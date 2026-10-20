@@ -10,33 +10,119 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrivadoRouteImport } from './routes/_privado'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
+import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
+import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
+import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivadoRoute = PrivadoRouteImport.update({
+  id: '/_privado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivadoAjustesRoute = PrivadoAjustesRouteImport.update({
+  id: '/ajustes',
+  path: '/ajustes',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoCalendarioRoute = PrivadoCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoCampeonatoRoute = PrivadoCampeonatoRouteImport.update({
+  id: '/campeonato',
+  path: '/campeonato',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
+  id: '/inicio',
+  path: '/inicio',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/registro': typeof RegistroRoute
+  '/ajustes': typeof PrivadoAjustesRoute
+  '/calendario': typeof PrivadoCalendarioRoute
+  '/campeonato': typeof PrivadoCampeonatoRoute
+  '/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/registro': typeof RegistroRoute
+  '/ajustes': typeof PrivadoAjustesRoute
+  '/calendario': typeof PrivadoCalendarioRoute
+  '/campeonato': typeof PrivadoCampeonatoRoute
+  '/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_privado': typeof PrivadoRouteWithChildren
+  '/login': typeof LoginRoute
+  '/registro': typeof RegistroRoute
+  '/_privado/ajustes': typeof PrivadoAjustesRoute
+  '/_privado/calendario': typeof PrivadoCalendarioRoute
+  '/_privado/campeonato': typeof PrivadoCampeonatoRoute
+  '/_privado/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/registro'
+    | '/ajustes'
+    | '/calendario'
+    | '/campeonato'
+    | '/inicio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/registro'
+    | '/ajustes'
+    | '/calendario'
+    | '/campeonato'
+    | '/inicio'
+  id:
+    | '__root__'
+    | '/'
+    | '/_privado'
+    | '/login'
+    | '/registro'
+    | '/_privado/ajustes'
+    | '/_privado/calendario'
+    | '/_privado/campeonato'
+    | '/_privado/inicio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrivadoRoute: typeof PrivadoRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegistroRoute: typeof RegistroRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +134,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_privado': {
+      id: '/_privado'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_privado/ajustes': {
+      id: '/_privado/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof PrivadoAjustesRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/calendario': {
+      id: '/_privado/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof PrivadoCalendarioRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/campeonato': {
+      id: '/_privado/campeonato'
+      path: '/campeonato'
+      fullPath: '/campeonato'
+      preLoaderRoute: typeof PrivadoCampeonatoRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/inicio': {
+      id: '/_privado/inicio'
+      path: '/inicio'
+      fullPath: '/inicio'
+      preLoaderRoute: typeof PrivadoInicioRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
   }
 }
 
+interface PrivadoRouteChildren {
+  PrivadoAjustesRoute: typeof PrivadoAjustesRoute
+  PrivadoCalendarioRoute: typeof PrivadoCalendarioRoute
+  PrivadoCampeonatoRoute: typeof PrivadoCampeonatoRoute
+  PrivadoInicioRoute: typeof PrivadoInicioRoute
+}
+
+const PrivadoRouteChildren: PrivadoRouteChildren = {
+  PrivadoAjustesRoute: PrivadoAjustesRoute,
+  PrivadoCalendarioRoute: PrivadoCalendarioRoute,
+  PrivadoCampeonatoRoute: PrivadoCampeonatoRoute,
+  PrivadoInicioRoute: PrivadoInicioRoute,
+}
+
+const PrivadoRouteWithChildren =
+  PrivadoRoute._addFileChildren(PrivadoRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrivadoRoute: PrivadoRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegistroRoute: RegistroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
