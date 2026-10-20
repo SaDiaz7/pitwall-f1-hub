@@ -10,5 +10,9 @@ export const Route = createFileRoute("/login")({
       { property: "og:description", content: "Entrá a tu cuenta de PitWall." },
     ],
   }),
-  component: () => <AuthForm mode="login" />,
+  component: Page,
 });
+
+function Page() {
+  return <AuthForm mode="login" />;
+}
