@@ -1,10 +1,15 @@
+import { getRouteApi } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
-import { grandsPrix } from "@/data/mockData";
+
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const route = getRouteApi("/_privado/calendario");
+
 export function CalendarPage() {
+  const grandsPrix = route.useLoaderData();
+
   return (
     <>
       <PageHeader title="Calendario" subtitle={`${grandsPrix.length} Grandes Premios esta temporada.`} />

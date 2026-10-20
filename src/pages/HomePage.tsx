@@ -1,12 +1,16 @@
-import { Link } from "@tanstack/react-router";
+import { Link, getRouteApi } from "@tanstack/react-router";
 import { ChevronRight, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { navItems } from "@/components/AppShell";
-import { getNextGrandPrix } from "@/data/mockData";
+
 import { formatDate } from "@/lib/format";
 
+const route = getRouteApi("/_privado/inicio");
+
 export function HomePage() {
-  const next = getNextGrandPrix();
+  const grandsPrix = route.useLoaderData();
+  const next = grandsPrix.find((gp) => gp.status === "proximo");
+
   return (
     <>
       <PageHeader title="Inicio" subtitle="Tu resumen de la temporada." />

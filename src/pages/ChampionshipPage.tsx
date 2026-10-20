@@ -1,13 +1,20 @@
+import { getRouteApi } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { StandingsTable } from "@/components/StandingsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { drivers, getTeam, teams } from "@/data/mockData";
+
+const route = getRouteApi("/_privado/campeonato");
 
 export function ChampionshipPage() {
-  const driverRows = [...drivers]
-    .sort((a, b) => b.points - a.points)
-    .map((d) => ({ id: d.id, name: d.name, team: getTeam(d.teamId)?.name, points: d.points, wins: d.wins }));
-  const teamRows = [...teams].sort((a, b) => b.points - a.points);
+  const { drivers, teams } = route.useLoaderData();
+
+  const driverRows = drivers.map((d) => ({
+    id: d.id,
+    name: d.name,
+    team: d.teamName,
+    points: d.points,
+    wins: d.wins,
+  }));
 
   return (
     <>
@@ -18,7 +25,7 @@ export function ChampionshipPage() {
           <TabsTrigger value="constructores">Constructores</TabsTrigger>
         </TabsList>
         <TabsContent value="pilotos"><StandingsTable rows={driverRows} /></TabsContent>
-        <TabsContent value="constructores"><StandingsTable rows={teamRows} showTeam={false} /></TabsContent>
+        <TabsContent value="constructores"><StandingsTable rows={teams} showTeam={false} /></TabsContent>
       </Tabs>
     </>
   );

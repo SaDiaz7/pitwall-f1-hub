@@ -10,6 +10,7 @@ export interface Driver {
   name: string;
   number: number;
   teamId: string;
+  teamName?: string; // lo completa la API real
   points: number;
   wins: number;
 }
