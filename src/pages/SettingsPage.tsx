@@ -18,7 +18,7 @@ function ToggleRow({ id, title, text, defaultChecked }: { id: string; title: str
         <Label htmlFor={id} className="font-semibold">{title}</Label>
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
-      <Switch id={id} defaultChecked={defaultChecked} />
+      <Switch id={id} defaultChecked={!!defaultChecked} />
     </div>
   );
 }

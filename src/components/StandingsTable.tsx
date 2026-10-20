@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export interface StandingRow {
   id: string;
   name: string;
-  team?: string;
+  team?: string | undefined;
   points: number;
   wins: number;
 }
