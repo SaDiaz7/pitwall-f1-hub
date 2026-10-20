@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivadoRouteImport } from './routes/_privado'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
 import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
 import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
@@ -32,9 +34,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadRoute = PrivacidadRouteImport.update({
+  id: '/privacidad',
+  path: '/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegistroRoute = RegistroRouteImport.update({
   id: '/registro',
   path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivadoAjustesRoute = PrivadoAjustesRouteImport.update({
@@ -61,7 +73,9 @@ const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -70,7 +84,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -81,7 +97,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_privado': typeof PrivadoRouteWithChildren
   '/login': typeof LoginRoute
+  '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/terminos': typeof TerminosRoute
   '/_privado/ajustes': typeof PrivadoAjustesRoute
   '/_privado/calendario': typeof PrivadoCalendarioRoute
   '/_privado/campeonato': typeof PrivadoCampeonatoRoute
@@ -92,7 +110,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/privacidad'
     | '/registro'
+    | '/terminos'
     | '/ajustes'
     | '/calendario'
     | '/campeonato'
@@ -101,7 +121,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/privacidad'
     | '/registro'
+    | '/terminos'
     | '/ajustes'
     | '/calendario'
     | '/campeonato'
@@ -111,7 +133,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_privado'
     | '/login'
+    | '/privacidad'
     | '/registro'
+    | '/terminos'
     | '/_privado/ajustes'
     | '/_privado/calendario'
     | '/_privado/campeonato'
@@ -122,7 +146,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrivadoRoute: typeof PrivadoRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PrivacidadRoute: typeof PrivacidadRoute
   RegistroRoute: typeof RegistroRoute
+  TerminosRoute: typeof TerminosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,11 +174,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidad': {
+      id: '/privacidad'
+      path: '/privacidad'
+      fullPath: '/privacidad'
+      preLoaderRoute: typeof PrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/registro': {
       id: '/registro'
       path: '/registro'
       fullPath: '/registro'
       preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_privado/ajustes': {
@@ -207,7 +247,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrivadoRoute: PrivadoRouteWithChildren,
   LoginRoute: LoginRoute,
+  PrivacidadRoute: PrivacidadRoute,
   RegistroRoute: RegistroRoute,
+  TerminosRoute: TerminosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

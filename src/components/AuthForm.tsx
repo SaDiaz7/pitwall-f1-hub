@@ -1,37 +1,94 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
+import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "login" | "registro";
-type Errors = Partial<Record<"email" | "password" | "confirm", string>>;
+type Errors = Partial<Record<"email" | "password" | "confirm" | "terms", string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateAuth(mode: Mode, v: { email: string; password: string; confirm: string }): Errors {
+export function validateAuth(
+  mode: Mode,
+  v: { email: string; password: string; confirm: string; terms?: boolean },
+): Errors {
   const e: Errors = {};
   if (!v.email.trim()) e.email = "Ingresá tu email.";
   else if (!EMAIL_RE.test(v.email.trim())) e.email = "El email no tiene un formato válido.";
   if (!v.password) e.password = "Ingresá tu contraseña.";
   else if (mode === "registro" && v.password.length < 8) e.password = "La contraseña debe tener al menos 8 caracteres.";
   if (mode === "registro" && v.confirm !== v.password) e.confirm = "Las contraseñas no coinciden.";
+  if (mode === "registro" && v.terms === false) e.terms = "Tenés que aceptar los términos y la política de privacidad.";
   return e;
+}
+
+function translateError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login credentials")) return "Email o contraseña incorrectos.";
+  if (m.includes("email not confirmed")) return "Todavía no confirmaste tu email. Revisá tu bandeja de entrada.";
+  if (m.includes("already registered")) return "Ya existe una cuenta con ese email.";
+  if (m.includes("rate limit")) return "Hiciste demasiados intentos. Esperá un rato y probá de nuevo.";
+  return "No pudimos completar la operación. Probá de nuevo en un momento.";
 }
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const [values, setValues] = useState({ email: "", password: "", confirm: "" });
+  const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const [sent, setSent] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
   const isLogin = mode === "login";
 
-  const onSubmit = (ev: FormEvent) => {
+  const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
-    const e = validateAuth(mode, values);
+    setServerError(null);
+    setInfo(null);
+
+    const e = validateAuth(mode, { ...values, terms: accepted });
     setErrors(e);
-    // TODO: conectar con Supabase
-    setSent(Object.keys(e).length === 0);
+    if (Object.keys(e).length > 0) return;
+
+    setSubmitting(true);
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: values.email.trim(),
+          password: values.password,
+        });
+        if (error) {
+          setServerError(translateError(error.message));
+          return;
+        }
+        await navigate({ to: "/inicio" });
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: values.email.trim(),
+          password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/inicio`,
+            data: { accepted_terms_at: new Date().toISOString() },
+          },
+        });
+        if (error) {
+          setServerError(translateError(error.message));
+          return;
+        }
+        if (data.session) {
+          // Confirmación de email desactivada: ya está logueado.
+          await navigate({ to: "/inicio" });
+        } else {
+          // Confirmación de email activada: hay que validar el correo.
+          setInfo("Te enviamos un email para confirmar tu cuenta. Revisá tu bandeja de entrada.");
+        }
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const field = (name: keyof typeof values, label: string, type: string, auto: string) => (
@@ -64,13 +121,43 @@ export function AuthForm({ mode }: { mode: Mode }) {
           {field("email", "Email", "email", "email")}
           {field("password", "Contraseña", "password", isLogin ? "current-password" : "new-password")}
           {!isLogin && field("confirm", "Repetir contraseña", "password", "new-password")}
-          {sent && (
-            <p className="rounded-md bg-success/15 p-2 text-sm text-success">
-              Formulario válido. La conexión con el servidor todavía no está activa.
-            </p>
+
+          {!isLogin && (
+            <div className="space-y-1.5">
+              <label className="flex items-start gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 accent-primary"
+                />
+                <span>
+                  Acepto los{" "}
+                  <Link to="/terminos" target="_blank" className="font-semibold text-primary hover:underline">
+                    términos
+                  </Link>{" "}
+                  y la{" "}
+                  <Link to="/privacidad" target="_blank" className="font-semibold text-primary hover:underline">
+                    política de privacidad
+                  </Link>
+                  .
+                </span>
+              </label>
+              {errors.terms && <p className="text-sm text-destructive">{errors.terms}</p>}
+            </div>
           )}
-          <Button type="submit" className="h-11 w-full bg-gradient-primary font-semibold uppercase tracking-wide">
-            {isLogin ? "Entrar" : "Registrarme"}
+
+          {serverError && (
+            <p className="rounded-md bg-destructive/15 p-2 text-sm text-destructive">{serverError}</p>
+          )}
+          {info && <p className="rounded-md bg-success/15 p-2 text-sm text-success">{info}</p>}
+
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="h-11 w-full bg-gradient-primary font-semibold uppercase tracking-wide"
+          >
+            {submitting ? "Procesando…" : isLogin ? "Entrar" : "Registrarme"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             {isLogin ? "¿No tenés cuenta? " : "¿Ya tenés cuenta? "}
