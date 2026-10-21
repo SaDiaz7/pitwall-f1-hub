@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Home, LogOut, Settings, Trophy } from "lucide-react";
+import { CalendarDays, Home, LogOut, Settings, Star, Trophy } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
+
 
 export const navItems = [
   { to: "/inicio", label: "Inicio", icon: Home },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/campeonato", label: "Campeonato", icon: Trophy },
+  { to: "/favoritos", label: "Favoritos", icon: Star },
   { to: "/ajustes", label: "Ajustes", icon: Settings },
 ] as const;
 
@@ -84,7 +86,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t bg-sidebar/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-sidebar/95 backdrop-blur md:hidden">
         {navItems.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
