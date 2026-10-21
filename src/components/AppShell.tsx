@@ -1,21 +1,24 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Home, LogOut, Settings, Star, Trophy } from "lucide-react";
+import { CalendarDays, Home, Image as ImageIcon, LogOut, Settings, Star, Trophy } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
-
+import { getInitials, useProfile } from "@/hooks/useProfile";
 
 export const navItems = [
   { to: "/inicio", label: "Inicio", icon: Home },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/campeonato", label: "Campeonato", icon: Trophy },
   { to: "/favoritos", label: "Favoritos", icon: Star },
+  { to: "/fondos", label: "Fondos", icon: ImageIcon },
   { to: "/ajustes", label: "Ajustes", icon: Settings },
 ] as const;
 
 export function AppShell() {
   const { session, loading } = useSession();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
   // Si terminó de cargar y no hay sesión, vuelve al login.
@@ -38,6 +41,8 @@ export function AppShell() {
     );
   }
 
+  const shownName = profile.display_name || profile.username || "Tu cuenta";
+
   return (
     <div className="min-h-screen md:flex">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-sidebar p-5 md:flex">
@@ -56,7 +61,18 @@ export function AppShell() {
           ))}
         </nav>
         <div className="mt-auto space-y-3">
-          <p className="truncate px-3 text-xs text-muted-foreground">{session.user.email}</p>
+          <div className="flex items-center gap-3 px-3">
+            <Avatar className="h-8 w-8">
+              {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="Tu avatar" />}
+              <AvatarFallback className="bg-gradient-primary text-xs font-bold text-primary-foreground">
+                {getInitials(profile.display_name || profile.username || session.user.email)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{shownName}</p>
+              <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={handleLogout}
@@ -86,7 +102,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-sidebar/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-sidebar/95 backdrop-blur md:hidden">
         {navItems.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}

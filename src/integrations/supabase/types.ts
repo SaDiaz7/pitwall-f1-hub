@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          user_id: string
+        }
+        Insert: {
+          user_id: string
+        }
+        Update: {
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorite_drivers: {
         Row: {
           created_at: string
@@ -32,12 +44,87 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      wallpapers: {
+        Row: {
+          created_at: string
+          credit: string | null
+          driver_id: string | null
+          driver_name: string | null
+          file_ext: string
+          height: number
+          id: string
+          quality: string
+          status: string
+          team_id: string | null
+          team_name: string | null
+          uploaded_by: string | null
+          width: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          credit?: string | null
+          driver_id?: string | null
+          driver_name?: string | null
+          file_ext?: string
+          height: number
+          id?: string
+          quality: string
+          status?: string
+          team_id?: string | null
+          team_name?: string | null
+          uploaded_by?: string | null
+          width: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          credit?: string | null
+          driver_id?: string | null
+          driver_name?: string | null
+          file_ext?: string
+          height?: number
+          id?: string
+          quality?: string
+          status?: string
+          team_id?: string | null
+          team_name?: string | null
+          uploaded_by?: string | null
+          width?: number
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

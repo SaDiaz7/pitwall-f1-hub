@@ -19,6 +19,7 @@ import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
 import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
 import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
 import { Route as PrivadoFavoritosRouteImport } from './routes/_privado.favoritos'
+import { Route as PrivadoFondosRouteImport } from './routes/_privado.fondos'
 import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
 
 const IndexRoute = IndexRouteImport.update({
@@ -70,6 +71,11 @@ const PrivadoFavoritosRoute = PrivadoFavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoFondosRoute = PrivadoFondosRouteImport.update({
+  id: '/fondos',
+  path: '/fondos',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
   id: '/inicio',
   path: '/inicio',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
   '/favoritos': typeof PrivadoFavoritosRoute
+  '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRoutesByTo {
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
   '/favoritos': typeof PrivadoFavoritosRoute
+  '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRoutesById {
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/_privado/calendario': typeof PrivadoCalendarioRoute
   '/_privado/campeonato': typeof PrivadoCampeonatoRoute
   '/_privado/favoritos': typeof PrivadoFavoritosRoute
+  '/_privado/fondos': typeof PrivadoFondosRoute
   '/_privado/inicio': typeof PrivadoInicioRoute
 }
 export interface FileRouteTypes {
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/calendario'
     | '/campeonato'
     | '/favoritos'
+    | '/fondos'
     | '/inicio'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/calendario'
     | '/campeonato'
     | '/favoritos'
+    | '/fondos'
     | '/inicio'
   id:
     | '__root__'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/_privado/calendario'
     | '/_privado/campeonato'
     | '/_privado/favoritos'
+    | '/_privado/fondos'
     | '/_privado/inicio'
   fileRoutesById: FileRoutesById
 }
@@ -235,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoFavoritosRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/fondos': {
+      id: '/_privado/fondos'
+      path: '/fondos'
+      fullPath: '/fondos'
+      preLoaderRoute: typeof PrivadoFondosRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/inicio': {
       id: '/_privado/inicio'
       path: '/inicio'
@@ -250,6 +269,7 @@ interface PrivadoRouteChildren {
   PrivadoCalendarioRoute: typeof PrivadoCalendarioRoute
   PrivadoCampeonatoRoute: typeof PrivadoCampeonatoRoute
   PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
+  PrivadoFondosRoute: typeof PrivadoFondosRoute
   PrivadoInicioRoute: typeof PrivadoInicioRoute
 }
 
@@ -258,6 +278,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoCalendarioRoute: PrivadoCalendarioRoute,
   PrivadoCampeonatoRoute: PrivadoCampeonatoRoute,
   PrivadoFavoritosRoute: PrivadoFavoritosRoute,
+  PrivadoFondosRoute: PrivadoFondosRoute,
   PrivadoInicioRoute: PrivadoInicioRoute,
 }
 

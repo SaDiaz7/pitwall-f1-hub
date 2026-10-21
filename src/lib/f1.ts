@@ -181,3 +181,47 @@ export const getSchedule = createServerFn({ method: "GET" }).handler(async (): P
     };
   });
 });
+
+// ---------- Pilotos y equipos de una temporada (para etiquetar fondos de pantalla) ----------
+
+export interface SeasonOption {
+  id: string;
+  name: string;
+}
+
+export interface SeasonOptions {
+  drivers: SeasonOption[];
+  teams: SeasonOption[];
+}
+
+interface SeasonDriversResponse {
+  MRData: { DriverTable: { Drivers?: { driverId: string; givenName: string; familyName: string }[] } };
+}
+
+interface SeasonConstructorsResponse {
+  MRData: { ConstructorTable: { Constructors?: { constructorId: string; name: string }[] } };
+}
+
+export const getSeasonOptions = createServerFn({ method: "GET" })
+  .inputValidator((data: { year: number }) => {
+    if (!Number.isInteger(data.year) || data.year < 1950 || data.year > 2100) {
+      throw new Error("Año inválido");
+    }
+    return data;
+  })
+  .handler(async ({ data }): Promise<SeasonOptions> => {
+    const [driversJson, teamsJson] = await Promise.all([
+      fetchJolpica<SeasonDriversResponse>(`/${data.year}/drivers/?limit=100`),
+      fetchJolpica<SeasonConstructorsResponse>(`/${data.year}/constructors/?limit=100`),
+    ]);
+
+    const drivers = (driversJson.MRData.DriverTable.Drivers ?? [])
+      .map((d) => ({ id: d.driverId, name: `${d.givenName} ${d.familyName}` }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    const teams = (teamsJson.MRData.ConstructorTable.Constructors ?? [])
+      .map((t) => ({ id: t.constructorId, name: t.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return { drivers, teams };
+  });

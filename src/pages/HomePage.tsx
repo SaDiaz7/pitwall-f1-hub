@@ -26,7 +26,7 @@ export function HomePage() {
         </section>
       )}
       <h2 className="mb-3 mt-10 text-2xl font-bold uppercase">Accesos rápidos</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {navItems.slice(1).map(({ to, label, icon: Icon }) => (
           <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary"><Icon className="h-5 w-5" /></span>
