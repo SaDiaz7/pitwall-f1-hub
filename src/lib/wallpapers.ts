@@ -90,7 +90,8 @@ export function slugify(text: string): string {
 export function getDownloadUrl(w: Wallpaper): string {
   const subject = slugify(w.driver_name ?? w.team_name ?? "fondo") || "fondo";
   const filename = `pitwall-${w.year}-${subject}-${w.quality}.${w.file_ext}`;
-  return supabase.storage.from("wallpapers").getPublicUrl(`${w.id}/full`, { download: filename }).data.publicUrl;
+  return supabase.storage.from("wallpapers").getPublicUrl(`${w.id}/full`, { download: filename })
+    .data.publicUrl;
 }
 
 export interface WallpaperMeta {
@@ -111,7 +112,7 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
   if (!ext) {
     return { ok: false, message: "El fondo tiene que ser JPG, PNG o WebP." };
   }
-  
+
   const bucket = supabase.storage.from("wallpapers");
   const paths = [`${id}/full`, `${id}/thumb`];
 
@@ -129,7 +130,10 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
   });
   if (fullError) {
     console.error("Subida del original:", fullError);
-    return { ok: false, message: "No pudimos subir la imagen. Revisá la consola para ver el detalle." };
+    return {
+      ok: false,
+      message: "No pudimos subir la imagen. Revisá la consola para ver el detalle.",
+    };
   }
 
   const { error: thumbError } = await bucket.upload(paths[1]!, thumb, {
@@ -139,7 +143,10 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
   if (thumbError) {
     console.error("Subida de la miniatura:", thumbError);
     await bucket.remove([paths[0]!]);
-    return { ok: false, message: "No pudimos subir la miniatura. Revisá la consola para ver el detalle." };
+    return {
+      ok: false,
+      message: "No pudimos subir la miniatura. Revisá la consola para ver el detalle.",
+    };
   }
 
   const { error: insertError } = await supabase.from("wallpapers").insert({
@@ -159,7 +166,10 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
   if (insertError) {
     console.error("Registro en la tabla:", insertError);
     await bucket.remove(paths);
-    return { ok: false, message: "No pudimos guardar los datos del fondo. Revisá la consola para ver el detalle." };
+    return {
+      ok: false,
+      message: "No pudimos guardar los datos del fondo. Revisá la consola para ver el detalle.",
+    };
   }
 
   return { ok: true };

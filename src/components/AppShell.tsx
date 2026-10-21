@@ -1,6 +1,14 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Home, Image as ImageIcon, LogOut, Settings, Star, Trophy } from "lucide-react";
+import {
+  CalendarDays,
+  Home,
+  Image as ImageIcon,
+  LogOut,
+  Settings,
+  Star,
+  Trophy,
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";

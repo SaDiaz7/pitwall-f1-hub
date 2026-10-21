@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { WallpaperUploadForm } from "@/components/WallpaperUploadForm";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useWallpapers } from "@/hooks/useWallpapers";
-import { deleteWallpaper, getDownloadUrl, getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
+import {
+  deleteWallpaper,
+  getDownloadUrl,
+  getWallpaperUrls,
+  qualityLabel,
+  type Wallpaper,
+} from "@/lib/wallpapers";
 
 interface Filters {
   year: string;
@@ -22,7 +28,9 @@ function uniqueOptions(items: { id: string | null; name: string | null }[]) {
   for (const item of items) {
     if (item.id && !map.has(item.id)) map.set(item.id, item.name ?? item.id);
   }
-  return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  return [...map.entries()]
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function FilterSelect({
@@ -96,21 +104,38 @@ function WallpaperModal({
           <div>
             <h2 className="font-display text-2xl font-bold uppercase">{title}</h2>
             <p className="text-sm text-muted-foreground">
-              {[wallpaper.driver_name ? wallpaper.team_name : null, wallpaper.year, qualityLabel(wallpaper.quality)]
+              {[
+                wallpaper.driver_name ? wallpaper.team_name : null,
+                wallpaper.year,
+                qualityLabel(wallpaper.quality),
+              ]
                 .filter(Boolean)
                 .join(" · ")}{" "}
               · {wallpaper.width} × {wallpaper.height} px
             </p>
-            {wallpaper.credit && <p className="mt-1 text-xs text-muted-foreground">Crédito: {wallpaper.credit}</p>}
+            {wallpaper.credit && (
+              <p className="mt-1 text-xs text-muted-foreground">Crédito: {wallpaper.credit}</p>
+            )}
           </div>
-          <button type="button" onClick={onClose} aria-label="Cerrar" className="rounded-lg p-2 text-muted-foreground hover:text-foreground">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="rounded-lg p-2 text-muted-foreground hover:text-foreground"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <img src={urls.full} alt={title} className="max-h-[60vh] w-full rounded-xl object-contain" />
+        <img
+          src={urls.full}
+          alt={title}
+          className="max-h-[60vh] w-full rounded-xl object-contain"
+        />
 
-        {error && <p className="rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>
+        )}
 
         <div className="flex flex-wrap gap-3">
           <a
@@ -161,7 +186,8 @@ export function WallpapersPage() {
   );
 
   const hasFilters = Object.values(filters).some(Boolean);
-  const setFilter = (key: keyof Filters) => (value: string) => setFilters((f) => ({ ...f, [key]: value }));
+  const setFilter = (key: keyof Filters) => (value: string) =>
+    setFilters((f) => ({ ...f, [key]: value }));
 
   return (
     <>
@@ -169,7 +195,11 @@ export function WallpapersPage() {
 
       {isAdmin && (
         <div className="mb-4 flex justify-end">
-          <Button type="button" onClick={() => setShowUpload((v) => !v)} className="bg-gradient-primary font-semibold">
+          <Button
+            type="button"
+            onClick={() => setShowUpload((v) => !v)}
+            className="bg-gradient-primary font-semibold"
+          >
             <Plus className="mr-2 h-4 w-4" /> {showUpload ? "Cerrar" : "Subir fondo"}
           </Button>
         </div>
@@ -181,19 +211,25 @@ export function WallpapersPage() {
         <FilterSelect label="Año" value={filters.year} onChange={setFilter("year")}>
           <option value="">Todos</option>
           {options.years.map((y) => (
-            <option key={y} value={y}>{y}</option>
+            <option key={y} value={y}>
+              {y}
+            </option>
           ))}
         </FilterSelect>
         <FilterSelect label="Equipo" value={filters.team} onChange={setFilter("team")}>
           <option value="">Todos</option>
           {options.teams.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
           ))}
         </FilterSelect>
         <FilterSelect label="Piloto" value={filters.driver} onChange={setFilter("driver")}>
           <option value="">Todos</option>
           {options.drivers.map((d) => (
-            <option key={d.id} value={d.id}>{d.name}</option>
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
           ))}
         </FilterSelect>
         <FilterSelect label="Calidad" value={filters.quality} onChange={setFilter("quality")}>
@@ -204,18 +240,25 @@ export function WallpapersPage() {
         </FilterSelect>
       </div>
 
-      {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>
+      )}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Cargando fondos…</p>
       ) : wallpapers.length === 0 ? (
         <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
-          Todavía no hay fondos cargados.{isAdmin ? " Usá el botón “Subir fondo” para agregar el primero." : ""}
+          Todavía no hay fondos cargados.
+          {isAdmin ? " Usá el botón “Subir fondo” para agregar el primero." : ""}
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
           No hay fondos con esos filtros.{" "}
-          <button type="button" onClick={() => setFilters(EMPTY_FILTERS)} className="font-semibold text-primary hover:underline">
+          <button
+            type="button"
+            onClick={() => setFilters(EMPTY_FILTERS)}
+            className="font-semibold text-primary hover:underline"
+          >
             Limpiar filtros
           </button>
         </div>
@@ -226,7 +269,11 @@ export function WallpapersPage() {
             {hasFilters && (
               <>
                 {" · "}
-                <button type="button" onClick={() => setFilters(EMPTY_FILTERS)} className="font-semibold text-primary hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setFilters(EMPTY_FILTERS)}
+                  className="font-semibold text-primary hover:underline"
+                >
                   Limpiar filtros
                 </button>
               </>
@@ -250,7 +297,9 @@ export function WallpapersPage() {
                     {qualityLabel(w.quality)}
                   </span>
                   <div className="p-3">
-                    <p className="truncate font-semibold">{w.driver_name ?? w.team_name ?? "Fondo"}</p>
+                    <p className="truncate font-semibold">
+                      {w.driver_name ?? w.team_name ?? "Fondo"}
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
                     </p>

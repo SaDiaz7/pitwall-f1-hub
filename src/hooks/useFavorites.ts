@@ -55,16 +55,24 @@ export function useFavorites() {
       setError(null);
 
       // Actualización optimista: la pantalla cambia al instante...
-      setFavorites((prev) => (wasFavorite ? prev.filter((id) => id !== driverId) : [...prev, driverId]));
+      setFavorites((prev) =>
+        wasFavorite ? prev.filter((id) => id !== driverId) : [...prev, driverId],
+      );
 
       // ...y después confirmamos con la base de datos.
       const { error: writeError } = wasFavorite
-        ? await supabase.from("favorite_drivers").delete().eq("user_id", userId).eq("driver_id", driverId)
+        ? await supabase
+            .from("favorite_drivers")
+            .delete()
+            .eq("user_id", userId)
+            .eq("driver_id", driverId)
         : await supabase.from("favorite_drivers").insert({ driver_id: driverId });
 
       if (writeError) {
         // Si falló, volvemos atrás el cambio.
-        setFavorites((prev) => (wasFavorite ? [...prev, driverId] : prev.filter((id) => id !== driverId)));
+        setFavorites((prev) =>
+          wasFavorite ? [...prev, driverId] : prev.filter((id) => id !== driverId),
+        );
         setError("No pudimos guardar el cambio. Probá de nuevo.");
       }
     },

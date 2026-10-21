@@ -17,7 +17,12 @@ interface StandingsTableProps {
   onToggleFavorite?: (id: string) => void;
 }
 
-export function StandingsTable({ rows, showTeam = true, isFavorite, onToggleFavorite }: StandingsTableProps) {
+export function StandingsTable({
+  rows,
+  showTeam = true,
+  isFavorite,
+  onToggleFavorite,
+}: StandingsTableProps) {
   const showFavorites = Boolean(isFavorite && onToggleFavorite);
 
   return (
@@ -48,11 +53,17 @@ export function StandingsTable({ rows, showTeam = true, isFavorite, onToggleFavo
               </td>
               <td className="px-3 py-3">
                 <div className="font-semibold">{r.name}</div>
-                {showTeam && <div className="text-xs text-muted-foreground sm:hidden">{r.team}</div>}
+                {showTeam && (
+                  <div className="text-xs text-muted-foreground sm:hidden">{r.team}</div>
+                )}
               </td>
-              {showTeam && <td className="hidden px-3 py-3 text-muted-foreground sm:table-cell">{r.team}</td>}
+              {showTeam && (
+                <td className="hidden px-3 py-3 text-muted-foreground sm:table-cell">{r.team}</td>
+              )}
               <td className="px-3 py-3 text-right tabular-nums">{r.wins}</td>
-              <td className="px-3 py-3 text-right font-display text-lg font-bold tabular-nums">{r.points}</td>
+              <td className="px-3 py-3 text-right font-display text-lg font-bold tabular-nums">
+                {r.points}
+              </td>
               {isFavorite && onToggleFavorite && (
                 <td className="px-2 py-3 text-right">
                   <FavoriteButton

@@ -7,7 +7,10 @@ export const Route = createFileRoute("/")({
       { title: "PitWall — Tu muro de boxes de Fórmula 1" },
       { name: "description", content: "Calendario, resultados y campeonatos de la F1 para fans." },
       { property: "og:title", content: "PitWall — Tu muro de boxes de Fórmula 1" },
-      { property: "og:description", content: "Calendario, resultados y campeonatos de la F1 para fans." },
+      {
+        property: "og:description",
+        content: "Calendario, resultados y campeonatos de la F1 para fans.",
+      },
     ],
   }),
   component: LandingPage,

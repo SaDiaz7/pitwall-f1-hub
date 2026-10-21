@@ -1,7 +1,13 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DataError } from "@/components/DataError";
 import { GrandPrixPage } from "@/pages/GrandPrixPage";
-import { getRaceResults, getSchedule, getWeather, type RaceResult, type WeatherForecast } from "@/lib/f1";
+import {
+  getRaceResults,
+  getSchedule,
+  getWeather,
+  type RaceResult,
+  type WeatherForecast,
+} from "@/lib/f1";
 
 export const Route = createFileRoute("/_privado/gp/$round")({
   head: () => ({

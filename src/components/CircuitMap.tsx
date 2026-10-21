@@ -13,7 +13,9 @@ export function CircuitMap({ lat, lng, label }: { lat: number; lng: number; labe
       .then((tracks) => {
         if (cancelled) return;
         const track = findTrack(tracks, lat, lng);
-        setState(track ? { status: "ready", path: buildTrackPath(track.points) } : { status: "missing" });
+        setState(
+          track ? { status: "ready", path: buildTrackPath(track.points) } : { status: "missing" },
+        );
       })
       .catch(() => {
         if (!cancelled) setState({ status: "missing" });
@@ -37,7 +39,12 @@ export function CircuitMap({ lat, lng, label }: { lat: number; lng: number; labe
   }
 
   return (
-    <svg role="img" aria-label={`Trazado de ${label}`} viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full">
+    <svg
+      role="img"
+      aria-label={`Trazado de ${label}`}
+      viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+      className="h-full w-full"
+    >
       <path
         d={state.path}
         fill="none"

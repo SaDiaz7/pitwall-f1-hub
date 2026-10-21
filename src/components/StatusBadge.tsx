@@ -10,7 +10,9 @@ export function StatusBadge({ status }: { status: GrandPrixStatus }) {
         done ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary",
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", done ? "bg-muted-foreground" : "bg-primary")} />
+      <span
+        className={cn("h-1.5 w-1.5 rounded-full", done ? "bg-muted-foreground" : "bg-primary")}
+      />
       {done ? "Finalizado" : "Próximo"}
     </span>
   );

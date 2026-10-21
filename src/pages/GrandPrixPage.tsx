@@ -32,8 +32,10 @@ function describeWeather(code: number): { label: string; Icon: LucideIcon } {
   if (code === 3) return { label: "Nublado", Icon: Cloud };
   if (code === 45 || code === 48) return { label: "Niebla", Icon: CloudFog };
   if (code >= 51 && code <= 57) return { label: "Llovizna", Icon: CloudDrizzle };
-  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return { label: "Lluvia", Icon: CloudRain };
-  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return { label: "Nieve", Icon: CloudSnow };
+  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82))
+    return { label: "Lluvia", Icon: CloudRain };
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86)
+    return { label: "Nieve", Icon: CloudSnow };
   if (code >= 95) return { label: "Tormenta", Icon: CloudLightning };
   return { label: "Variable", Icon: Cloud };
 }
@@ -47,9 +49,12 @@ function formatStatus(status: string): string {
 
 // Fecha YYYY-MM-DD en la zona horaria del circuito.
 function dateInZone(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(
-    new Date(iso),
-  );
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(iso));
 }
 
 function shiftDate(date: string, days: number): string {
@@ -67,7 +72,11 @@ const dayFormatter = new Intl.DateTimeFormat("es-AR", {
 
 function ResultsTable({ results }: { results: RaceResult[] }) {
   if (results.length === 0) {
-    return <p className="text-sm text-muted-foreground">La clasificación no está disponible por el momento.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        La clasificación no está disponible por el momento.
+      </p>
+    );
   }
 
   return (
@@ -89,7 +98,9 @@ function ResultsTable({ results }: { results: RaceResult[] }) {
                 <span
                   className={cn(
                     "inline-flex h-6 min-w-6 items-center justify-center rounded-md px-1 font-display text-sm font-bold",
-                    r.position === 1 ? "bg-gradient-primary text-primary-foreground" : "bg-secondary",
+                    r.position === 1
+                      ? "bg-gradient-primary text-primary-foreground"
+                      : "bg-secondary",
                   )}
                 >
                   {r.positionText}
@@ -100,7 +111,9 @@ function ResultsTable({ results }: { results: RaceResult[] }) {
               <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
                 {r.time || formatStatus(r.status)}
               </td>
-              <td className="px-2 py-2 text-right font-display font-bold tabular-nums">{r.points}</td>
+              <td className="px-2 py-2 text-right font-display font-bold tabular-nums">
+                {r.points}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -109,7 +122,15 @@ function ResultsTable({ results }: { results: RaceResult[] }) {
   );
 }
 
-function WeatherCard({ weather, raceStart, fallbackDate }: { weather: WeatherForecast | null; raceStart?: string | undefined; fallbackDate: string }) {
+function WeatherCard({
+  weather,
+  raceStart,
+  fallbackDate,
+}: {
+  weather: WeatherForecast | null;
+  raceStart?: string | undefined;
+  fallbackDate: string;
+}) {
   // Día de la carrera en la hora local del circuito, y los dos días anteriores.
   const raceDay = weather && raceStart ? dateInZone(raceStart, weather.timezone) : fallbackDate;
   const weekend = [shiftDate(raceDay, -2), shiftDate(raceDay, -1), raceDay];
@@ -162,7 +183,8 @@ function WeatherCard({ weather, raceStart, fallbackDate }: { weather: WeatherFor
       )}
 
       <p className="text-xs text-muted-foreground">
-        Hora y clima del circuito{weather ? ` (${weather.timezone})` : ""}. Pronóstico: Open-Meteo.com.
+        Hora y clima del circuito{weather ? ` (${weather.timezone})` : ""}. Pronóstico:
+        Open-Meteo.com.
       </p>
     </section>
   );
@@ -187,7 +209,8 @@ export function GrandPrixPage() {
       <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
         <StatusBadge status={gp.status} />
         <span className="text-muted-foreground">
-          Ronda {gp.round} · {formatDate(gp.date, { day: "numeric", month: "long", year: "numeric" })}
+          Ronda {gp.round} ·{" "}
+          {formatDate(gp.date, { day: "numeric", month: "long", year: "numeric" })}
         </span>
       </div>
 

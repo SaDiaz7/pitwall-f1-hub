@@ -71,14 +71,20 @@ export function useProfile() {
 
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: userId, ...changes, updated_at: new Date().toISOString() }, { onConflict: "id" });
+        .upsert(
+          { id: userId, ...changes, updated_at: new Date().toISOString() },
+          { onConflict: "id" },
+        );
 
       if (error) {
         if (error.code === "23505") {
           return { ok: false, message: "Ese nombre de usuario ya está en uso." };
         }
         if (error.code === "23514") {
-          return { ok: false, message: "El nombre de usuario o el nombre visible no cumplen el formato." };
+          return {
+            ok: false,
+            message: "El nombre de usuario o el nombre visible no cumplen el formato.",
+          };
         }
         return { ok: false, message: "No pudimos guardar los cambios. Probá de nuevo." };
       }

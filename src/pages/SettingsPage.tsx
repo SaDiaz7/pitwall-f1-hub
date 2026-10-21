@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,11 +24,23 @@ function Panel({ children }: { children: ReactNode }) {
   return <div className="space-y-5 rounded-2xl border bg-card p-5 md:p-6">{children}</div>;
 }
 
-function ToggleRow({ id, title, text, defaultChecked }: { id: string; title: string; text: string; defaultChecked?: boolean }) {
+function ToggleRow({
+  id,
+  title,
+  text,
+  defaultChecked,
+}: {
+  id: string;
+  title: string;
+  text: string;
+  defaultChecked?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <Label htmlFor={id} className="font-semibold">{title}</Label>
+        <Label htmlFor={id} className="font-semibold">
+          {title}
+        </Label>
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
       <Switch id={id} defaultChecked={!!defaultChecked} />
@@ -65,7 +84,11 @@ function ProfilePanel() {
     });
     setSaving(false);
 
-    setStatus(result.ok ? { type: "ok", text: "Cambios guardados." } : { type: "error", text: result.message });
+    setStatus(
+      result.ok
+        ? { type: "ok", text: "Cambios guardados." }
+        : { type: "error", text: result.message },
+    );
   };
 
   const onAvatarChange = async (ev: ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +103,11 @@ function ProfilePanel() {
     // Limpia el input para poder elegir el mismo archivo otra vez si hace falta.
     if (fileInput.current) fileInput.current.value = "";
 
-    setStatus(result.ok ? { type: "ok", text: "Avatar actualizado." } : { type: "error", text: result.message });
+    setStatus(
+      result.ok
+        ? { type: "ok", text: "Avatar actualizado." }
+        : { type: "error", text: result.message },
+    );
   };
 
   if (loading) {
@@ -108,7 +135,12 @@ function ProfilePanel() {
             className="hidden"
             onChange={onAvatarChange}
           />
-          <Button type="button" variant="outline" disabled={uploading} onClick={() => fileInput.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => fileInput.current?.click()}
+          >
             {uploading ? "Subiendo…" : "Cambiar avatar"}
           </Button>
           <p className="text-xs text-muted-foreground">JPG, PNG o WebP, hasta 2 MB.</p>
@@ -174,15 +206,39 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="privacidad">
           <Panel>
-            <ToggleRow id="public" title="Perfil público" text="Otros fans pueden ver tu perfil." defaultChecked />
-            <ToggleRow id="showEmail" title="Mostrar email" text="Tu email será visible en tu perfil." />
-            <ToggleRow id="activity" title="Mostrar actividad" text="Compartí tu actividad reciente." defaultChecked />
+            <ToggleRow
+              id="public"
+              title="Perfil público"
+              text="Otros fans pueden ver tu perfil."
+              defaultChecked
+            />
+            <ToggleRow
+              id="showEmail"
+              title="Mostrar email"
+              text="Tu email será visible en tu perfil."
+            />
+            <ToggleRow
+              id="activity"
+              title="Mostrar actividad"
+              text="Compartí tu actividad reciente."
+              defaultChecked
+            />
           </Panel>
         </TabsContent>
         <TabsContent value="notificaciones">
           <Panel>
-            <ToggleRow id="raceReminder" title="Recordatorio de carrera" text="Aviso una hora antes de cada GP." defaultChecked />
-            <ToggleRow id="results" title="Resultados" text="Recibí los resultados al terminar la carrera." defaultChecked />
+            <ToggleRow
+              id="raceReminder"
+              title="Recordatorio de carrera"
+              text="Aviso una hora antes de cada GP."
+              defaultChecked
+            />
+            <ToggleRow
+              id="results"
+              title="Resultados"
+              text="Recibí los resultados al terminar la carrera."
+              defaultChecked
+            />
             <ToggleRow id="news" title="Novedades de PitWall" text="Nuevas funciones y anuncios." />
           </Panel>
         </TabsContent>

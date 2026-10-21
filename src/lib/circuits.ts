@@ -48,8 +48,11 @@ function toTrack(feature: GeoFeature): Track | null {
   const points = toPoints(feature.geometry);
   if (points.length < 2) return null;
 
-  const sum = points.reduce<[number, number]>((acc, [lng, lat]) => [acc[0] + lng, acc[1] + lat], [0, 0]);
-    const name = String(feature.properties?.["Name"] ?? feature.properties?.["name"] ?? "");
+  const sum = points.reduce<[number, number]>(
+    (acc, [lng, lat]) => [acc[0] + lng, acc[1] + lat],
+    [0, 0],
+  );
+  const name = String(feature.properties?.["Name"] ?? feature.properties?.["name"] ?? "");
 
   return { name, points, center: [sum[0] / points.length, sum[1] / points.length] };
 }
@@ -77,7 +80,9 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.sqrt(a));
 }
 
@@ -112,7 +117,10 @@ export function buildTrackPath(points: [number, number][]): string {
 
   const spanX = maxX - minX || 1;
   const spanY = maxY - minY || 1;
-  const scale = Math.min((MAP_WIDTH - 2 * MAP_PADDING) / spanX, (MAP_HEIGHT - 2 * MAP_PADDING) / spanY);
+  const scale = Math.min(
+    (MAP_WIDTH - 2 * MAP_PADDING) / spanX,
+    (MAP_HEIGHT - 2 * MAP_PADDING) / spanY,
+  );
 
   const offsetX = (MAP_WIDTH - spanX * scale) / 2;
   const offsetY = (MAP_HEIGHT - spanY * scale) / 2;

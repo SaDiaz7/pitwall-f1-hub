@@ -45,7 +45,10 @@ export function useCircuitFacts(circuitId: string) {
 
       if (error) {
         console.error("Agregar dato curioso:", error);
-        return { ok: false, message: "No pudimos guardar el dato. Revisá la consola para ver el detalle." };
+        return {
+          ok: false,
+          message: "No pudimos guardar el dato. Revisá la consola para ver el detalle.",
+        };
       }
 
       await reload();

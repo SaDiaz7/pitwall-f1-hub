@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSeasonOptions, type SeasonOptions } from "@/lib/f1";
-import { detectQuality, qualityLabel, readImageSize, uploadWallpaper, validateImageFile } from "@/lib/wallpapers";
+import {
+  detectQuality,
+  qualityLabel,
+  readImageSize,
+  uploadWallpaper,
+  validateImageFile,
+} from "@/lib/wallpapers";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 1950 + 1 }, (_, i) => CURRENT_YEAR - i);
@@ -144,15 +150,27 @@ export function WallpaperUploadForm({ onUploaded }: { onUploaded: () => void }) 
 
       <div className="space-y-1.5">
         <Label htmlFor="wallpaper-file">Imagen (JPG, PNG o WebP, hasta 15 MB)</Label>
-        <Input key={inputKey} id="wallpaper-file" type="file" accept="image/jpeg,image/png,image/webp" onChange={onFileChange} />
+        <Input
+          key={inputKey}
+          id="wallpaper-file"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={onFileChange}
+        />
       </div>
 
       {preview && size && (
         <div className="space-y-2">
-          <img src={preview} alt="Vista previa" className="max-h-56 rounded-xl border object-contain" />
+          <img
+            src={preview}
+            alt="Vista previa"
+            className="max-h-56 rounded-xl border object-contain"
+          />
           <p className="text-sm text-muted-foreground">
             {size.width} × {size.height} px · Calidad detectada:{" "}
-            <span className="font-semibold text-foreground">{qualityLabel(detectQuality(size.width, size.height))}</span>
+            <span className="font-semibold text-foreground">
+              {qualityLabel(detectQuality(size.width, size.height))}
+            </span>
           </p>
         </div>
       )}
@@ -160,9 +178,16 @@ export function WallpaperUploadForm({ onUploaded }: { onUploaded: () => void }) 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="wallpaper-year">Año</Label>
-          <select id="wallpaper-year" value={year} onChange={(e) => setYear(e.target.value)} className={SELECT_CLASS}>
+          <select
+            id="wallpaper-year"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className={SELECT_CLASS}
+          >
             {YEARS.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
         </div>
@@ -177,7 +202,9 @@ export function WallpaperUploadForm({ onUploaded }: { onUploaded: () => void }) 
           >
             <option value="">{seasonLoading ? "Cargando…" : "Sin piloto"}</option>
             {season.drivers.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
             ))}
           </select>
         </div>
@@ -192,7 +219,9 @@ export function WallpaperUploadForm({ onUploaded }: { onUploaded: () => void }) 
           >
             <option value="">{seasonLoading ? "Cargando…" : "Sin equipo"}</option>
             {season.teams.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>

@@ -55,7 +55,9 @@ interface DriverStandingsResponse {
 }
 
 interface ConstructorStandingsResponse {
-  MRData: { StandingsTable: { StandingsLists: { ConstructorStandings?: ConstructorStandingRaw[] }[] } };
+  MRData: {
+    StandingsTable: { StandingsLists: { ConstructorStandings?: ConstructorStandingRaw[] }[] };
+  };
 }
 
 interface ScheduleResponse {
@@ -86,10 +88,10 @@ const RACE_NAMES_ES: Record<string, string> = {
   "Mexico City Grand Prix": "GP de México",
   "Brazilian Grand Prix": "GP de Brasil",
   "Las Vegas Grand Prix": "GP de Las Vegas",
-  "Qatar Grand Prix": "GP de Qatar",
+  "Qatar Grand Prix": "GP de Catar",
   "Abu Dhabi Grand Prix": "GP de Abu Dabi",
   "Bahrain Grand Prix in Malaysia": "GP de Baréin en Malasia",
-  "Barcelona Grand Prix": "GP de Barcelona", 
+  "Barcelona Grand Prix": "GP de Barcelona",
 };
 
 const COUNTRIES_ES: Record<string, string> = {
@@ -117,12 +119,17 @@ const COUNTRIES_ES: Record<string, string> = {
   Malaysia: "Malasia",
 };
 
-const translateRaceName = (name: string) => RACE_NAMES_ES[name] ?? name;
+const translateRaceName = (name: string) => {
+  const translated = RACE_NAMES_ES[name];
+  if (!translated) console.warn(`[f1] Falta traducir el GP: "${name}"`);
+  return translated ?? name;
+};
 const translateCountry = (country: string) => COUNTRIES_ES[country] ?? country;
 
 // ---------- Descarga con caché en memoria ----------
 
 const cache = new Map<string, { expires: number; data: unknown }>();
+const inFlight = new Map<string, Promise<unknown>>();
 
 async function fetchJolpica<T>(path: string): Promise<T> {
   const cached = cache.get(path);
@@ -130,52 +137,72 @@ async function fetchJolpica<T>(path: string): Promise<T> {
     return cached.data as T;
   }
 
-  try {
-    const res = await fetch(`${BASE_URL}${path}`, { headers: { Accept: "application/json" } });
-    if (!res.ok) {
-      throw new Error(`Jolpica respondió con estado ${res.status}`);
+  // Si ya hay un pedido igual en curso, esperamos ese en vez de hacer otro.
+  const pending = inFlight.get(path);
+  if (pending) return pending as Promise<T>;
+
+  const request = (async () => {
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(8000), // si tarda más de 8 segundos, se corta
+      });
+      if (!res.ok) {
+        throw new Error(`Jolpica respondió con estado ${res.status}`);
+      }
+      const json = (await res.json()) as T;
+      cache.set(path, { expires: Date.now() + CACHE_TTL_MS, data: json });
+      return json;
+    } catch (error) {
+      // Si la API falla pero tenemos datos viejos, mejor mostrar esos que nada.
+      if (cached) return cached.data as T;
+      throw error;
+    } finally {
+      inFlight.delete(path);
     }
-    const json = (await res.json()) as T;
-    cache.set(path, { expires: Date.now() + CACHE_TTL_MS, data: json });
-    return json;
-  } catch (error) {
-    // Si la API falla pero tenemos datos viejos, mejor mostrar esos que nada.
-    if (cached) return cached.data as T;
-    throw error;
-  }
+  })();
+
+  inFlight.set(path, request);
+  return request;
 }
 
 // ---------- Funciones de servidor ----------
 
-export const getDriverStandings = createServerFn({ method: "GET" }).handler(async (): Promise<Driver[]> => {
-  const json = await fetchJolpica<DriverStandingsResponse>("/current/driverstandings/?limit=100");
-  const list = json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
+export const getDriverStandings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Driver[]> => {
+    const json = await fetchJolpica<DriverStandingsResponse>("/current/driverstandings/?limit=100");
+    const list = json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 
-  return list.map((entry) => {
-    const team = entry.Constructors[entry.Constructors.length - 1];
-    return {
-      id: entry.Driver.driverId,
-      name: `${entry.Driver.givenName} ${entry.Driver.familyName}`,
-      number: Number(entry.Driver.permanentNumber ?? 0),
-      teamId: team?.constructorId ?? "",
-      teamName: team?.name ?? "—",
+    return list.map((entry) => {
+      const team = entry.Constructors[entry.Constructors.length - 1];
+      return {
+        id: entry.Driver.driverId,
+        name: `${entry.Driver.givenName} ${entry.Driver.familyName}`,
+        number: Number(entry.Driver.permanentNumber ?? 0),
+        teamId: team?.constructorId ?? "",
+        teamName: team?.name ?? "—",
+        points: Number(entry.points),
+        wins: Number(entry.wins),
+      };
+    });
+  },
+);
+
+export const getConstructorStandings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Team[]> => {
+    const json = await fetchJolpica<ConstructorStandingsResponse>(
+      "/current/constructorstandings/?limit=100",
+    );
+    const list = json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+
+    return list.map((entry) => ({
+      id: entry.Constructor.constructorId,
+      name: entry.Constructor.name,
       points: Number(entry.points),
       wins: Number(entry.wins),
-    };
-  });
-});
-
-export const getConstructorStandings = createServerFn({ method: "GET" }).handler(async (): Promise<Team[]> => {
-  const json = await fetchJolpica<ConstructorStandingsResponse>("/current/constructorstandings/?limit=100");
-  const list = json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
-
-  return list.map((entry) => ({
-    id: entry.Constructor.constructorId,
-    name: entry.Constructor.name,
-    points: Number(entry.points),
-    wins: Number(entry.wins),
-  }));
-});
+    }));
+  },
+);
 
 const SESSION_LABELS = {
   FirstPractice: "Práctica libre 1",
@@ -190,44 +217,49 @@ const SESSION_LABELS = {
 type SessionKey = keyof typeof SESSION_LABELS;
 const SESSION_KEYS = Object.keys(SESSION_LABELS) as SessionKey[];
 
-export const getSchedule = createServerFn({ method: "GET" }).handler(async (): Promise<GrandPrix[]> => {
-  const json = await fetchJolpica<ScheduleResponse>("/current/?limit=100");
-  const races = json.MRData.RaceTable.Races ?? [];
-  const now = Date.now();
+export const getSchedule = createServerFn({ method: "GET" }).handler(
+  async (): Promise<GrandPrix[]> => {
+    const json = await fetchJolpica<ScheduleResponse>("/current/?limit=100");
+    const races = json.MRData.RaceTable.Races ?? [];
+    const now = Date.now();
 
-  return races.map((race) => {
-    const raceStart = new Date(`${race.date}T${race.time ?? "00:00:00Z"}`);
-    const finished = raceStart.getTime() + RACE_DURATION_MS < now;
+    return races.map((race) => {
+      const raceStart = new Date(`${race.date}T${race.time ?? "00:00:00Z"}`);
+      const finished = raceStart.getTime() + RACE_DURATION_MS < now;
 
-    // Todas las sesiones del fin de semana, ordenadas por horario.
-    const sessions: GrandPrixSession[] = [];
-    for (const key of SESSION_KEYS) {
-      const raw = race[key];
-      if (raw?.time) {
-        sessions.push({ name: SESSION_LABELS[key], start: new Date(`${raw.date}T${raw.time}`).toISOString() });
+      // Todas las sesiones del fin de semana, ordenadas por horario.
+      const sessions: GrandPrixSession[] = [];
+      for (const key of SESSION_KEYS) {
+        const raw = race[key];
+        if (raw?.time) {
+          sessions.push({
+            name: SESSION_LABELS[key],
+            start: new Date(`${raw.date}T${raw.time}`).toISOString(),
+          });
+        }
       }
-    }
-    if (race.time) {
-      sessions.push({ name: "Carrera", start: raceStart.toISOString() });
-    }
-    sessions.sort((a, b) => a.start.localeCompare(b.start));
+      if (race.time) {
+        sessions.push({ name: "Carrera", start: raceStart.toISOString() });
+      }
+      sessions.sort((a, b) => a.start.localeCompare(b.start));
 
-    return {
-      id: `${race.season}-${race.round}`,
-      round: Number(race.round),
-      name: translateRaceName(race.raceName),
-      circuit: race.Circuit.circuitName,
-      country: translateCountry(race.Circuit.Location.country),
-      date: race.date,
-      status: finished ? "finalizado" : "proximo",
-      circuitId: race.Circuit.circuitId,
-      locality: race.Circuit.Location.locality,
-      lat: Number(race.Circuit.Location.lat),
-      lng: Number(race.Circuit.Location.long),
-      sessions,
-    };
-  });
-});
+      return {
+        id: `${race.season}-${race.round}`,
+        round: Number(race.round),
+        name: translateRaceName(race.raceName),
+        circuit: race.Circuit.circuitName,
+        country: translateCountry(race.Circuit.Location.country),
+        date: race.date,
+        status: finished ? "finalizado" : "proximo",
+        circuitId: race.Circuit.circuitId,
+        locality: race.Circuit.Location.locality,
+        lat: Number(race.Circuit.Location.lat),
+        lng: Number(race.Circuit.Location.long),
+        sessions,
+      };
+    });
+  },
+);
 
 // ---------- Pilotos y equipos de una temporada (para etiquetar fondos de pantalla) ----------
 
@@ -242,7 +274,9 @@ export interface SeasonOptions {
 }
 
 interface SeasonDriversResponse {
-  MRData: { DriverTable: { Drivers?: { driverId: string; givenName: string; familyName: string }[] } };
+  MRData: {
+    DriverTable: { Drivers?: { driverId: string; givenName: string; familyName: string }[] };
+  };
 }
 
 interface SeasonConstructorsResponse {
@@ -273,7 +307,7 @@ export const getSeasonOptions = createServerFn({ method: "GET" })
     return { drivers, teams };
   });
 
-  // ---------- Podios de las carreras ya corridas ----------
+// ---------- Podios de las carreras ya corridas ----------
 
 export interface PodiumEntry {
   position: number;
@@ -367,7 +401,9 @@ export const getRaceResults = createServerFn({ method: "GET" })
     return data;
   })
   .handler(async ({ data }): Promise<RaceResult[]> => {
-    const json = await fetchJolpica<RaceResultsResponse>(`/current/${data.round}/results/?limit=100`);
+    const json = await fetchJolpica<RaceResultsResponse>(
+      `/current/${data.round}/results/?limit=100`,
+    );
     const results = json.MRData.RaceTable.Races?.[0]?.Results ?? [];
 
     return results.map((r) => ({
@@ -428,17 +464,27 @@ export const getWeather = createServerFn({ method: "GET" })
     const params = new URLSearchParams({
       latitude: String(data.lat),
       longitude: String(data.lng),
-      daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max",
+      daily:
+        "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max",
       timezone: "auto",
       forecast_days: "16",
     });
 
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
-    if (!res.ok) {
-      throw new Error(`Open-Meteo respondió con estado ${res.status}`);
+    let json: OpenMeteoResponse;
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        throw new Error(`Open-Meteo respondió con estado ${res.status}`);
+      }
+      json = (await res.json()) as OpenMeteoResponse;
+    } catch (error) {
+      // Si falla pero hay un pronóstico viejo guardado, lo mostramos.
+      if (cached) return cached.data;
+      throw error;
     }
 
-    const json = (await res.json()) as OpenMeteoResponse;
     const daily = json.daily;
 
     const days: WeatherDay[] = (daily?.time ?? []).map((date, i) => ({

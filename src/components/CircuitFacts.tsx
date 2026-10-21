@@ -8,7 +8,13 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 type Status = { type: "ok" | "error"; text: string } | null;
 
-export function CircuitFacts({ circuitId, circuitName }: { circuitId: string; circuitName: string }) {
+export function CircuitFacts({
+  circuitId,
+  circuitName,
+}: {
+  circuitId: string;
+  circuitName: string;
+}) {
   const isAdmin = useIsAdmin();
   const { facts, loading, add, remove } = useCircuitFacts(circuitId);
 
@@ -71,15 +77,23 @@ export function CircuitFacts({ circuitId, circuitName }: { circuitId: string; ci
       {current ? (
         <div className="space-y-2">
           <p className="text-base leading-relaxed">{current.fact}</p>
-          {current.source && <p className="text-xs text-muted-foreground">Fuente: {current.source}</p>}
+          {current.source && (
+            <p className="text-xs text-muted-foreground">Fuente: {current.source}</p>
+          )}
           {facts.length > 1 && (
-            <button type="button" onClick={showAnother} className="text-sm font-semibold text-primary hover:underline">
+            <button
+              type="button"
+              onClick={showAnother}
+              className="text-sm font-semibold text-primary hover:underline"
+            >
               Otro dato
             </button>
           )}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Todavía no hay datos curiosos de este circuito.</p>
+        <p className="text-sm text-muted-foreground">
+          Todavía no hay datos curiosos de este circuito.
+        </p>
       )}
 
       {isAdmin && (
@@ -100,7 +114,12 @@ export function CircuitFacts({ circuitId, circuitName }: { circuitId: string; ci
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="fact-source">Fuente (opcional)</Label>
-              <Input id="fact-source" value={source} maxLength={120} onChange={(e) => setSource(e.target.value)} />
+              <Input
+                id="fact-source"
+                value={source}
+                maxLength={120}
+                onChange={(e) => setSource(e.target.value)}
+              />
             </div>
 
             {status && (

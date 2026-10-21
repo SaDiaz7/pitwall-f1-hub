@@ -12,7 +12,9 @@ const route = getRouteApi("/_privado/calendario");
 
 function Podium({ entries }: { entries?: PodiumEntry[] | undefined }) {
   if (!entries || entries.length === 0) {
-    return <p className="text-sm text-muted-foreground">Resultados no disponibles por el momento.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">Resultados no disponibles por el momento.</p>
+    );
   }
 
   return (
@@ -28,7 +30,9 @@ function Podium({ entries }: { entries?: PodiumEntry[] | undefined }) {
             {entry.position}
           </span>
           <span className="min-w-0 flex-1 truncate font-semibold">{entry.name}</span>
-          <span className="hidden truncate text-xs text-muted-foreground sm:inline">{entry.teamName}</span>
+          <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+            {entry.teamName}
+          </span>
         </li>
       ))}
     </ol>
@@ -47,7 +51,10 @@ export function CalendarPage() {
 
   return (
     <>
-      <PageHeader title="Calendario" subtitle={`${grandsPrix.length} Grandes Premios esta temporada.`} />
+      <PageHeader
+        title="Calendario"
+        subtitle={`${grandsPrix.length} Grandes Premios esta temporada.`}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {grandsPrix.map((gp) => {
@@ -65,16 +72,26 @@ export function CalendarPage() {
               <header className="flex items-start justify-between gap-3 p-4">
                 <div className="min-w-0">
                   {isNext && (
-                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">Próxima carrera</p>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
+                      Próxima carrera
+                    </p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     Ronda {gp.round} · {gp.country}
                   </p>
-                  <Link to="/gp/$round" params={{ round: String(gp.round) }} className="hover:text-primary">
-                    <h2 className="font-display text-xl font-bold uppercase leading-tight">{gp.name}</h2>
+                  <Link
+                    to="/gp/$round"
+                    params={{ round: String(gp.round) }}
+                    className="hover:text-primary"
+                  >
+                    <h2 className="font-display text-xl font-bold uppercase leading-tight">
+                      {gp.name}
+                    </h2>
                   </Link>
                   <p className="truncate text-sm text-muted-foreground">{gp.circuit}</p>
-                  <p className="text-sm font-semibold">{formatDate(gp.date, { day: "numeric", month: "long" })}</p>
+                  <p className="text-sm font-semibold">
+                    {formatDate(gp.date, { day: "numeric", month: "long" })}
+                  </p>
                 </div>
                 <StatusBadge status={gp.status} />
               </header>
@@ -103,7 +120,8 @@ export function CalendarPage() {
       </div>
 
       <p className="mt-8 text-xs text-muted-foreground">
-        Trazados de circuitos: bacinger/f1-circuits (licencia MIT). Datos de la temporada: Jolpica-F1.
+        Trazados de circuitos: bacinger/f1-circuits (licencia MIT). Datos de la temporada:
+        Jolpica-F1.
       </p>
     </>
   );

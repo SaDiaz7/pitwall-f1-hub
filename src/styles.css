@@ -89,7 +89,8 @@
   --sidebar-ring: oklch(0.6 0.23 27);
 
   --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  --gradient-hero: radial-gradient(ellipse at 70% 0%, oklch(0.6 0.23 27 / 35%), transparent 60%),
+  --gradient-hero:
+    radial-gradient(ellipse at 70% 0%, oklch(0.6 0.23 27 / 35%), transparent 60%),
     linear-gradient(180deg, oklch(0.16 0.01 20), var(--background));
   --shadow-glow: 0 10px 40px -10px oklch(0.6 0.23 27 / 55%);
 }
@@ -103,7 +104,9 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display);
     letter-spacing: 0.01em;
   }
