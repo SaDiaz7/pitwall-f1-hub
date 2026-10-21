@@ -168,41 +168,62 @@ async function fetchJolpica<T>(path: string): Promise<T> {
 
 // ---------- Funciones de servidor ----------
 
-export const getDriverStandings = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Driver[]> => {
-    const json = await fetchJolpica<DriverStandingsResponse>("/current/driverstandings/?limit=100");
-    const list = json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
+async function loadDriverStandings(season: number | null): Promise<Driver[]> {
+  const base = season === null ? "/current" : `/${season}`;
+  const json = await fetchJolpica<DriverStandingsResponse>(`${base}/driverstandings/?limit=100`);
+  const list = json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 
-    return list.map((entry) => {
-      const team = entry.Constructors[entry.Constructors.length - 1];
-      return {
-        id: entry.Driver.driverId,
-        name: `${entry.Driver.givenName} ${entry.Driver.familyName}`,
-        number: Number(entry.Driver.permanentNumber ?? 0),
-        teamId: team?.constructorId ?? "",
-        teamName: team?.name ?? "—",
-        points: Number(entry.points),
-        wins: Number(entry.wins),
-      };
-    });
-  },
+  return list.map((entry) => {
+    const team = entry.Constructors[entry.Constructors.length - 1];
+    return {
+      id: entry.Driver.driverId,
+      name: `${entry.Driver.givenName} ${entry.Driver.familyName}`,
+      number: Number(entry.Driver.permanentNumber ?? 0),
+      teamId: team?.constructorId ?? "",
+      teamName: team?.name ?? "—",
+      points: Number(entry.points),
+      wins: Number(entry.wins),
+    };
+  });
+}
+
+async function loadConstructorStandings(season: number | null): Promise<Team[]> {
+  const base = season === null ? "/current" : `/${season}`;
+  const json = await fetchJolpica<ConstructorStandingsResponse>(`${base}/constructorstandings/?limit=100`);
+  const list = json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+
+  return list.map((entry) => ({
+    id: entry.Constructor.constructorId,
+    name: entry.Constructor.name,
+    points: Number(entry.points),
+    wins: Number(entry.wins),
+  }));
+}
+
+// Temporada en curso (la usan Favoritos y otras pantallas).
+export const getDriverStandings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Driver[]> => loadDriverStandings(null),
 );
 
 export const getConstructorStandings = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Team[]> => {
-    const json = await fetchJolpica<ConstructorStandingsResponse>(
-      "/current/constructorstandings/?limit=100",
-    );
-    const list = json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
-
-    return list.map((entry) => ({
-      id: entry.Constructor.constructorId,
-      name: entry.Constructor.name,
-      points: Number(entry.points),
-      wins: Number(entry.wins),
-    }));
-  },
+  async (): Promise<Team[]> => loadConstructorStandings(null),
 );
+
+// Cualquier temporada, por año.
+function validateSeason(data: { season: number }) {
+  if (!Number.isInteger(data.season) || data.season < 1950 || data.season > 2100) {
+    throw new Error("Temporada inválida");
+  }
+  return data;
+}
+
+export const getDriverStandingsForSeason = createServerFn({ method: "GET" })
+  .inputValidator(validateSeason)
+  .handler(async ({ data }): Promise<Driver[]> => loadDriverStandings(data.season));
+
+export const getConstructorStandingsForSeason = createServerFn({ method: "GET" })
+  .inputValidator(validateSeason)
+  .handler(async ({ data }): Promise<Team[]> => loadConstructorStandings(data.season));
 
 const SESSION_LABELS = {
   FirstPractice: "Práctica libre 1",
@@ -372,6 +393,7 @@ export interface RaceResult {
   time: string;
   status: string;
   points: number;
+  fastestLapTime: string | null;
 }
 
 interface RaceResultsResponse {
@@ -385,6 +407,7 @@ interface RaceResultsResponse {
           grid: string;
           status: string;
           Time?: { time: string };
+          FastestLap?: { rank: string; Time?: { time: string } };
           Driver: { givenName: string; familyName: string };
           Constructor: { name: string };
         }[];
@@ -415,6 +438,7 @@ export const getRaceResults = createServerFn({ method: "GET" })
       time: r.Time?.time ?? "",
       status: r.status,
       points: Number(r.points),
+      fastestLapTime: r.FastestLap?.Time?.time ?? null,
     }));
   });
 
