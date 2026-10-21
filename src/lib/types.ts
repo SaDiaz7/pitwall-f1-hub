@@ -17,6 +17,11 @@ export interface Driver {
 
 export type GrandPrixStatus = "finalizado" | "proximo";
 
+export interface GrandPrixSession {
+  name: string;
+  start: string; // ISO en UTC
+}
+
 export interface GrandPrix {
   id: string;
   round: number;
@@ -25,4 +30,9 @@ export interface GrandPrix {
   country: string;
   date: string; // ISO yyyy-mm-dd
   status: GrandPrixStatus;
+  circuitId: string;
+  locality: string;
+  lat: number;
+  lng: number;
+  sessions: GrandPrixSession[];
 }

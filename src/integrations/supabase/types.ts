@@ -26,6 +26,33 @@ export type Database = {
         }
         Relationships: []
       }
+      circuit_facts: {
+        Row: {
+          circuit_id: string
+          created_at: string
+          created_by: string | null
+          fact: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          circuit_id: string
+          created_at?: string
+          created_by?: string | null
+          fact: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          circuit_id?: string
+          created_at?: string
+          created_by?: string | null
+          fact?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       favorite_drivers: {
         Row: {
           created_at: string

@@ -21,6 +21,7 @@ import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeon
 import { Route as PrivadoFavoritosRouteImport } from './routes/_privado.favoritos'
 import { Route as PrivadoFondosRouteImport } from './routes/_privado.fondos'
 import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
+import { Route as PrivadoGpRoundRouteImport } from './routes/_privado.gp.$round'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +82,11 @@ const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoGpRoundRoute = PrivadoGpRoundRouteImport.update({
+  id: '/gp/$round',
+  path: '/gp/$round',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/gp/$round': typeof PrivadoGpRoundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/gp/$round': typeof PrivadoGpRoundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/_privado/favoritos': typeof PrivadoFavoritosRoute
   '/_privado/fondos': typeof PrivadoFondosRoute
   '/_privado/inicio': typeof PrivadoInicioRoute
+  '/_privado/gp/$round': typeof PrivadoGpRoundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/gp/$round'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/gp/$round'
   id:
     | '__root__'
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/_privado/favoritos'
     | '/_privado/fondos'
     | '/_privado/inicio'
+    | '/_privado/gp/$round'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoInicioRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/gp/$round': {
+      id: '/_privado/gp/$round'
+      path: '/gp/$round'
+      fullPath: '/gp/$round'
+      preLoaderRoute: typeof PrivadoGpRoundRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
   }
 }
 
@@ -271,6 +290,7 @@ interface PrivadoRouteChildren {
   PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
   PrivadoFondosRoute: typeof PrivadoFondosRoute
   PrivadoInicioRoute: typeof PrivadoInicioRoute
+  PrivadoGpRoundRoute: typeof PrivadoGpRoundRoute
 }
 
 const PrivadoRouteChildren: PrivadoRouteChildren = {
@@ -280,6 +300,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoFavoritosRoute: PrivadoFavoritosRoute,
   PrivadoFondosRoute: PrivadoFondosRoute,
   PrivadoInicioRoute: PrivadoInicioRoute,
+  PrivadoGpRoundRoute: PrivadoGpRoundRoute,
 }
 
 const PrivadoRouteWithChildren =

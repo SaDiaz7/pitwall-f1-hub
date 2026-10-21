@@ -108,6 +108,10 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
 
   const id = crypto.randomUUID();
   const ext = EXTENSIONS[file.type];
+  if (!ext) {
+    return { ok: false, message: "El fondo tiene que ser JPG, PNG o WebP." };
+  }
+  
   const bucket = supabase.storage.from("wallpapers");
   const paths = [`${id}/full`, `${id}/thumb`];
 

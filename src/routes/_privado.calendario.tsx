@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CalendarPage } from "@/pages/CalendarPage";
 import { DataError } from "@/components/DataError";
-import { getSchedule } from "@/lib/f1";
+import { getPodiums, getSchedule, type Podiums } from "@/lib/f1";
 
 export const Route = createFileRoute("/_privado/calendario")({
   head: () => ({
@@ -12,7 +12,14 @@ export const Route = createFileRoute("/_privado/calendario")({
       { property: "og:description", content: "Todos los Grandes Premios de la temporada." },
     ],
   }),
-  loader: () => getSchedule(),
+  loader: async () => {
+    // Si fallan los podios, el calendario se muestra igual.
+    const [grandsPrix, podiums] = await Promise.all([
+      getSchedule(),
+      getPodiums().catch((): Podiums => ({})),
+    ]);
+    return { grandsPrix, podiums };
+  },
   errorComponent: DataError,
   component: CalendarPage,
 });
