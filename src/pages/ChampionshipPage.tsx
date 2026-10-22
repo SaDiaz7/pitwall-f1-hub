@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StandingsTable } from "@/components/StandingsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFavorites } from "@/hooks/useFavorites";
+import { DriverComparison } from "@/components/DriverComparison";
 
 const route = getRouteApi("/_privado/campeonato");
 
@@ -82,6 +83,14 @@ export function ChampionshipPage() {
           ) : (
             <StandingsTable rows={teams} showTeam={false} />
           )}
+        </TabsContent>
+        <TabsList className="mb-4">
+          <TabsTrigger value="pilotos">Pilotos</TabsTrigger>
+          <TabsTrigger value="constructores">Constructores</TabsTrigger>
+          <TabsTrigger value="comparar">Comparar</TabsTrigger>
+        </TabsList>
+          <TabsContent value="comparar">
+          <DriverComparison drivers={drivers} />
         </TabsContent>
       </Tabs>
     </>
