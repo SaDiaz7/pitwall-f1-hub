@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Mode = "login" | "registro";
 type Errors = Partial<Record<"email" | "password" | "confirm" | "terms" | "username" | "displayName", string>>;
@@ -63,6 +65,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visible, setVisible] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const isLogin = mode === "login";
 
@@ -134,27 +137,46 @@ export function AuthForm({ mode }: { mode: Mode }) {
     }
   };
 
-  const field = (name: keyof typeof values, label: string, type: string, auto: string, hint?: string) => (
-    <div className="space-y-1.5">
-      <Label htmlFor={name}>{label}</Label>
-      <Input
-        id={name}
-        type={type}
-        autoComplete={auto}
-        value={values[name]}
-        aria-invalid={!!errors[name as keyof Errors]}
-        maxLength={name === "username" ? 20 : name === "displayName" ? 40 : undefined}
-        onChange={(e) => {
-          // El nombre de usuario siempre va en minúsculas.
-          const value = name === "username" ? e.target.value.toLowerCase() : e.target.value;
-          setValues((s) => ({ ...s, [name]: value }));
-        }}
-        className="h-11"
-      />
-      {hint && !errors[name as keyof Errors] && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {errors[name as keyof Errors] && <p className="text-sm text-destructive">{errors[name as keyof Errors]}</p>}
-    </div>
-  );
+    const field = (name: keyof typeof values, label: string, type: string, auto: string, hint?: string) => {
+    const isPassword = type === "password";
+    const shown = isPassword && visible[name] === true;
+    const error = errors[name as keyof Errors];
+
+    return (
+      <div className="space-y-1.5">
+        <Label htmlFor={name}>{label}</Label>
+        <div className="relative">
+          <Input
+            id={name}
+            type={shown ? "text" : type}
+            autoComplete={auto}
+            value={values[name]}
+            aria-invalid={!!error}
+            maxLength={name === "username" ? 20 : name === "displayName" ? 40 : undefined}
+            onChange={(e) => {
+              // El nombre de usuario siempre va en minúsculas.
+              const value = name === "username" ? e.target.value.toLowerCase() : e.target.value;
+              setValues((s) => ({ ...s, [name]: value }));
+            }}
+            className={cn("h-11", isPassword && "pr-11")}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              onClick={() => setVisible((s) => ({ ...s, [name]: !s[name] }))}
+              aria-label={shown ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-pressed={shown}
+              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {shown ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          )}
+        </div>
+        {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-hero px-4 py-10">
