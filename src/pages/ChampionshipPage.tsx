@@ -4,6 +4,7 @@ import { StandingsTable } from "@/components/StandingsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFavorites } from "@/hooks/useFavorites";
 import { DriverComparison } from "@/components/DriverComparison";
+import { TitleCalculator } from "@/components/TitleCalculator";
 
 const route = getRouteApi("/_privado/campeonato");
 
@@ -15,7 +16,7 @@ function Empty({ text }: { text: string }) {
 }
 
 export function ChampionshipPage() {
-  const { drivers, teams } = route.useLoaderData();
+  const { drivers, teams, schedule } = route.useLoaderData();
   const { season } = route.useSearch();
   const navigate = useNavigate();
   const { isFavorite, toggle, error } = useFavorites();
@@ -63,10 +64,11 @@ export function ChampionshipPage() {
       )}
 
       <Tabs defaultValue="pilotos">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="pilotos">Pilotos</TabsTrigger>
           <TabsTrigger value="constructores">Constructores</TabsTrigger>
           <TabsTrigger value="comparar">Comparar</TabsTrigger>
+          <TabsTrigger value="calculadora">Calculadora</TabsTrigger>
         </TabsList>
           <TabsContent value="comparar">
           <DriverComparison drivers={drivers} />
@@ -88,7 +90,13 @@ export function ChampionshipPage() {
             <StandingsTable rows={teams} showTeam={false} />
           )}
         </TabsContent>
-        
+        <TabsContent value="calculadora">
+          {isCurrent ? (
+            <TitleCalculator drivers={drivers} schedule={schedule} />
+          ) : (
+            <Empty text="La calculadora solo está disponible para la temporada en curso." />
+          )}
+        </TabsContent>
       </Tabs>
     </>
   );

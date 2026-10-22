@@ -6,7 +6,9 @@ import {
   getConstructorStandingsForSeason,
   getDriverStandings,
   getDriverStandingsForSeason,
+  getSchedule,
 } from "@/lib/f1";
+import type { GrandPrix } from "@/lib/types";
 
 export const Route = createFileRoute("/_privado/campeonato")({
   head: () => ({
@@ -23,9 +25,16 @@ export const Route = createFileRoute("/_privado/campeonato")({
   },
   loaderDeps: ({ search }) => ({ season: search.season ?? null }),
   loader: async ({ deps }) => {
-    if (deps.season === null) {
-      const [drivers, teams] = await Promise.all([getDriverStandings(), getConstructorStandings()]);
-      return { drivers, teams };
+    const currentYear = new Date().getFullYear();
+
+    // Sin año, o con el año en curso, usamos la temporada actual y su calendario.
+    if (deps.season === null || deps.season === currentYear) {
+      const [drivers, teams, schedule] = await Promise.all([
+        getDriverStandings(),
+        getConstructorStandings(),
+        getSchedule().catch((): GrandPrix[] => []),
+      ]);
+      return { drivers, teams, schedule };
     }
 
     const season = deps.season;
@@ -33,7 +42,8 @@ export const Route = createFileRoute("/_privado/campeonato")({
       getDriverStandingsForSeason({ data: { season } }),
       getConstructorStandingsForSeason({ data: { season } }),
     ]);
-    return { drivers, teams };
+    const schedule: GrandPrix[] = [];
+    return { drivers, teams, schedule };
   },
   errorComponent: DataError,
   component: ChampionshipPage,
