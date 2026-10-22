@@ -66,7 +66,11 @@ export function ChampionshipPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="pilotos">Pilotos</TabsTrigger>
           <TabsTrigger value="constructores">Constructores</TabsTrigger>
+          <TabsTrigger value="comparar">Comparar</TabsTrigger>
         </TabsList>
+          <TabsContent value="comparar">
+          <DriverComparison drivers={drivers} />
+        </TabsContent>
         <TabsContent value="pilotos">
           {drivers.length === 0 ? (
             <Empty text="No hay datos de pilotos para esa temporada." />
@@ -84,14 +88,7 @@ export function ChampionshipPage() {
             <StandingsTable rows={teams} showTeam={false} />
           )}
         </TabsContent>
-        <TabsList className="mb-4">
-          <TabsTrigger value="pilotos">Pilotos</TabsTrigger>
-          <TabsTrigger value="constructores">Constructores</TabsTrigger>
-          <TabsTrigger value="comparar">Comparar</TabsTrigger>
-        </TabsList>
-          <TabsContent value="comparar">
-          <DriverComparison drivers={drivers} />
-        </TabsContent>
+        
       </Tabs>
     </>
   );
