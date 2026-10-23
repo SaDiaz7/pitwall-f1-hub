@@ -1,10 +1,11 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { DriverComparison } from "@/components/DriverComparison";
 import { PageHeader } from "@/components/PageHeader";
 import { StandingsTable } from "@/components/StandingsTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFavorites } from "@/hooks/useFavorites";
-import { DriverComparison } from "@/components/DriverComparison";
 import { TitleCalculator } from "@/components/TitleCalculator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDriverPhotos } from "@/hooks/useDriverPhotos";
+import { useFavorites } from "@/hooks/useFavorites";
 
 const route = getRouteApi("/_privado/campeonato");
 
@@ -20,6 +21,7 @@ export function ChampionshipPage() {
   const { season } = route.useSearch();
   const navigate = useNavigate();
   const { isFavorite, toggle, error } = useFavorites();
+  const photos = useDriverPhotos(drivers.map((d) => ({ id: d.id, wikiUrl: d.wikiUrl })));
 
   // Las estrellas solo tienen sentido en la temporada en curso.
   const isCurrent = season === undefined || season === CURRENT_YEAR;
@@ -32,6 +34,7 @@ export function ChampionshipPage() {
     id: d.id,
     name: d.name,
     team: d.teamName,
+    teamId: d.teamId,
     points: d.points,
     wins: d.wins,
   }));
@@ -70,21 +73,26 @@ export function ChampionshipPage() {
           <TabsTrigger value="comparar">Comparar</TabsTrigger>
           <TabsTrigger value="calculadora">Calculadora</TabsTrigger>
         </TabsList>
-          <TabsContent value="comparar">
-          <DriverComparison drivers={drivers} />
-        </TabsContent>
+
         <TabsContent value="pilotos">
           {drivers.length === 0 ? (
             <Empty text="No hay datos de pilotos para esa temporada." />
           ) : (
-            <StandingsTable
-              rows={driverRows}
-              driverLinks
-              isFavorite={isFavorite}
-              onToggleFavorite={toggle}
-            />
+            <>
+              <StandingsTable
+                rows={driverRows}
+                driverLinks
+                photos={photos}
+                {...(isCurrent ? { isFavorite, onToggleFavorite: toggle } : {})}
+              />
+              <p className="mt-3 text-xs text-muted-foreground">
+                Fotos: Wikipedia/Wikimedia Commons, cada imagen con su propia licencia. Los colores de los equipos son
+                aproximados.
+              </p>
+            </>
           )}
         </TabsContent>
+
         <TabsContent value="constructores">
           {teams.length === 0 ? (
             <Empty text="No hay tabla de constructores para esa temporada (ese campeonato empezó en 1958)." />
@@ -92,6 +100,11 @@ export function ChampionshipPage() {
             <StandingsTable rows={teams} showTeam={false} />
           )}
         </TabsContent>
+
+        <TabsContent value="comparar">
+          <DriverComparison drivers={drivers} />
+        </TabsContent>
+
         <TabsContent value="calculadora">
           {isCurrent ? (
             <TitleCalculator drivers={drivers} schedule={schedule} />

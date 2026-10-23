@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Trophy } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useFavorites } from "@/hooks/useFavorites";
-import type { CareerSeason } from "@/lib/f1";
+import { getDriverSeasonStandings, type CareerSeason, type SeasonStanding } from "@/lib/f1";
+import { DriverAvatar } from "@/components/DriverAvatar";
+import { TeamStripe } from "@/components/TeamStripe";
+import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 
 const route = getRouteApi("/_privado/piloto/$id");
 
@@ -52,6 +56,9 @@ const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   timeZone: "UTC",
 });
 
+// Cantidad de temporadas que se piden juntas a la API.
+const STANDINGS_CHUNK = 5;
+
 function ageFrom(dateOfBirth: string): number {
   const born = new Date(`${dateOfBirth}T00:00:00Z`);
   const now = new Date();
@@ -100,6 +107,44 @@ export function DriverPage() {
   const { detail, current } = route.useLoaderData();
   const { profile, seasons, totals } = detail;
   const { isFavorite, toggle } = useFavorites();
+  const photos = useDriverPhotos([{ id: profile.id, wikiUrl: profile.wikiUrl }]);
+  const photo = photos[profile.id] ?? null;
+
+  const [standings, setStandings] = useState<Record<number, SeasonStanding>>({});
+  const [standingsState, setStandingsState] = useState<"loading" | "done">("loading");
+
+  // Después de mostrar la ficha, trae las posiciones oficiales de cada temporada de a tandas.
+  useEffect(() => {
+    let cancelled = false;
+    const driverId = profile.id;
+    const allYears = seasons.map((s) => s.season);
+
+    setStandings({});
+    setStandingsState("loading");
+
+    async function run() {
+      for (let i = 0; i < allYears.length; i += STANDINGS_CHUNK) {
+        const chunk = allYears.slice(i, i + STANDINGS_CHUNK);
+        try {
+          const result = await getDriverSeasonStandings({ data: { id: driverId, seasons: chunk } });
+          if (cancelled) return;
+          setStandings((prev) => {
+            const next = { ...prev };
+            for (const item of result) next[item.season] = item;
+            return next;
+          });
+        } catch (error) {
+          console.error("Posiciones por temporada:", error);
+        }
+      }
+      if (!cancelled) setStandingsState("done");
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile.id, seasons]);
 
   const stints = buildStints(seasons);
   const lastSeason = seasons[seasons.length - 1];
@@ -110,6 +155,16 @@ export function DriverPage() {
   const currentStint = racesNow ? stints[stints.length - 1] : undefined;
   const previousStints = currentStint ? stints.slice(0, -1) : stints;
   const lastTeam = current?.driver.teamName ?? lastSeason?.teams[lastSeason.teams.length - 1];
+
+  // Los títulos solo se muestran cuando están todas las posiciones cargadas.
+  const allStandingsLoaded = seasons.every((s) => {
+    const item = standings[s.season];
+    return item !== undefined && !item.failed;
+  });
+  const titles =
+    standingsState === "done" && allStandingsLoaded
+      ? seasons.filter((s) => standings[s.season]?.position === 1 && s.season < currentYear).length
+      : null;
 
   const nationality = NATIONALITIES[profile.nationality] ?? profile.nationality;
   const born = new Date(`${profile.dateOfBirth}T00:00:00Z`);
@@ -124,9 +179,11 @@ export function DriverPage() {
       </Link>
 
       <header className="mb-6 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <TeamStripe teamId={current?.driver.teamId} teamName={lastTeam} className="h-20" />
+          <DriverAvatar name={profile.name} photo={photo} size="xl" />
           {profile.number !== null && (
-            <span className="font-display text-6xl font-bold leading-none text-primary">{profile.number}</span>
+            <span className="font-display text-5xl font-bold leading-none text-primary">{profile.number}</span>
           )}
           <div className="min-w-0">
             <h1 className="font-display text-3xl font-bold uppercase leading-tight md:text-4xl">{profile.name}</h1>
@@ -146,6 +203,15 @@ export function DriverPage() {
         />
       </header>
 
+      {photo && (
+        <p className="-mt-3 mb-6 text-xs text-muted-foreground">
+          Foto:{" "}
+          <a href={photo.page} target="_blank" rel="noopener noreferrer" className="underline">
+            Wikipedia
+          </a>{" "}
+        </p>
+      )}
+
       {current && (
         <section className="mb-6 space-y-3">
           <h2 className="text-xl font-bold uppercase">Temporada {currentYear}</h2>
@@ -164,12 +230,21 @@ export function DriverPage() {
           <StatCard label="Victorias" value={show(totals.wins)} />
           <StatCard label="Podios" value={show(totals.podiums)} />
           <StatCard label="Poles" value={show(totals.poles)} />
-          <StatCard label="Títulos" value={show(totals.titles)} />
+          <StatCard label="Títulos" value={show(titles)} />
           <StatCard label="Temporadas" value={seasons.length === 0 ? "—" : String(seasons.length)} />
         </div>
         <p className="text-xs text-muted-foreground">
-          Poles: largadas desde el primer puesto de la grilla. Los guiones indican datos que la API no devolvió.
+          Poles: largadas desde el primer puesto de la grilla.
         </p>
+        <p className="text-xs text-muted-foreground">
+          Los guiones indican datos que la API no devolvió datos o que
+          todavía se están cargando.
+        </p>
+        {standingsState === "done" && !allStandingsLoaded && seasons.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            No pudimos obtener las posiciones finales de algunas temporadas, así que no mostramos los títulos.
+          </p>
+        )}
       </section>
 
       <section className="mb-6 space-y-3 rounded-2xl border bg-card p-5">
@@ -207,38 +282,54 @@ export function DriverPage() {
         {seasons.length === 0 ? (
           <p className="text-sm text-muted-foreground">No hay datos de temporadas.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-2 py-2 text-left">Año</th>
-                  <th className="px-2 py-2 text-left">Equipo</th>
-                  <th className="px-2 py-2 text-right">Pos</th>
-                  <th className="px-2 py-2 text-right">Pts</th>
-                  <th className="px-2 py-2 text-right">Vict.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...seasons].reverse().map((s) => {
-                  const champion = s.position === 1 && s.season < currentYear;
-                  return (
-                    <tr key={s.season} className="border-t">
-                      <td className="px-2 py-2 font-semibold tabular-nums">{s.season}</td>
-                      <td className="px-2 py-2 text-muted-foreground">{s.teams.join(" / ") || "—"}</td>
-                      <td className="px-2 py-2 text-right tabular-nums">
-                        <span className="inline-flex items-center justify-end gap-1.5">
-                          {champion && <Trophy className="h-4 w-4 text-primary" aria-label="Campeón" />}
-                          {s.position === null ? "—" : `P${s.position}`}
-                        </span>
-                      </td>
-                      <td className="px-2 py-2 text-right tabular-nums">{s.points}</td>
-                      <td className="px-2 py-2 text-right tabular-nums">{s.wins}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-xs uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-2 py-2 text-left">Año</th>
+                    <th className="px-2 py-2 text-left">Equipo</th>
+                    <th className="px-2 py-2 text-right">GP</th>
+                    <th className="px-2 py-2 text-right">Podios</th>
+                    <th className="px-2 py-2 text-right">Vict.</th>
+                    <th className="px-2 py-2 text-right">Pos</th>
+                    <th className="px-2 py-2 text-right">Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...seasons].reverse().map((s) => {
+                    const standing = standings[s.season];
+                    const pending = standing === undefined && standingsState === "loading";
+                    const position = standing?.position ?? null;
+                    const champion = position === 1 && s.season < currentYear;
+
+                    return (
+                      <tr key={s.season} className="border-t">
+                        <td className="px-2 py-2 font-semibold tabular-nums">{s.season}</td>
+                        <td className="px-2 py-2 text-muted-foreground">{s.teams.join(" / ") || "—"}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">{s.races}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">{s.podiums}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">{s.wins}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">
+                          <span className="inline-flex items-center justify-end gap-1.5">
+                            {champion && <Trophy className="h-4 w-4 text-primary" aria-label="Campeón" />}
+                            {pending ? "…" : position === null ? "—" : `P${position}`}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-right tabular-nums">
+                          {pending ? "…" : (standing?.points ?? "—")}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              GP, podios y victorias se cuentan a partir de los resultados de cada carrera. Posición y puntos son los
+              oficiales de la temporada y se cargan aparte.
+            </p>
+          </>
         )}
       </section>
 

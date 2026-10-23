@@ -14,6 +14,9 @@ import { formatDate } from "@/lib/format";
 import type { Driver, GrandPrix } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
+import { DriverAvatar } from "@/components/DriverAvatar";
+import { useDriverPhotos } from "@/hooks/useDriverPhotos";
+import { getTeamColor } from "@/lib/team-colors";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -85,6 +88,8 @@ function MyDrivers({ drivers }: { drivers: Driver[] }) {
     .map((driver, index) => ({ driver, position: index + 1 }))
     .filter(({ driver }) => favorites.includes(driver.id));
 
+  const photos = useDriverPhotos(mine.map(({ driver }) => ({ id: driver.id, wikiUrl: driver.wikiUrl })));
+
   if (loading || mine.length === 0) return null;
 
   return (
@@ -98,18 +103,20 @@ function MyDrivers({ drivers }: { drivers: Driver[] }) {
 
       <ul className="flex gap-3 overflow-x-auto pb-2">
         {mine.map(({ driver, position }) => (
-          <li key={driver.id} className="min-w-52 shrink-0">
+          <li key={driver.id} className="min-w-60 shrink-0">
             <Link
               to="/piloto/$id"
               params={{ id: driver.id }}
-              className="block rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50"
+              style={{ borderLeftColor: getTeamColor(driver.teamId, driver.teamName) }}
+              className="block rounded-2xl border border-l-4 bg-card p-4 transition-colors hover:bg-accent/40"
             >
               <div className="flex items-center gap-3">
-                <span className="font-display text-3xl font-bold leading-none">{driver.number}</span>
-                <div className="min-w-0">
+                <DriverAvatar name={driver.name} photo={photos[driver.id] ?? null} size="md" />
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{driver.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{driver.teamName}</p>
                 </div>
+                <span className="font-display text-2xl font-bold text-muted-foreground">{driver.number}</span>
               </div>
               <p className="mt-3 text-sm">
                 <span className="font-display text-xl font-bold">P{position}</span>{" "}
@@ -122,6 +129,7 @@ function MyDrivers({ drivers }: { drivers: Driver[] }) {
           </li>
         ))}
       </ul>
+      <p className="text-xs text-muted-foreground">Fotos: Wikipedia/Wikimedia Commons.</p>
     </section>
   );
 }

@@ -13,6 +13,7 @@ export interface Driver {
   teamName?: string; // lo completa la API real
   points: number;
   wins: number;
+  wikiUrl?: string | undefined;
 }
 
 export type GrandPrixStatus = "finalizado" | "proximo";

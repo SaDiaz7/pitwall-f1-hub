@@ -15,6 +15,7 @@ interface DriverStandingRaw {
     permanentNumber?: string;
     givenName: string;
     familyName: string;
+    url?: string;
   };
   Constructors: { constructorId: string; name: string }[];
 }
@@ -183,6 +184,7 @@ async function loadDriverStandings(season: number | null): Promise<Driver[]> {
       teamName: team?.name ?? "—",
       points: Number(entry.points),
       wins: Number(entry.wins),
+      wikiUrl: entry.Driver.url,
     };
   });
 }
@@ -528,6 +530,8 @@ export const getWeather = createServerFn({ method: "GET" })
   
 // ---------- Ficha de un piloto ----------
 
+// ---------- Ficha de un piloto ----------
+
 export interface DriverProfile {
   id: string;
   name: string;
@@ -538,12 +542,13 @@ export interface DriverProfile {
   wikiUrl: string | null;
 }
 
+// Resumen de una temporada, armado a partir de los resultados de cada carrera.
 export interface CareerSeason {
   season: number;
-  position: number | null;
-  points: number;
-  wins: number;
   teams: string[];
+  races: number;
+  wins: number;
+  podiums: number;
 }
 
 export interface CareerTotals {
@@ -551,13 +556,21 @@ export interface CareerTotals {
   wins: number | null;
   podiums: number | null;
   poles: number | null;
-  titles: number | null;
 }
 
 export interface DriverDetail {
   profile: DriverProfile;
   seasons: CareerSeason[];
   totals: CareerTotals;
+}
+
+// Posición final oficial de un piloto en una temporada.
+export interface SeasonStanding {
+  season: number;
+  position: number | null;
+  points: number | null;
+  wins: number | null;
+  failed: boolean; // true si la consulta falló (distinto de "no hay datos")
 }
 
 interface DriverInfoResponse {
@@ -572,6 +585,29 @@ interface DriverInfoResponse {
         familyName: string;
         dateOfBirth: string;
         nationality: string;
+      }[];
+    };
+  };
+}
+
+interface DriverResultsResponse {
+  MRData: {
+    total: string;
+    RaceTable: {
+      Races?: {
+        season: string;
+        round: string;
+        Results?: { position: string; Constructor: { name: string } }[];
+      }[];
+    };
+  };
+}
+
+interface SeasonStandingResponse {
+  MRData: {
+    StandingsTable: {
+      StandingsLists?: {
+        DriverStandings?: { position?: string; points: string; wins: string }[];
       }[];
     };
   };
@@ -592,6 +628,56 @@ async function fetchTotal(path: string): Promise<number | null> {
   }
 }
 
+const RESULTS_PAGE_SIZE = 100;
+const MAX_RESULTS_PAGES = 5;
+
+// Recorre todos los resultados del piloto y los agrupa por temporada.
+async function fetchCareerSeasons(id: string): Promise<CareerSeason[]> {
+  const byYear = new Map<number, CareerSeason>();
+  let total: number | null = null;
+
+  for (let page = 0; page < MAX_RESULTS_PAGES; page++) {
+    const offset = page * RESULTS_PAGE_SIZE;
+
+    let json: DriverResultsResponse;
+    try {
+      json = await fetchJolpica<DriverResultsResponse>(
+        `/drivers/${id}/results/?limit=${RESULTS_PAGE_SIZE}&offset=${offset}`,
+      );
+    } catch (error) {
+      console.error(`Resultados de ${id} (página ${page + 1}):`, error);
+      break;
+    }
+
+    if (total === null) {
+      const parsed = Number(json.MRData.total);
+      total = Number.isFinite(parsed) ? parsed : null;
+    }
+
+    for (const race of json.MRData.RaceTable.Races ?? []) {
+      const result = race.Results?.[0];
+      if (!result) continue;
+
+      const year = Number(race.season);
+      const entry = byYear.get(year) ?? { season: year, teams: [], races: 0, wins: 0, podiums: 0 };
+
+      const team = result.Constructor.name;
+      if (!entry.teams.includes(team)) entry.teams.push(team);
+
+      entry.races += 1;
+      const position = Number(result.position);
+      if (position === 1) entry.wins += 1;
+      if (position >= 1 && position <= 3) entry.podiums += 1;
+
+      byYear.set(year, entry);
+    }
+
+    if (total !== null && offset + RESULTS_PAGE_SIZE >= total) break;
+  }
+
+  return [...byYear.values()].sort((a, b) => a.season - b.season);
+}
+
 export const getDriverDetail = createServerFn({ method: "GET" })
   .inputValidator((data: { id: string }) => {
     if (!/^[a-z0-9_-]{1,50}$/i.test(data.id)) throw new Error("Piloto inválido");
@@ -604,18 +690,10 @@ export const getDriverDetail = createServerFn({ method: "GET" })
     const info = infoJson.MRData.DriverTable.Drivers?.[0];
     if (!info) return null;
 
-    // Historial por temporada: pendiente de verificar cómo pedirlo a la API.
-    const seasons: CareerSeason[] = [];
-
-    // Estadísticas de carrera, de a una para no saturar la API.
-    const starts = await fetchTotal(`/drivers/${id}/results/?limit=1`);
-    const wins = await fetchTotal(`/drivers/${id}/results/1/?limit=1`);
-    const seconds = await fetchTotal(`/drivers/${id}/results/2/?limit=1`);
-    const thirds = await fetchTotal(`/drivers/${id}/results/3/?limit=1`);
+    const seasons = await fetchCareerSeasons(id);
     const poles = await fetchTotal(`/drivers/${id}/grid/1/results/?limit=1`);
 
-    const podiums =
-      wins !== null && seconds !== null && thirds !== null ? wins + seconds + thirds : null;
+    const hasSeasons = seasons.length > 0;
     const number = Number(info.permanentNumber);
 
     return {
@@ -629,6 +707,145 @@ export const getDriverDetail = createServerFn({ method: "GET" })
         wikiUrl: info.url ?? null,
       },
       seasons,
-      totals: { starts, wins, podiums, poles, titles: null },
+      totals: {
+        starts: hasSeasons ? seasons.reduce((sum, s) => sum + s.races, 0) : null,
+        wins: hasSeasons ? seasons.reduce((sum, s) => sum + s.wins, 0) : null,
+        podiums: hasSeasons ? seasons.reduce((sum, s) => sum + s.podiums, 0) : null,
+        poles,
+      },
     };
+  });
+
+// Posición final y puntos oficiales de un piloto en algunas temporadas.
+// La página los pide de a pocos, después de mostrarse.
+export const getDriverSeasonStandings = createServerFn({ method: "GET" })
+  .inputValidator((data: { id: string; seasons: number[] }) => {
+    if (!/^[a-z0-9_-]{1,50}$/i.test(data.id)) throw new Error("Piloto inválido");
+    if (!Array.isArray(data.seasons) || data.seasons.length === 0 || data.seasons.length > 8) {
+      throw new Error("Temporadas inválidas");
+    }
+    if (!data.seasons.every((s) => Number.isInteger(s) && s >= 1950 && s <= 2100)) {
+      throw new Error("Temporadas inválidas");
+    }
+    return data;
+  })
+  .handler(async ({ data }): Promise<SeasonStanding[]> => {
+    return Promise.all(
+      data.seasons.map(async (season): Promise<SeasonStanding> => {
+        try {
+          const json = await fetchJolpica<SeasonStandingResponse>(
+            `/${season}/drivers/${data.id}/driverstandings/`,
+          );
+          const entry = json.MRData.StandingsTable.StandingsLists?.[0]?.DriverStandings?.[0];
+          if (!entry) return { season, position: null, points: null, wins: null, failed: false };
+
+          const position = Number(entry.position);
+          return {
+            season,
+            position: entry.position !== undefined && Number.isFinite(position) ? position : null,
+            points: Number(entry.points),
+            wins: Number(entry.wins),
+            failed: false,
+          };
+        } catch (error) {
+          console.error(`Posiciones de ${data.id} en ${season}:`, error);
+          return { season, position: null, points: null, wins: null, failed: true };
+        }
+      }),
+    );
+  });
+  // ---------- Fotos de pilotos (Wikipedia) ----------
+
+export interface DriverPhoto {
+  url: string; // miniatura de la imagen principal
+  page: string; // página de Wikipedia de donde sale (para dar el crédito)
+}
+
+export type DriverPhotos = Record<string, DriverPhoto | null>;
+
+interface WikiSummary {
+  type?: string;
+  thumbnail?: { source: string };
+  content_urls?: { desktop?: { page?: string } };
+}
+
+const WIKI_USER_AGENT =
+  "PitWall/1.0 (https://pitwallff1.netlify.app; proyecto personal sin fines de lucro; contacto: santi.cat.rn@gmail.com)";
+const PHOTO_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
+const PHOTO_MISS_TTL_MS = 60 * 60 * 1000; // 1 hora si no hay foto
+const PHOTO_CONCURRENCY = 5;
+
+const photoCache = new Map<string, { expires: number; photo: DriverPhoto | null }>();
+
+// Solo se aceptan enlaces de la Wikipedia en inglés; de ahí sale el título de la página.
+function wikiTitle(wikiUrl: string): string | null {
+  const match = wikiUrl.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^?#\s/]{1,200})$/);
+  return match?.[1] ?? null;
+}
+
+async function fetchWikiPhoto(title: string): Promise<DriverPhoto | null> {
+  const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`, {
+    headers: { "User-Agent": WIKI_USER_AGENT, Accept: "application/json" },
+  });
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as WikiSummary;
+  if (json.type === "disambiguation" || !json.thumbnail?.source) return null;
+
+  return {
+    url: json.thumbnail.source,
+    page: json.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${title}`,
+  };
+}
+
+export const getDriverPhotos = createServerFn({ method: "POST" })
+  .inputValidator((data: { drivers: { id: string; wikiUrl: string | null }[] }) => {
+    if (!Array.isArray(data.drivers) || data.drivers.length > 40) throw new Error("Pedido inválido");
+    for (const d of data.drivers) {
+      if (typeof d.id !== "string" || !/^[a-z0-9_-]{1,50}$/i.test(d.id)) throw new Error("Piloto inválido");
+      if (d.wikiUrl !== null && (typeof d.wikiUrl !== "string" || d.wikiUrl.length > 300)) {
+        throw new Error("Enlace inválido");
+      }
+    }
+    return data;
+  })
+  .handler(async ({ data }): Promise<DriverPhotos> => {
+    const result: DriverPhotos = {};
+    const pending: { id: string; title: string }[] = [];
+    const now = Date.now();
+
+    for (const driver of data.drivers) {
+      const cached = photoCache.get(driver.id);
+      if (cached && cached.expires > now) {
+        result[driver.id] = cached.photo;
+        continue;
+      }
+
+      const title = driver.wikiUrl ? wikiTitle(driver.wikiUrl) : null;
+      if (!title) {
+        result[driver.id] = null;
+        continue;
+      }
+      pending.push({ id: driver.id, title });
+    }
+
+    // De a pocas consultas a la vez, para ser amables con Wikipedia.
+    for (let i = 0; i < pending.length; i += PHOTO_CONCURRENCY) {
+      const batch = pending.slice(i, i + PHOTO_CONCURRENCY);
+
+      await Promise.all(
+        batch.map(async ({ id, title }) => {
+          try {
+            const photo = await fetchWikiPhoto(title);
+            photoCache.set(id, { expires: Date.now() + (photo ? PHOTO_TTL_MS : PHOTO_MISS_TTL_MS), photo });
+            result[id] = photo;
+          } catch (error) {
+            console.error(`Foto de ${id}:`, error);
+            result[id] = null;
+          }
+        }),
+      );
+    }
+
+    return result;
   });
