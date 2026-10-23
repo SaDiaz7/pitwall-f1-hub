@@ -19,50 +19,6 @@ const route = getRouteApi("/_privado/inicio");
 
 const MAX_WALLPAPERS = 6;
 
-function MyDrivers({ drivers }: { drivers: Driver[] }) {
-  const { favorites, loading } = useFavorites();
-  const leaderPoints = drivers[0]?.points ?? 0;
-
-  // Solo pilotos que corren esta temporada, en el orden del campeonato.
-  const mine = drivers
-    .map((driver, index) => ({ driver, position: index + 1 }))
-    .filter(({ driver }) => favorites.includes(driver.id));
-
-  if (loading || mine.length === 0) return null;
-
-  return (
-    <section className="mt-10">
-      <div className="mb-3 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-bold uppercase">Tus pilotos</h2>
-        <Link to="/favoritos" className="text-sm font-semibold text-primary hover:underline">
-          Ver favoritos
-        </Link>
-      </div>
-
-      <ul className="flex gap-3 overflow-x-auto pb-2">
-        {mine.map(({ driver, position }) => (
-          <li key={driver.id} className="min-w-52 shrink-0 rounded-2xl border bg-card p-4">
-            <div className="flex items-center gap-3">
-              <span className="font-display text-3xl font-bold leading-none">{driver.number}</span>
-              <div className="min-w-0">
-                <p className="truncate font-semibold">{driver.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{driver.teamName}</p>
-              </div>
-            </div>
-            <p className="mt-3 text-sm">
-              <span className="font-display text-xl font-bold">P{position}</span>{" "}
-              <span className="text-muted-foreground">· {driver.points} pts</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {position === 1 ? "Líder del campeonato" : `A ${leaderPoints - driver.points} pts del líder`}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function LastRace({ gp, results }: { gp: GrandPrix; results: RaceResult[] }) {
   const podium = results.slice(0, 3);
   const fastest = results.find((r) => r.fastestLapTime !== null);
@@ -119,6 +75,57 @@ function LastRace({ gp, results }: { gp: GrandPrix; results: RaceResult[] }) {
     </section>
   );
 }
+
+function MyDrivers({ drivers }: { drivers: Driver[] }) {
+  const { favorites, loading } = useFavorites();
+  const leaderPoints = drivers[0]?.points ?? 0;
+
+  // Solo pilotos que corren esta temporada, en el orden del campeonato.
+  const mine = drivers
+    .map((driver, index) => ({ driver, position: index + 1 }))
+    .filter(({ driver }) => favorites.includes(driver.id));
+
+  if (loading || mine.length === 0) return null;
+
+  return (
+    <section className="mt-10">
+      <div className="mb-3 flex items-end justify-between gap-4">
+        <h2 className="text-2xl font-bold uppercase">Tus pilotos</h2>
+        <Link to="/favoritos" className="text-sm font-semibold text-primary hover:underline">
+          Ver favoritos
+        </Link>
+      </div>
+
+      <ul className="flex gap-3 overflow-x-auto pb-2">
+        {mine.map(({ driver, position }) => (
+          <li key={driver.id} className="min-w-52 shrink-0">
+            <Link
+              to="/piloto/$id"
+              params={{ id: driver.id }}
+              className="block rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-display text-3xl font-bold leading-none">{driver.number}</span>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{driver.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{driver.teamName}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm">
+                <span className="font-display text-xl font-bold">P{position}</span>{" "}
+                <span className="text-muted-foreground">· {driver.points} pts</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {position === 1 ? "Líder del campeonato" : `A ${leaderPoints - driver.points} pts del líder`}
+              </p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 
 function FavoriteWallpapers() {
   const isAdmin = useIsAdmin();

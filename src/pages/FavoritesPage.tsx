@@ -40,7 +40,13 @@ export function FavoritesPage() {
                 {driver.number}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-xl font-bold uppercase">{driver.name}</p>
+                <Link
+                  to="/piloto/$id"
+                  params={{ id: driver.id }}
+                  className="block truncate font-display text-xl font-bold uppercase hover:text-primary"
+                >
+                  {driver.name}
+                </Link>
                 <p className="truncate text-sm text-muted-foreground">{driver.teamName}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   P{driver.position} · {driver.points} pts · {driver.wins} victorias

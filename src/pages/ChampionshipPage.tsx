@@ -79,7 +79,9 @@ export function ChampionshipPage() {
           ) : (
             <StandingsTable
               rows={driverRows}
-              {...(isCurrent ? { isFavorite, onToggleFavorite: toggle } : {})}
+              driverLinks
+              isFavorite={isFavorite}
+              onToggleFavorite={toggle}
             />
           )}
         </TabsContent>

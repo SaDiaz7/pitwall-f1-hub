@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,8 @@ export interface StandingRow {
 interface StandingsTableProps {
   rows: StandingRow[];
   showTeam?: boolean;
+  // Si es true, el nombre enlaza a la ficha del piloto.
+  driverLinks?: boolean;
   // Si se pasan las dos, la tabla muestra la columna de la estrella.
   isFavorite?: (id: string) => boolean;
   onToggleFavorite?: (id: string) => void;
@@ -20,6 +23,7 @@ interface StandingsTableProps {
 export function StandingsTable({
   rows,
   showTeam = true,
+  driverLinks = false,
   isFavorite,
   onToggleFavorite,
 }: StandingsTableProps) {
@@ -52,18 +56,20 @@ export function StandingsTable({
                 </span>
               </td>
               <td className="px-3 py-3">
-                <div className="font-semibold">{r.name}</div>
-                {showTeam && (
-                  <div className="text-xs text-muted-foreground sm:hidden">{r.team}</div>
-                )}
+                <div className="font-semibold">
+                  {driverLinks ? (
+                    <Link to="/piloto/$id" params={{ id: r.id }} className="hover:text-primary hover:underline">
+                      {r.name}
+                    </Link>
+                  ) : (
+                    r.name
+                  )}
+                </div>
+                {showTeam && <div className="text-xs text-muted-foreground sm:hidden">{r.team}</div>}
               </td>
-              {showTeam && (
-                <td className="hidden px-3 py-3 text-muted-foreground sm:table-cell">{r.team}</td>
-              )}
+              {showTeam && <td className="hidden px-3 py-3 text-muted-foreground sm:table-cell">{r.team}</td>}
               <td className="px-3 py-3 text-right tabular-nums">{r.wins}</td>
-              <td className="px-3 py-3 text-right font-display text-lg font-bold tabular-nums">
-                {r.points}
-              </td>
+              <td className="px-3 py-3 text-right font-display text-lg font-bold tabular-nums">{r.points}</td>
               {isFavorite && onToggleFavorite && (
                 <td className="px-2 py-3 text-right">
                   <FavoriteButton

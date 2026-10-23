@@ -524,3 +524,111 @@ export const getWeather = createServerFn({ method: "GET" })
     weatherCache.set(key, { expires: Date.now() + WEATHER_TTL_MS, data: forecast });
     return forecast;
   });
+
+  
+// ---------- Ficha de un piloto ----------
+
+export interface DriverProfile {
+  id: string;
+  name: string;
+  code: string | null;
+  number: number | null;
+  nationality: string;
+  dateOfBirth: string;
+  wikiUrl: string | null;
+}
+
+export interface CareerSeason {
+  season: number;
+  position: number | null;
+  points: number;
+  wins: number;
+  teams: string[];
+}
+
+export interface CareerTotals {
+  starts: number | null;
+  wins: number | null;
+  podiums: number | null;
+  poles: number | null;
+  titles: number | null;
+}
+
+export interface DriverDetail {
+  profile: DriverProfile;
+  seasons: CareerSeason[];
+  totals: CareerTotals;
+}
+
+interface DriverInfoResponse {
+  MRData: {
+    DriverTable: {
+      Drivers?: {
+        driverId: string;
+        permanentNumber?: string;
+        code?: string;
+        url?: string;
+        givenName: string;
+        familyName: string;
+        dateOfBirth: string;
+        nationality: string;
+      }[];
+    };
+  };
+}
+
+interface TotalResponse {
+  MRData: { total: string };
+}
+
+// Devuelve solo el total de resultados de una consulta (null si falla).
+async function fetchTotal(path: string): Promise<number | null> {
+  try {
+    const json = await fetchJolpica<TotalResponse>(path);
+    const total = Number(json.MRData.total);
+    return Number.isFinite(total) ? total : null;
+  } catch {
+    return null;
+  }
+}
+
+export const getDriverDetail = createServerFn({ method: "GET" })
+  .inputValidator((data: { id: string }) => {
+    if (!/^[a-z0-9_-]{1,50}$/i.test(data.id)) throw new Error("Piloto inválido");
+    return data;
+  })
+  .handler(async ({ data }): Promise<DriverDetail | null> => {
+    const id = data.id;
+
+    const infoJson = await fetchJolpica<DriverInfoResponse>(`/drivers/${id}/`);
+    const info = infoJson.MRData.DriverTable.Drivers?.[0];
+    if (!info) return null;
+
+    // Historial por temporada: pendiente de verificar cómo pedirlo a la API.
+    const seasons: CareerSeason[] = [];
+
+    // Estadísticas de carrera, de a una para no saturar la API.
+    const starts = await fetchTotal(`/drivers/${id}/results/?limit=1`);
+    const wins = await fetchTotal(`/drivers/${id}/results/1/?limit=1`);
+    const seconds = await fetchTotal(`/drivers/${id}/results/2/?limit=1`);
+    const thirds = await fetchTotal(`/drivers/${id}/results/3/?limit=1`);
+    const poles = await fetchTotal(`/drivers/${id}/grid/1/results/?limit=1`);
+
+    const podiums =
+      wins !== null && seconds !== null && thirds !== null ? wins + seconds + thirds : null;
+    const number = Number(info.permanentNumber);
+
+    return {
+      profile: {
+        id: info.driverId,
+        name: `${info.givenName} ${info.familyName}`,
+        code: info.code ?? null,
+        number: Number.isFinite(number) && info.permanentNumber ? number : null,
+        nationality: info.nationality,
+        dateOfBirth: info.dateOfBirth,
+        wikiUrl: info.url ?? null,
+      },
+      seasons,
+      totals: { starts, wins, podiums, poles, titles: null },
+    };
+  });

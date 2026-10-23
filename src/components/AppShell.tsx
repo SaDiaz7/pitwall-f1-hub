@@ -1,19 +1,11 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import {
-  CalendarDays,
-  Home,
-  Image as ImageIcon,
-  LogOut,
-  Settings,
-  Star,
-  Trophy,
-} from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { getInitials, useProfile } from "@/hooks/useProfile";
+import { CalendarDays, Home, Image as ImageIcon, LayoutGrid, LogOut, Settings, Star, Trophy } from "lucide-react";
 
 export const navItems = [
   { to: "/inicio", label: "Inicio", icon: Home },
@@ -21,6 +13,7 @@ export const navItems = [
   { to: "/campeonato", label: "Campeonato", icon: Trophy },
   { to: "/favoritos", label: "Favoritos", icon: Star },
   { to: "/fondos", label: "Fondos", icon: ImageIcon },
+  { to: "/bingo", label: "Bingo Card", icon: LayoutGrid },
   { to: "/ajustes", label: "Ajustes", icon: Settings },
 ] as const;
 
@@ -110,12 +103,12 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-sidebar/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t bg-sidebar/95 backdrop-blur md:hidden">
         {navItems.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-muted-foreground"
+            className="flex min-w-20 flex-1 shrink-0 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-muted-foreground"
             activeProps={{ className: "!text-primary" }}
           >
             <Icon className="h-5 w-5" />

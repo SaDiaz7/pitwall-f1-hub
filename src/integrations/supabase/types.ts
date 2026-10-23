@@ -26,6 +26,36 @@ export type Database = {
         }
         Relationships: []
       }
+      bingo_cells: {
+        Row: {
+          marked: boolean
+          marked_at: string | null
+          position: number
+          season: number
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          marked?: boolean
+          marked_at?: string | null
+          position: number
+          season: number
+          text: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          marked?: boolean
+          marked_at?: string | null
+          position?: number
+          season?: number
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       circuit_facts: {
         Row: {
           circuit_id: string
