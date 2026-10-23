@@ -7,6 +7,7 @@ import { WallpaperUploadForm } from "@/components/WallpaperUploadForm";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
+import { TeamStripe } from "@/components/TeamStripe";
 
 interface Filters {
   year: string;
@@ -190,14 +191,15 @@ export function WallpapersPage() {
                   <span className="absolute left-2 top-2 rounded-md bg-background/80 px-2 py-0.5 text-xs font-bold backdrop-blur">
                     {qualityLabel(w.quality)}
                   </span>
-                  <div className="p-3">
-                    <p className="truncate font-semibold">
-                      {w.driver_name ?? w.team_name ?? "Fondo"}
-                    </p>
+                <div className="flex items-center gap-2 p-3">
+                  <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{w.driver_name ?? w.team_name ?? "Fondo"}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
                     </p>
                   </div>
+                </div>
                 </button>
               </li>
             ))}

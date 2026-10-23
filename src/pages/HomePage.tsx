@@ -17,6 +17,7 @@ import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { getTeamColor } from "@/lib/team-colors";
+import { TeamStripe } from "@/components/TeamStripe";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -61,8 +62,9 @@ function LastRace({ gp, results }: { gp: GrandPrix; results: RaceResult[] }) {
                 >
                   {entry.position}
                 </span>
-                <span className="min-w-0 flex-1 truncate font-semibold">{entry.name}</span>
-                <span className="hidden truncate text-xs text-muted-foreground sm:inline">{entry.teamName}</span>
+          <TeamStripe teamName={entry.teamName} className="h-5" />
+          <span className="min-w-0 flex-1 truncate font-semibold">{entry.name}</span>                
+          <span className="hidden truncate text-xs text-muted-foreground sm:inline">{entry.teamName}</span>
               </li>
             ))}
           </ol>
@@ -189,11 +191,14 @@ function FavoriteWallpapers() {
                 <span className="absolute left-2 top-2 rounded-md bg-background/80 px-2 py-0.5 text-xs font-bold backdrop-blur">
                   {qualityLabel(w.quality)}
                 </span>
-                <div className="p-3">
-                  <p className="truncate font-semibold">{w.driver_name ?? w.team_name ?? "Fondo"}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
-                  </p>
+                <div className="flex items-center gap-2 p-3">
+                  <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{w.driver_name ?? w.team_name ?? "Fondo"}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
                 </div>
               </button>
             </li>

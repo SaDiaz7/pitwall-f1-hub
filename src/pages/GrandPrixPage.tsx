@@ -21,6 +21,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import type { RaceResult, WeatherForecast } from "@/lib/f1";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TeamStripe } from "@/components/TeamStripe";
 
 const route = getRouteApi("/_privado/gp/$round");
 
@@ -106,7 +107,12 @@ function ResultsTable({ results }: { results: RaceResult[] }) {
                   {r.positionText}
                 </span>
               </td>
-              <td className="px-2 py-2 font-semibold">{r.name}</td>
+              <td className="px-2 py-2 font-semibold">
+                <span className="flex items-center gap-2">
+                  <TeamStripe teamName={r.teamName} className="h-5" />
+                  {r.name}
+                </span>
+              </td>
               <td className="hidden px-2 py-2 text-muted-foreground sm:table-cell">{r.teamName}</td>
               <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
                 {r.time || formatStatus(r.status)}

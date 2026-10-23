@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getTeamColor } from "@/lib/team-colors";
 import type { Driver } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,8 @@ function Metric({
   label,
   a,
   b,
+  colorA,
+  colorB,
   prefix = "",
   lowerIsBetter = false,
   showBars = true,
@@ -20,6 +23,8 @@ function Metric({
   label: string;
   a: number;
   b: number;
+  colorA: string;
+  colorB: string;
   prefix?: string;
   lowerIsBetter?: boolean;
   showBars?: boolean;
@@ -46,14 +51,14 @@ function Metric({
         <div className="grid grid-cols-2 gap-1">
           <div className="flex justify-end">
             <div
-              className={cn("h-2 rounded-full", aWins ? "bg-primary" : "bg-secondary")}
-              style={{ width: `${(a / max) * 100}%` }}
+              className={cn("h-2 rounded-full", bWins && "opacity-40")}
+              style={{ width: `${(a / max) * 100}%`, backgroundColor: colorA }}
             />
           </div>
           <div className="flex justify-start">
             <div
-              className={cn("h-2 rounded-full", bWins ? "bg-primary" : "bg-secondary")}
-              style={{ width: `${(b / max) * 100}%` }}
+              className={cn("h-2 rounded-full", aWins && "opacity-40")}
+              style={{ width: `${(b / max) * 100}%`, backgroundColor: colorB }}
             />
           </div>
         </div>
@@ -64,7 +69,10 @@ function Metric({
 
 function DriverHeader({ entry, align }: { entry: Entry; align: "left" | "right" }) {
   return (
-    <div className={cn("min-w-0", align === "right" ? "text-right" : "text-left")}>
+    <div
+      className={cn("min-w-0 border-b-4 pb-2", align === "right" ? "text-right" : "text-left")}
+      style={{ borderBottomColor: getTeamColor(entry.driver.teamId, entry.driver.teamName) }}
+    >
       {entry.driver.number > 0 && (
         <p className="font-display text-3xl font-bold leading-none text-primary">{entry.driver.number}</p>
       )}
@@ -95,6 +103,9 @@ export function DriverComparison({ drivers }: { drivers: Driver[] }) {
   const a = entries.find((e) => e.driver.id === aId) ?? first;
   const b = entries.find((e) => e.driver.id === bId) ?? second;
   const same = a.driver.id === b.driver.id;
+
+  const colorA = getTeamColor(a.driver.teamId, a.driver.teamName);
+  const colorB = getTeamColor(b.driver.teamId, b.driver.teamName);
 
   const diff = a.driver.points - b.driver.points;
   const summary =
@@ -133,15 +144,24 @@ export function DriverComparison({ drivers }: { drivers: Driver[] }) {
         <p className="text-sm text-muted-foreground">Elegí dos pilotos distintos para compararlos.</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 border-b pb-4">
+          <div className="grid grid-cols-2 gap-4">
             <DriverHeader entry={a} align="left" />
             <DriverHeader entry={b} align="right" />
           </div>
 
           <div className="space-y-5">
-            <Metric label="Posición" a={a.position} b={b.position} prefix="P" lowerIsBetter showBars={false} />
-            <Metric label="Puntos" a={a.driver.points} b={b.driver.points} />
-            <Metric label="Victorias" a={a.driver.wins} b={b.driver.wins} />
+            <Metric
+              label="Posición"
+              a={a.position}
+              b={b.position}
+              colorA={colorA}
+              colorB={colorB}
+              prefix="P"
+              lowerIsBetter
+              showBars={false}
+            />
+            <Metric label="Puntos" a={a.driver.points} b={b.driver.points} colorA={colorA} colorB={colorB} />
+            <Metric label="Victorias" a={a.driver.wins} b={b.driver.wins} colorA={colorA} colorB={colorB} />
           </div>
 
           <p className="border-t pt-4 text-sm text-muted-foreground">{summary}</p>

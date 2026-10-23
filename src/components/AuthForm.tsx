@@ -196,6 +196,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
           {field("email", "Email", "email", "email")}
           {field("password", "Contraseña", "password", isLogin ? "current-password" : "new-password")}
+          {isLogin && (
+            <div className="-mt-2 text-right">
+              <Link to="/olvide" className="text-sm font-semibold text-primary hover:underline">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+          )}
           {!isLogin && field("confirm", "Repetir contraseña", "password", "new-password")}
 
           {!isLogin && (

@@ -1,20 +1,18 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getInitials, useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
+import { supabase } from "@/integrations/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
+import { cn } from "@/lib/utils";
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -24,27 +22,17 @@ function Panel({ children }: { children: ReactNode }) {
   return <div className="space-y-5 rounded-2xl border bg-card p-5 md:p-6">{children}</div>;
 }
 
-function ToggleRow({
-  id,
-  title,
-  text,
-  defaultChecked,
-}: {
-  id: string;
-  title: string;
-  text: string;
-  defaultChecked?: boolean;
-}) {
+function StatusMessage({ status }: { status: Status }) {
+  if (!status) return null;
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div>
-        <Label htmlFor={id} className="font-semibold">
-          {title}
-        </Label>
-        <p className="text-sm text-muted-foreground">{text}</p>
-      </div>
-      <Switch id={id} defaultChecked={!!defaultChecked} />
-    </div>
+    <p
+      className={cn(
+        "rounded-md p-2 text-sm",
+        status.type === "ok" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+      )}
+    >
+      {status.text}
+    </p>
   );
 }
 
@@ -84,11 +72,7 @@ function ProfilePanel() {
     });
     setSaving(false);
 
-    setStatus(
-      result.ok
-        ? { type: "ok", text: "Cambios guardados." }
-        : { type: "error", text: result.message },
-    );
+    setStatus(result.ok ? { type: "ok", text: "Cambios guardados." } : { type: "error", text: result.message });
   };
 
   const onAvatarChange = async (ev: ChangeEvent<HTMLInputElement>) => {
@@ -103,11 +87,7 @@ function ProfilePanel() {
     // Limpia el input para poder elegir el mismo archivo otra vez si hace falta.
     if (fileInput.current) fileInput.current.value = "";
 
-    setStatus(
-      result.ok
-        ? { type: "ok", text: "Avatar actualizado." }
-        : { type: "error", text: result.message },
-    );
+    setStatus(result.ok ? { type: "ok", text: "Avatar actualizado." } : { type: "error", text: result.message });
   };
 
   if (loading) {
@@ -135,12 +115,7 @@ function ProfilePanel() {
             className="hidden"
             onChange={onAvatarChange}
           />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={uploading}
-            onClick={() => fileInput.current?.click()}
-          >
+          <Button type="button" variant="outline" disabled={uploading} onClick={() => fileInput.current?.click()}>
             {uploading ? "Subiendo…" : "Cambiar avatar"}
           </Button>
           <p className="text-xs text-muted-foreground">JPG, PNG o WebP, hasta 2 MB.</p>
@@ -171,17 +146,7 @@ function ProfilePanel() {
           />
         </div>
 
-        {status && (
-          <p
-            className={
-              status.type === "ok"
-                ? "rounded-md bg-success/15 p-2 text-sm text-success"
-                : "rounded-md bg-destructive/15 p-2 text-sm text-destructive"
-            }
-          >
-            {status.text}
-          </p>
-        )}
+        <StatusMessage status={status} />
 
         <Button type="submit" disabled={saving} className="bg-gradient-primary font-semibold">
           {saving ? "Guardando…" : "Guardar cambios"}
@@ -191,56 +156,142 @@ function ProfilePanel() {
   );
 }
 
+function AccountPanel() {
+  const { session } = useSession();
+  const navigate = useNavigate();
+
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [status, setStatus] = useState<Status>(null);
+  const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const onChangePassword = async (ev: FormEvent) => {
+    ev.preventDefault();
+    setStatus(null);
+
+    if (password.length < 8) {
+      setStatus({ type: "error", text: "La contraseña debe tener al menos 8 caracteres." });
+      return;
+    }
+    if (password !== confirm) {
+      setStatus({ type: "error", text: "Las contraseñas no coinciden." });
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setSaving(false);
+
+    if (error) {
+      console.error("Cambiar contraseña:", error);
+      setStatus({ type: "error", text: translateAuthError(error.message) });
+      return;
+    }
+
+    setPassword("");
+    setConfirm("");
+    setStatus({ type: "ok", text: "Contraseña actualizada." });
+  };
+
+  const onSignOutEverywhere = async () => {
+    if (!window.confirm("¿Cerrar sesión en todos tus dispositivos?")) return;
+
+    setSigningOut(true);
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+    setSigningOut(false);
+
+    if (error) {
+      console.error("Cerrar sesiones:", error);
+      setStatus({ type: "error", text: "No pudimos cerrar las sesiones. Probá de nuevo." });
+      return;
+    }
+
+    await navigate({ to: "/login" });
+  };
+
+  return (
+    <div className="space-y-4">
+      <Panel>
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold">Email</p>
+          <p className="text-sm text-muted-foreground">{session?.user.email}</p>
+        </div>
+
+        <form onSubmit={onChangePassword} noValidate className="space-y-4">
+          <h2 className="text-xl font-bold uppercase">Cambiar contraseña</h2>
+          <div className="space-y-1.5">
+            <Label htmlFor="account-password">Contraseña nueva</Label>
+            <PasswordInput
+              id="account-password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="account-confirm">Repetir contraseña</Label>
+            <PasswordInput id="account-confirm" value={confirm} onChange={setConfirm} autoComplete="new-password" />
+          </div>
+
+          <StatusMessage status={status} />
+
+          <Button type="submit" disabled={saving} className="bg-gradient-primary font-semibold">
+            {saving ? "Guardando…" : "Cambiar contraseña"}
+          </Button>
+        </form>
+      </Panel>
+
+      <Panel>
+        <h2 className="text-xl font-bold uppercase">Sesiones</h2>
+        <p className="text-sm text-muted-foreground">
+          Si entraste desde un dispositivo que ya no usás, podés cerrar la sesión en todos a la vez.
+        </p>
+        <Button type="button" variant="outline" disabled={signingOut} onClick={onSignOutEverywhere}>
+          {signingOut ? "Cerrando…" : "Cerrar sesión en todos los dispositivos"}
+        </Button>
+      </Panel>
+
+      <p className="text-xs text-muted-foreground">
+        Más información en los{" "}
+        <Link to="/terminos" className="font-semibold text-primary hover:underline">
+          términos
+        </Link>{" "}
+        y la{" "}
+        <Link to="/privacidad" className="font-semibold text-primary hover:underline">
+          política de privacidad
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   return (
     <>
       <PageHeader title="Ajustes" subtitle="Configurá tu cuenta." />
       <Tabs defaultValue="perfil">
-        <TabsList className="mb-4">
+        <TabsList className="mb-2 max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
-          <TabsTrigger value="privacidad">Privacidad</TabsTrigger>
-          <TabsTrigger value="notificaciones">Notificaciones</TabsTrigger>
+          <TabsTrigger value="cuenta">Cuenta</TabsTrigger>
+          <TabsTrigger value="privacidad" disabled>
+            Privacidad
+          </TabsTrigger>
+          <TabsTrigger value="notificaciones" disabled>
+            Notificaciones
+          </TabsTrigger>
         </TabsList>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Privacidad y Notificaciones llegan más adelante: hoy la app no muestra perfiles de otras personas ni envía
+          avisos.
+        </p>
+
         <TabsContent value="perfil">
           <ProfilePanel />
         </TabsContent>
-        <TabsContent value="privacidad">
-          <Panel>
-            <ToggleRow
-              id="public"
-              title="Perfil público"
-              text="Otros fans pueden ver tu perfil."
-              defaultChecked
-            />
-            <ToggleRow
-              id="showEmail"
-              title="Mostrar email"
-              text="Tu email será visible en tu perfil."
-            />
-            <ToggleRow
-              id="activity"
-              title="Mostrar actividad"
-              text="Compartí tu actividad reciente."
-              defaultChecked
-            />
-          </Panel>
-        </TabsContent>
-        <TabsContent value="notificaciones">
-          <Panel>
-            <ToggleRow
-              id="raceReminder"
-              title="Recordatorio de carrera"
-              text="Aviso una hora antes de cada GP."
-              defaultChecked
-            />
-            <ToggleRow
-              id="results"
-              title="Resultados"
-              text="Recibí los resultados al terminar la carrera."
-              defaultChecked
-            />
-            <ToggleRow id="news" title="Novedades de PitWall" text="Nuevas funciones y anuncios." />
-          </Panel>
+        <TabsContent value="cuenta">
+          <AccountPanel />
         </TabsContent>
       </Tabs>
     </>

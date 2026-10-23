@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import type { PodiumEntry } from "@/lib/f1";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TeamStripe } from "@/components/TeamStripe";
 
 const route = getRouteApi("/_privado/calendario");
 
@@ -29,6 +30,7 @@ function Podium({ entries }: { entries?: PodiumEntry[] | undefined }) {
           >
             {entry.position}
           </span>
+          <TeamStripe teamName={entry.teamName} className="h-5" />
           <span className="min-w-0 flex-1 truncate font-semibold">{entry.name}</span>
           <span className="hidden truncate text-xs text-muted-foreground sm:inline">
             {entry.teamName}

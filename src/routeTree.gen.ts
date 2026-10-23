@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivadoRouteImport } from './routes/_privado'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as OlvideRouteImport } from './routes/olvide'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as RestablecerRouteImport } from './routes/restablecer'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
 import { Route as PrivadoBingoRouteImport } from './routes/_privado.bingo'
@@ -39,6 +41,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OlvideRoute = OlvideRouteImport.update({
+  id: '/olvide',
+  path: '/olvide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadRoute = PrivacidadRouteImport.update({
   id: '/privacidad',
   path: '/privacidad',
@@ -47,6 +54,11 @@ const PrivacidadRoute = PrivacidadRouteImport.update({
 const RegistroRoute = RegistroRouteImport.update({
   id: '/registro',
   path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestablecerRoute = RestablecerRouteImport.update({
+  id: '/restablecer',
+  path: '/restablecer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TerminosRoute = TerminosRouteImport.update({
@@ -103,8 +115,10 @@ const PrivadoPilotoIdRoute = PrivadoPilotoIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/olvide': typeof OlvideRoute
   '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/bingo': typeof PrivadoBingoRoute
@@ -119,8 +133,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/olvide': typeof OlvideRoute
   '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/bingo': typeof PrivadoBingoRoute
@@ -137,8 +153,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_privado': typeof PrivadoRouteWithChildren
   '/login': typeof LoginRoute
+  '/olvide': typeof OlvideRoute
   '/privacidad': typeof PrivacidadRoute
   '/registro': typeof RegistroRoute
+  '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/_privado/ajustes': typeof PrivadoAjustesRoute
   '/_privado/bingo': typeof PrivadoBingoRoute
@@ -155,8 +173,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/olvide'
     | '/privacidad'
     | '/registro'
+    | '/restablecer'
     | '/terminos'
     | '/ajustes'
     | '/bingo'
@@ -171,8 +191,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/olvide'
     | '/privacidad'
     | '/registro'
+    | '/restablecer'
     | '/terminos'
     | '/ajustes'
     | '/bingo'
@@ -188,8 +210,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_privado'
     | '/login'
+    | '/olvide'
     | '/privacidad'
     | '/registro'
+    | '/restablecer'
     | '/terminos'
     | '/_privado/ajustes'
     | '/_privado/bingo'
@@ -206,8 +230,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrivadoRoute: typeof PrivadoRouteWithChildren
   LoginRoute: typeof LoginRoute
+  OlvideRoute: typeof OlvideRoute
   PrivacidadRoute: typeof PrivacidadRoute
   RegistroRoute: typeof RegistroRoute
+  RestablecerRoute: typeof RestablecerRoute
   TerminosRoute: typeof TerminosRoute
 }
 
@@ -234,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/olvide': {
+      id: '/olvide'
+      path: '/olvide'
+      fullPath: '/olvide'
+      preLoaderRoute: typeof OlvideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidad': {
       id: '/privacidad'
       path: '/privacidad'
@@ -246,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/registro'
       fullPath: '/registro'
       preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restablecer': {
+      id: '/restablecer'
+      path: '/restablecer'
+      fullPath: '/restablecer'
+      preLoaderRoute: typeof RestablecerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terminos': {
@@ -352,8 +392,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrivadoRoute: PrivadoRouteWithChildren,
   LoginRoute: LoginRoute,
+  OlvideRoute: OlvideRoute,
   PrivacidadRoute: PrivacidadRoute,
   RegistroRoute: RegistroRoute,
+  RestablecerRoute: RestablecerRoute,
   TerminosRoute: TerminosRoute,
 }
 export const routeTree = rootRouteImport

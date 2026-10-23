@@ -10,6 +10,7 @@ import {
 } from "@/lib/championship";
 import type { Driver, GrandPrix } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { TeamStripe } from "@/components/TeamStripe";
 
 const SELECT_CLASS = "h-10 w-full rounded-md border bg-card px-3 text-sm";
 
@@ -152,9 +153,10 @@ export function TitleCalculator({ drivers, schedule }: { drivers: Driver[]; sche
         <ul className="space-y-1.5">
           {alive.map((c) => (
             <li key={c.driver.id} className="flex items-center justify-between gap-3 text-sm">
-              <span className="min-w-0 truncate">
-                <span className="mr-2 font-display font-bold">P{c.position}</span>
-                <span className="font-semibold">{c.driver.name}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <TeamStripe teamId={c.driver.teamId} teamName={c.driver.teamName} className="h-5" />
+                <span className="font-display font-bold">P{c.position}</span>
+                <span className="truncate font-semibold">{c.driver.name}</span>
               </span>
               <span className="shrink-0 tabular-nums text-muted-foreground">
                 hasta {c.maxFinal} pts{c.gap > 0 ? ` · a ${c.gap} del líder` : ""}
