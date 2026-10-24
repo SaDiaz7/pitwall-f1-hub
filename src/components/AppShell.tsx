@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { getInitials, useProfile } from "@/hooks/useProfile";
 import { CalendarDays, Home, Image as ImageIcon, LayoutGrid, LogOut, Settings, Star, Trophy } from "lucide-react";
+import { NewsDialog } from "@/components/NewsDialog";
 
 export const navItems = [
   { to: "/inicio", label: "Inicio", icon: Home },
@@ -103,7 +104,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t bg-sidebar/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {navItems.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
@@ -116,6 +117,7 @@ export function AppShell() {
           </Link>
         ))}
       </nav>
+      <NewsDialog />
     </div>
   );
 }

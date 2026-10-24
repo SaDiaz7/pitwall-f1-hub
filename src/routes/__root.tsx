@@ -9,6 +9,8 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { startInstallPromptCapture } from "../lib/install-prompt";
+
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -77,7 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#0a0a0a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "PitWall" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { title: "PitWall" },
       { name: "description", content: "La app para fans de la Fórmula 1." },
       { property: "og:type", content: "website" },
@@ -94,6 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/favicon.svg?v=2", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico?v=2", sizes: "any" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=2" },
@@ -121,6 +128,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  
+  useEffect(() => {
+    // Captura el aviso de "se puede instalar" y registra el service worker (solo en producción).
+    startInstallPromptCapture();
+
+    if (import.meta.env.PROD && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch((error) => console.error("Service worker:", error));
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

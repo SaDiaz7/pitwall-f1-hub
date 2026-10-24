@@ -119,6 +119,24 @@ export type Database = {
         }
         Relationships: []
       }
+      news_dismissals: {
+        Row: {
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          updated_at?: string
+          user_id?: string
+          version: number
+        }
+        Update: {
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -140,6 +158,33 @@ export type Database = {
           id?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      site_news: {
+        Row: {
+          active: boolean
+          body: string
+          id: number
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          id?: number
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          id?: number
+          title?: string
+          updated_at?: string
+          version?: number
         }
         Relationships: []
       }

@@ -13,6 +13,9 @@ import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { translateAuthError } from "@/lib/auth-errors";
 import { cn } from "@/lib/utils";
+import { InstallPanel } from "@/components/InstallPanel";
+import { NewsEditor } from "@/components/NewsEditor";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -268,6 +271,8 @@ function AccountPanel() {
 }
 
 export function SettingsPage() {
+  const isAdmin = useIsAdmin();
+
   return (
     <>
       <PageHeader title="Ajustes" subtitle="Configurá tu cuenta." />
@@ -275,6 +280,8 @@ export function SettingsPage() {
         <TabsList className="mb-2 max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="cuenta">Cuenta</TabsTrigger>
+          <TabsTrigger value="app">App</TabsTrigger>
+          {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
           <TabsTrigger value="privacidad" disabled>
             Privacidad
           </TabsTrigger>
@@ -293,6 +300,14 @@ export function SettingsPage() {
         <TabsContent value="cuenta">
           <AccountPanel />
         </TabsContent>
+        <TabsContent value="app">
+          <InstallPanel />
+        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="novedades">
+            <NewsEditor />
+          </TabsContent>
+        )}
       </Tabs>
     </>
   );
