@@ -1,10 +1,12 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { DriverComparison } from "@/components/DriverComparison";
 import { PageHeader } from "@/components/PageHeader";
+import { ScenarioBuilder } from "@/components/ScenarioBuilder";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TitleCalculator } from "@/components/TitleCalculator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
+import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
 import { useFavorites } from "@/hooks/useFavorites";
 
 const route = getRouteApi("/_privado/campeonato");
@@ -21,10 +23,12 @@ export function ChampionshipPage() {
   const { season } = route.useSearch();
   const navigate = useNavigate();
   const { isFavorite, toggle, error } = useFavorites();
+  const teamFavorites = useFavoriteTeams();
   const photos = useDriverPhotos(drivers.map((d) => ({ id: d.id, wikiUrl: d.wikiUrl })));
 
   // Las estrellas solo tienen sentido en la temporada en curso.
   const isCurrent = season === undefined || season === CURRENT_YEAR;
+  const errorMessage = error ?? teamFavorites.error;
 
   const onSeasonChange = (value: string) => {
     navigate({ to: "/campeonato", search: value === "" ? {} : { season: Number(value) } });
@@ -62,8 +66,8 @@ export function ChampionshipPage() {
         </select>
       </label>
 
-      {isCurrent && error && (
-        <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>
+      {isCurrent && errorMessage && (
+        <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{errorMessage}</p>
       )}
 
       <Tabs defaultValue="pilotos">
@@ -72,6 +76,7 @@ export function ChampionshipPage() {
           <TabsTrigger value="constructores">Constructores</TabsTrigger>
           <TabsTrigger value="comparar">Comparar</TabsTrigger>
           <TabsTrigger value="calculadora">Calculadora</TabsTrigger>
+          <TabsTrigger value="escenarios">Escenarios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pilotos">
@@ -97,7 +102,13 @@ export function ChampionshipPage() {
           {teams.length === 0 ? (
             <Empty text="No hay tabla de constructores para esa temporada (ese campeonato empezó en 1958)." />
           ) : (
-            <StandingsTable rows={teams} showTeam={false} />
+            <StandingsTable
+              rows={teams}
+              showTeam={false}
+              {...(isCurrent
+                ? { isFavorite: teamFavorites.isFavorite, onToggleFavorite: teamFavorites.toggle }
+                : {})}
+            />
           )}
         </TabsContent>
 
@@ -110,6 +121,14 @@ export function ChampionshipPage() {
             <TitleCalculator drivers={drivers} schedule={schedule} />
           ) : (
             <Empty text="La calculadora solo está disponible para la temporada en curso." />
+          )}
+        </TabsContent>
+
+        <TabsContent value="escenarios">
+          {isCurrent ? (
+            <ScenarioBuilder drivers={drivers} schedule={schedule} />
+          ) : (
+            <Empty text="Los escenarios solo están disponibles para la temporada en curso." />
           )}
         </TabsContent>
       </Tabs>

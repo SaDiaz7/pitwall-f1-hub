@@ -83,6 +83,24 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_constructors: {
+        Row: {
+          constructor_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          constructor_id: string
+          created_at?: string
+          user_id?: string
+        }
+        Update: {
+          constructor_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorite_drivers: {
         Row: {
           created_at: string
