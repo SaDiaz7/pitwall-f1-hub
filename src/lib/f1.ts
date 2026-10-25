@@ -530,8 +530,7 @@ export const getWeather = createServerFn({ method: "GET" })
   });
 
   
-// ---------- Ficha de un piloto ----------
-
+  
 // ---------- Ficha de un piloto ----------
 
 export interface DriverProfile {

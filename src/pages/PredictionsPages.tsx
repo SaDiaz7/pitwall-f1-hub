@@ -216,6 +216,10 @@ export function PredictionsPage() {
           {POSITION_POINTS[1]} por el 2.º y el 3.º, y {POSITION_POINTS[3]} por cada uno del 4.º al 10.º. Máximo por
           carrera: {MAX_POINTS} puntos.
         </p>
+        <p>
+          <span className="font-semibold">¡Asegurate de predecir antes de que empiece la clasificación!</span> 
+          Una vez que la carrera empieza, no se pueden cambiar las predicciones. 
+        </p>
       </div>
 
       {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
