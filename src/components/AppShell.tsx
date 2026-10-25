@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { getInitials, useProfile } from "@/hooks/useProfile";
-import { CalendarDays, Home, Image as ImageIcon, LayoutGrid, LogOut, Medal, Settings, Star, Target, Trophy } from "lucide-react";
+import { CalendarDays, Home, Image as ImageIcon, LayoutGrid, LogOut, Medal, Settings, Star, Target, Trophy, Users } from "lucide-react";
 import { NewsDialog } from "@/components/NewsDialog";
 
 
@@ -15,6 +15,7 @@ export const navItems = [
   { to: "/campeonato", label: "Campeonato", icon: Trophy },
   { to: "/predicciones", label: "Predicciones", icon: Target },
   { to: "/ranking", label: "Ranking", icon: Medal },
+  { to: "/amigos", label: "Amigos", icon: Users },
   { to: "/favoritos", label: "Favoritos", icon: Star },
   { to: "/fondos", label: "Fondos", icon: ImageIcon },
   { to: "/bingo", label: "Bingo Card", icon: LayoutGrid },

@@ -29,6 +29,11 @@ function Page() {
         aparecer en el ranking y en las búsquedas de otros usuarios. Podés desactivarlo cuando quieras en Ajustes →
         Privacidad. Tu email nunca se muestra a otras personas.
       </p>
+      <p>
+        Si agregás amigos, ellos pueden ver tus predicciones de las carreras cuyas predicciones ya cerraron. Para
+        encontrarte, otra persona tiene que buscar tu nombre de usuario o tu nombre visible, y solo aparecés si tenés
+        la visibilidad activada. Podés quitar a un amigo en cualquier momento.
+      </p>
       
       <Link to="/registro" className="font-semibold text-primary hover:underline">
         Volver al registro

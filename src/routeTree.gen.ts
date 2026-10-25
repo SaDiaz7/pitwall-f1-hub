@@ -18,6 +18,7 @@ import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RestablecerRouteImport } from './routes/restablecer'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
+import { Route as PrivadoAmigosRouteImport } from './routes/_privado.amigos'
 import { Route as PrivadoBingoRouteImport } from './routes/_privado.bingo'
 import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
 import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
@@ -28,6 +29,7 @@ import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predi
 import { Route as PrivadoRankingRouteImport } from './routes/_privado.ranking'
 import { Route as PrivadoGpRoundRouteImport } from './routes/_privado.gp.$round'
 import { Route as PrivadoPilotoIdRouteImport } from './routes/_privado.piloto.$id'
+import { Route as PrivadoUsuarioIdRouteImport } from './routes/_privado.usuario.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +73,11 @@ const TerminosRoute = TerminosRouteImport.update({
 const PrivadoAjustesRoute = PrivadoAjustesRouteImport.update({
   id: '/ajustes',
   path: '/ajustes',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoAmigosRoute = PrivadoAmigosRouteImport.update({
+  id: '/amigos',
+  path: '/amigos',
   getParentRoute: () => PrivadoRoute,
 } as any)
 const PrivadoBingoRoute = PrivadoBingoRouteImport.update({
@@ -123,6 +130,11 @@ const PrivadoPilotoIdRoute = PrivadoPilotoIdRouteImport.update({
   path: '/piloto/$id',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoUsuarioIdRoute = PrivadoUsuarioIdRouteImport.update({
+  id: '/usuario/$id',
+  path: '/usuario/$id',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
+  '/amigos': typeof PrivadoAmigosRoute
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -143,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/ranking': typeof PrivadoRankingRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/piloto/$id': typeof PrivadoPilotoIdRoute
+  '/usuario/$id': typeof PrivadoUsuarioIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -153,6 +167,7 @@ export interface FileRoutesByTo {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
+  '/amigos': typeof PrivadoAmigosRoute
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -163,6 +178,7 @@ export interface FileRoutesByTo {
   '/ranking': typeof PrivadoRankingRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/piloto/$id': typeof PrivadoPilotoIdRoute
+  '/usuario/$id': typeof PrivadoUsuarioIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -175,6 +191,7 @@ export interface FileRoutesById {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/_privado/ajustes': typeof PrivadoAjustesRoute
+  '/_privado/amigos': typeof PrivadoAmigosRoute
   '/_privado/bingo': typeof PrivadoBingoRoute
   '/_privado/calendario': typeof PrivadoCalendarioRoute
   '/_privado/campeonato': typeof PrivadoCampeonatoRoute
@@ -185,6 +202,7 @@ export interface FileRoutesById {
   '/_privado/ranking': typeof PrivadoRankingRoute
   '/_privado/gp/$round': typeof PrivadoGpRoundRoute
   '/_privado/piloto/$id': typeof PrivadoPilotoIdRoute
+  '/_privado/usuario/$id': typeof PrivadoUsuarioIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -197,6 +215,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/ajustes'
+    | '/amigos'
     | '/bingo'
     | '/calendario'
     | '/campeonato'
@@ -207,6 +226,7 @@ export interface FileRouteTypes {
     | '/ranking'
     | '/gp/$round'
     | '/piloto/$id'
+    | '/usuario/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +237,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/ajustes'
+    | '/amigos'
     | '/bingo'
     | '/calendario'
     | '/campeonato'
@@ -227,6 +248,7 @@ export interface FileRouteTypes {
     | '/ranking'
     | '/gp/$round'
     | '/piloto/$id'
+    | '/usuario/$id'
   id:
     | '__root__'
     | '/'
@@ -238,6 +260,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/_privado/ajustes'
+    | '/_privado/amigos'
     | '/_privado/bingo'
     | '/_privado/calendario'
     | '/_privado/campeonato'
@@ -248,6 +271,7 @@ export interface FileRouteTypes {
     | '/_privado/ranking'
     | '/_privado/gp/$round'
     | '/_privado/piloto/$id'
+    | '/_privado/usuario/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -326,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoAjustesRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/amigos': {
+      id: '/_privado/amigos'
+      path: '/amigos'
+      fullPath: '/amigos'
+      preLoaderRoute: typeof PrivadoAmigosRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/bingo': {
       id: '/_privado/bingo'
       path: '/bingo'
@@ -396,11 +427,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoPilotoIdRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/usuario/$id': {
+      id: '/_privado/usuario/$id'
+      path: '/usuario/$id'
+      fullPath: '/usuario/$id'
+      preLoaderRoute: typeof PrivadoUsuarioIdRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
   }
 }
 
 interface PrivadoRouteChildren {
   PrivadoAjustesRoute: typeof PrivadoAjustesRoute
+  PrivadoAmigosRoute: typeof PrivadoAmigosRoute
   PrivadoBingoRoute: typeof PrivadoBingoRoute
   PrivadoCalendarioRoute: typeof PrivadoCalendarioRoute
   PrivadoCampeonatoRoute: typeof PrivadoCampeonatoRoute
@@ -411,10 +450,12 @@ interface PrivadoRouteChildren {
   PrivadoRankingRoute: typeof PrivadoRankingRoute
   PrivadoGpRoundRoute: typeof PrivadoGpRoundRoute
   PrivadoPilotoIdRoute: typeof PrivadoPilotoIdRoute
+  PrivadoUsuarioIdRoute: typeof PrivadoUsuarioIdRoute
 }
 
 const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoAjustesRoute: PrivadoAjustesRoute,
+  PrivadoAmigosRoute: PrivadoAmigosRoute,
   PrivadoBingoRoute: PrivadoBingoRoute,
   PrivadoCalendarioRoute: PrivadoCalendarioRoute,
   PrivadoCampeonatoRoute: PrivadoCampeonatoRoute,
@@ -425,6 +466,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoRankingRoute: PrivadoRankingRoute,
   PrivadoGpRoundRoute: PrivadoGpRoundRoute,
   PrivadoPilotoIdRoute: PrivadoPilotoIdRoute,
+  PrivadoUsuarioIdRoute: PrivadoUsuarioIdRoute,
 }
 
 const PrivadoRouteWithChildren =
