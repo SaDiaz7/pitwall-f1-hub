@@ -24,6 +24,8 @@ import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeon
 import { Route as PrivadoFavoritosRouteImport } from './routes/_privado.favoritos'
 import { Route as PrivadoFondosRouteImport } from './routes/_privado.fondos'
 import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
+import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predicciones'
+import { Route as PrivadoRankingRouteImport } from './routes/_privado.ranking'
 import { Route as PrivadoGpRoundRouteImport } from './routes/_privado.gp.$round'
 import { Route as PrivadoPilotoIdRouteImport } from './routes/_privado.piloto.$id'
 
@@ -101,6 +103,16 @@ const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoPrediccionesRoute = PrivadoPrediccionesRouteImport.update({
+  id: '/predicciones',
+  path: '/predicciones',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoRankingRoute = PrivadoRankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoGpRoundRoute = PrivadoGpRoundRouteImport.update({
   id: '/gp/$round',
   path: '/gp/$round',
@@ -127,6 +139,8 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/predicciones': typeof PrivadoPrediccionesRoute
+  '/ranking': typeof PrivadoRankingRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/piloto/$id': typeof PrivadoPilotoIdRoute
 }
@@ -145,6 +159,8 @@ export interface FileRoutesByTo {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/predicciones': typeof PrivadoPrediccionesRoute
+  '/ranking': typeof PrivadoRankingRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/piloto/$id': typeof PrivadoPilotoIdRoute
 }
@@ -165,6 +181,8 @@ export interface FileRoutesById {
   '/_privado/favoritos': typeof PrivadoFavoritosRoute
   '/_privado/fondos': typeof PrivadoFondosRoute
   '/_privado/inicio': typeof PrivadoInicioRoute
+  '/_privado/predicciones': typeof PrivadoPrediccionesRoute
+  '/_privado/ranking': typeof PrivadoRankingRoute
   '/_privado/gp/$round': typeof PrivadoGpRoundRoute
   '/_privado/piloto/$id': typeof PrivadoPilotoIdRoute
 }
@@ -185,6 +203,8 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/predicciones'
+    | '/ranking'
     | '/gp/$round'
     | '/piloto/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -203,6 +223,8 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/predicciones'
+    | '/ranking'
     | '/gp/$round'
     | '/piloto/$id'
   id:
@@ -222,6 +244,8 @@ export interface FileRouteTypes {
     | '/_privado/favoritos'
     | '/_privado/fondos'
     | '/_privado/inicio'
+    | '/_privado/predicciones'
+    | '/_privado/ranking'
     | '/_privado/gp/$round'
     | '/_privado/piloto/$id'
   fileRoutesById: FileRoutesById
@@ -344,6 +368,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoInicioRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/predicciones': {
+      id: '/_privado/predicciones'
+      path: '/predicciones'
+      fullPath: '/predicciones'
+      preLoaderRoute: typeof PrivadoPrediccionesRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/ranking': {
+      id: '/_privado/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof PrivadoRankingRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/gp/$round': {
       id: '/_privado/gp/$round'
       path: '/gp/$round'
@@ -369,6 +407,8 @@ interface PrivadoRouteChildren {
   PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
   PrivadoFondosRoute: typeof PrivadoFondosRoute
   PrivadoInicioRoute: typeof PrivadoInicioRoute
+  PrivadoPrediccionesRoute: typeof PrivadoPrediccionesRoute
+  PrivadoRankingRoute: typeof PrivadoRankingRoute
   PrivadoGpRoundRoute: typeof PrivadoGpRoundRoute
   PrivadoPilotoIdRoute: typeof PrivadoPilotoIdRoute
 }
@@ -381,6 +421,8 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoFavoritosRoute: PrivadoFavoritosRoute,
   PrivadoFondosRoute: PrivadoFondosRoute,
   PrivadoInicioRoute: PrivadoInicioRoute,
+  PrivadoPrediccionesRoute: PrivadoPrediccionesRoute,
+  PrivadoRankingRoute: PrivadoRankingRoute,
   PrivadoGpRoundRoute: PrivadoGpRoundRoute,
   PrivadoPilotoIdRoute: PrivadoPilotoIdRoute,
 }

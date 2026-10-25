@@ -388,6 +388,7 @@ export const getPodiums = createServerFn({ method: "GET" }).handler(async (): Pr
 
 export interface RaceResult {
   position: number;
+  Driver: { driverId: string; givenName: string; familyName: string };
   positionText: string;
   name: string;
   teamName: string;
@@ -410,7 +411,7 @@ interface RaceResultsResponse {
           status: string;
           Time?: { time: string };
           FastestLap?: { rank: string; Time?: { time: string } };
-          Driver: { givenName: string; familyName: string };
+          Driver: { driverId: string; givenName: string; familyName: string };
           Constructor: { name: string };
         }[];
       }[];
@@ -434,6 +435,7 @@ export const getRaceResults = createServerFn({ method: "GET" })
     return results.map((r) => ({
       position: Number(r.position),
       positionText: r.positionText,
+      driverId: r.Driver.driverId,
       name: `${r.Driver.givenName} ${r.Driver.familyName}`,
       teamName: r.Constructor.name,
       grid: Number(r.grid),

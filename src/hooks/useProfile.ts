@@ -13,11 +13,12 @@ export interface Profile {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  is_public: boolean;
 }
 
 export type SaveResult = { ok: true } | { ok: false; message: string };
 
-const EMPTY_PROFILE: Profile = { username: null, display_name: null, avatar_url: null };
+const EMPTY_PROFILE: Profile = { username: null, display_name: null, avatar_url: null, is_public: true };
 
 // Devuelve las iniciales para mostrar cuando no hay foto.
 export function getInitials(source?: string | null): string {
@@ -47,7 +48,7 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_url")
+      .select("username, display_name, avatar_url, is_public")
       .eq("id", userId)
       .maybeSingle();
 

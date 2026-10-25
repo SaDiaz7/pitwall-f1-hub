@@ -17,6 +17,9 @@ import { InstallPanel } from "@/components/InstallPanel";
 import { NewsEditor } from "@/components/NewsEditor";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
+import { PredictionsAdmin } from "@/components/PredictionsAdmin";
+import { PrivacyPanel } from "@/components/PrivacyPanel";
+
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
 type Status = { type: "ok" | "error"; text: string } | null;
@@ -280,18 +283,16 @@ export function SettingsPage() {
         <TabsList className="mb-2 max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="cuenta">Cuenta</TabsTrigger>
+          <TabsTrigger value="privacidad">Privacidad</TabsTrigger>
           <TabsTrigger value="app">App</TabsTrigger>
-          {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
-          <TabsTrigger value="privacidad" disabled>
-            Privacidad
-          </TabsTrigger>
           <TabsTrigger value="notificaciones" disabled>
             Notificaciones
           </TabsTrigger>
+          {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="predicciones">Predicciones</TabsTrigger>}
         </TabsList>
         <p className="mb-4 text-xs text-muted-foreground">
-          Privacidad y Notificaciones llegan más adelante: hoy la app no muestra perfiles de otras personas ni envía
-          avisos.
+          Las notificaciones llegan más adelante: hoy la app no envía avisos.
         </p>
 
         <TabsContent value="perfil">
@@ -300,12 +301,20 @@ export function SettingsPage() {
         <TabsContent value="cuenta">
           <AccountPanel />
         </TabsContent>
+        <TabsContent value="privacidad">
+          <PrivacyPanel />
+        </TabsContent>
         <TabsContent value="app">
           <InstallPanel />
         </TabsContent>
         {isAdmin && (
           <TabsContent value="novedades">
             <NewsEditor />
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="predicciones">
+            <PredictionsAdmin />
           </TabsContent>
         )}
       </Tabs>

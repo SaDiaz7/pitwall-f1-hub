@@ -24,6 +24,12 @@ function Page() {
         usamos cookies de publicidad ni de analítica.
       </p>
       <p>No vendemos tus datos. Podés pedir que eliminemos tu cuenta y tus datos cuando quieras.</p>
+      <p>
+        Si elegís un nombre de usuario, ese nombre, tu nombre visible, tu avatar y tus puntos de predicciones pueden
+        aparecer en el ranking y en las búsquedas de otros usuarios. Podés desactivarlo cuando quieras en Ajustes →
+        Privacidad. Tu email nunca se muestra a otras personas.
+      </p>
+      
       <Link to="/registro" className="font-semibold text-primary hover:underline">
         Volver al registro
       </Link>

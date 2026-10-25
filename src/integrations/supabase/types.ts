@@ -137,11 +137,50 @@ export type Database = {
         }
         Relationships: []
       }
+      predictions: {
+        Row: {
+          created_at: string
+          picks: string[]
+          points: number | null
+          round: number
+          season: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          picks: string[]
+          points?: number | null
+          round: number
+          season: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          picks?: string[]
+          points?: number | null
+          round?: number
+          season?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_season_round_fkey"
+            columns: ["season", "round"]
+            isOneToOne: false
+            referencedRelation: "race_events"
+            referencedColumns: ["season", "round"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           display_name: string | null
           id: string
+          is_public: boolean
           updated_at: string
           username: string | null
         }
@@ -149,6 +188,7 @@ export type Database = {
           avatar_url?: string | null
           display_name?: string | null
           id: string
+          is_public?: boolean
           updated_at?: string
           username?: string | null
         }
@@ -156,8 +196,39 @@ export type Database = {
           avatar_url?: string | null
           display_name?: string | null
           id?: string
+          is_public?: boolean
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      race_events: {
+        Row: {
+          name: string
+          qualifying_at: string | null
+          race_at: string
+          results: string[] | null
+          round: number
+          scored_at: string | null
+          season: number
+        }
+        Insert: {
+          name: string
+          qualifying_at?: string | null
+          race_at: string
+          results?: string[] | null
+          round: number
+          scored_at?: string | null
+          season: number
+        }
+        Update: {
+          name?: string
+          qualifying_at?: string | null
+          race_at?: string
+          results?: string[] | null
+          round?: number
+          scored_at?: string | null
+          season?: number
         }
         Relationships: []
       }
@@ -244,7 +315,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      all_distinct: { Args: { items: string[] }; Returns: boolean }
+      get_leaderboard: {
+        Args: { p_season: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          scored_races: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      score_race: {
+        Args: { p_results: string[]; p_round: number; p_season: number }
+        Returns: number
+      }
       username_available: { Args: { candidate: string }; Returns: boolean }
     }
     Enums: {
