@@ -12,7 +12,7 @@ function Page() {
     <main className="mx-auto max-w-2xl space-y-4 px-4 py-10">
       <h1 className="text-3xl font-bold uppercase italic">Política de privacidad</h1>
       <p className="text-sm text-muted-foreground">
-        Borrador. Última actualización: octubre de 2026.
+        Última actualización: Noviembre de 2026.
       </p>
       <p>
         Al registrarte guardamos tu email y tu contraseña (esta última, de forma protegida por el
@@ -33,6 +33,12 @@ function Page() {
         Si agregás amigos, ellos pueden ver tus predicciones de las carreras cuyas predicciones ya cerraron. Para
         encontrarte, otra persona tiene que buscar tu nombre de usuario o tu nombre visible, y solo aparecés si tenés
         la visibilidad activada. Podés quitar a un amigo en cualquier momento.
+      </p>
+      <p>
+        Si activás las notificaciones, guardamos los datos técnicos que tu navegador nos entrega para poder enviarte
+        avisos (no incluyen tu ubicación). Podés desactivarlas en Ajustes → Notificaciones, y también podés elegir qué
+        avisos recibir. Si mostrás tus favoritos en el perfil, otras personas que puedan verlo los ven; podés
+        ocultarlos en Ajustes → Privacidad.
       </p>
       
       <Link to="/registro" className="font-semibold text-primary hover:underline">

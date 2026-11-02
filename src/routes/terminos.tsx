@@ -12,7 +12,7 @@ function Page() {
     <main className="mx-auto max-w-2xl space-y-4 px-4 py-10">
       <h1 className="text-3xl font-bold uppercase italic">Términos de uso</h1>
       <p className="text-sm text-muted-foreground">
-        Borrador. Última actualización: octubre de 2026.
+        Última actualización: noviembre de 2026.
       </p>
       <p>
         PitWall es un proyecto personal y sin fines comerciales hecho por y para fans de la Fórmula

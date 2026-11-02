@@ -9,5 +9,5 @@ export default async () => {
   }
 };
 
-// Cada 5 minutos (horario UTC).
-export const config = { schedule: "*/5 * * * *" };
+// Cada 1 minuto (horario UTC).
+export const config = { schedule: "*/1 * * * *" };
