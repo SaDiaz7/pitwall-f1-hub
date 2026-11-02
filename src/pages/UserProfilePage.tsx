@@ -9,6 +9,7 @@ import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { breakdown } from "@/lib/predictions";
 import { cn } from "@/lib/utils";
+import { ProfileFavorites } from "@/components/ProfileFavorites";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -34,7 +35,7 @@ type Message = { type: "ok" | "error"; text: string } | null;
 
 export function UserProfilePage() {
   const { id } = route.useParams();
-  const { drivers } = route.useLoaderData();
+  const { drivers, teams } = route.useLoaderData();
   const season = new Date().getFullYear();
 
   const { session } = useSession();
@@ -192,6 +193,8 @@ export function UserProfilePage() {
           temporada {season}
         </p>
       </section>
+
+      <ProfileFavorites userId={profile.user_id} drivers={drivers} teams={teams} />
 
       {profile.relation === "friends" && (
         <section className="space-y-3">
