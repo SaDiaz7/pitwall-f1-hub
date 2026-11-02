@@ -20,6 +20,8 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PredictionsAdmin } from "@/components/PredictionsAdmin";
 import { PrivacyPanel } from "@/components/PrivacyPanel";
 
+import { NotificationsPanel } from "@/components/NotificationsPanel";
+
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
 type Status = { type: "ok" | "error"; text: string } | null;
@@ -280,20 +282,15 @@ export function SettingsPage() {
     <>
       <PageHeader title="Ajustes" subtitle="Configurá tu cuenta." />
       <Tabs defaultValue="perfil">
-        <TabsList className="mb-2 max-w-full justify-start overflow-x-auto">
+        <TabsList className="mb-4 max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="cuenta">Cuenta</TabsTrigger>
           <TabsTrigger value="privacidad">Privacidad</TabsTrigger>
+          <TabsTrigger value="notificaciones">Notificaciones</TabsTrigger>
           <TabsTrigger value="app">App</TabsTrigger>
-          <TabsTrigger value="notificaciones" disabled>
-            Notificaciones
-          </TabsTrigger>
           {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
           {isAdmin && <TabsTrigger value="predicciones">Predicciones</TabsTrigger>}
         </TabsList>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Las notificaciones llegan más adelante: hoy la app no envía avisos.
-        </p>
 
         <TabsContent value="perfil">
           <ProfilePanel />
@@ -303,6 +300,9 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="privacidad">
           <PrivacyPanel />
+        </TabsContent>
+        <TabsContent value="notificaciones">
+          <NotificationsPanel />
         </TabsContent>
         <TabsContent value="app">
           <InstallPanel />
