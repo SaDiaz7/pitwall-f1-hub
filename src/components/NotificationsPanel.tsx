@@ -64,7 +64,7 @@ export function NotificationsPanel() {
     }
     setMessage({
       type: "ok",
-      text: "Listo: la notificación de prueba llega en unos minutos (los avisos se envían cada 5 minutos).",
+      text: "Listo: la notificación de prueba llega en unos segundos (los avisos se envían cada 1 minuto).",
     });
   };
 
