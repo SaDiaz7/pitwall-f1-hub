@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.18"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -165,6 +140,56 @@ export type Database = {
           requester_id?: string
           responded_at?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      league_members: {
+        Row: {
+          joined_at: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leagues: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name?: string
+          owner_id?: string
         }
         Relationships: []
       }
@@ -352,6 +377,7 @@ export type Database = {
       }
       race_events: {
         Row: {
+          driver_results_queued_at: string | null
           name: string
           qualifying_at: string | null
           race_at: string
@@ -361,6 +387,7 @@ export type Database = {
           season: number
         }
         Insert: {
+          driver_results_queued_at?: string | null
           name: string
           qualifying_at?: string | null
           race_at: string
@@ -370,6 +397,7 @@ export type Database = {
           season: number
         }
         Update: {
+          driver_results_queued_at?: string | null
           name?: string
           qualifying_at?: string | null
           race_at?: string
@@ -406,6 +434,47 @@ export type Database = {
           version?: number
         }
         Relationships: []
+      }
+      trophies: {
+        Row: {
+          awarded_at: string
+          id: string
+          league_id: string | null
+          league_name: string
+          member_count: number
+          season: number
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          id?: string
+          league_id?: string | null
+          league_name: string
+          member_count: number
+          season: number
+          total_points: number
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          id?: string
+          league_id?: string | null
+          league_name?: string
+          member_count?: number
+          season?: number
+          total_points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trophies_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallpaper_likes: {
         Row: {
@@ -493,6 +562,8 @@ export type Database = {
     }
     Functions: {
       all_distinct: { Args: { items: string[] }; Returns: boolean }
+      award_trophies: { Args: { p_season: number }; Returns: number }
+      create_league: { Args: { p_name: string }; Returns: string }
       get_friend_predictions: {
         Args: { p_season: number; p_user_id: string }
         Returns: {
@@ -535,11 +606,64 @@ export type Database = {
           username: string
         }[]
       }
+      get_league_info: {
+        Args: { p_league_id: string }
+        Returns: {
+          active: boolean
+          invite_code: string
+          is_owner: boolean
+          league_id: string
+          member_count: number
+          min_members: number
+          name: string
+        }[]
+      }
+      get_league_invite: {
+        Args: { p_code: string }
+        Returns: {
+          league_name: string
+          member_count: number
+          owner_name: string
+        }[]
+      }
+      get_league_leaderboard: {
+        Args: { p_league_id: string; p_season: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          scored_races: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_my_leagues: {
+        Args: never
+        Returns: {
+          active: boolean
+          invite_code: string
+          is_owner: boolean
+          league_id: string
+          member_count: number
+          name: string
+        }[]
+      }
       get_profile_favorites: {
         Args: { p_user_id: string }
         Returns: {
           item_id: string
           kind: string
+        }[]
+      }
+      get_profile_trophies: {
+        Args: { p_user_id: string }
+        Returns: {
+          awarded_at: string
+          league_name: string
+          member_count: number
+          season: number
+          total_points: number
+          trophy_id: string
         }[]
       }
       get_public_profile: {
@@ -555,6 +679,16 @@ export type Database = {
         }[]
       }
       is_admin: { Args: never; Returns: boolean }
+      join_league: {
+        Args: { p_code: string }
+        Returns: {
+          join_status: string
+          joined_league_id: string
+        }[]
+      }
+      league_min_members: { Args: never; Returns: number }
+      leave_league: { Args: { p_league_id: string }; Returns: boolean }
+      queue_prediction_reminders: { Args: never; Returns: number }
       remove_friend: { Args: { p_user_id: string }; Returns: boolean }
       respond_friend_request: {
         Args: { p_accept: boolean; p_requester_id: string }
@@ -570,6 +704,10 @@ export type Database = {
         Returns: undefined
       }
       score_race: {
+        Args: { p_results: string[]; p_round: number; p_season: number }
+        Returns: number
+      }
+      score_race_system: {
         Args: { p_results: string[]; p_round: number; p_season: number }
         Returns: number
       }
@@ -714,9 +852,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { Driver, GrandPrix, GrandPrixSession, Team } from "@/lib/types";
+import { translateRaceName } from "@/lib/race-names";
 
 const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
@@ -67,33 +68,9 @@ interface ScheduleResponse {
 
 // ---------- Traducciones (si falta alguna, se muestra el texto original) ----------
 
-const RACE_NAMES_ES: Record<string, string> = {
-  "Australian Grand Prix": "GP de Australia",
-  "Chinese Grand Prix": "GP de China",
-  "Japanese Grand Prix": "GP de Japón",
-  "Bahrain Grand Prix": "GP de Baréin",
-  "Saudi Arabian Grand Prix": "GP de Arabia Saudita",
-  "Miami Grand Prix": "GP de Miami",
-  "Canadian Grand Prix": "GP de Canadá",
-  "Monaco Grand Prix": "GP de Mónaco",
-  "Spanish Grand Prix": "GP de España",
-  "Austrian Grand Prix": "GP de Austria",
-  "British Grand Prix": "GP de Gran Bretaña",
-  "Belgian Grand Prix": "GP de Bélgica",
-  "Hungarian Grand Prix": "GP de Hungría",
-  "Dutch Grand Prix": "GP de Países Bajos",
-  "Italian Grand Prix": "GP de Italia",
-  "Azerbaijan Grand Prix": "GP de Azerbaiyán",
-  "Singapore Grand Prix": "GP de Singapur",
-  "United States Grand Prix": "GP de Estados Unidos",
-  "Mexico City Grand Prix": "GP de México",
-  "Brazilian Grand Prix": "GP de Brasil",
-  "Las Vegas Grand Prix": "GP de Las Vegas",
-  "Qatar Grand Prix": "GP de Catar",
-  "Abu Dhabi Grand Prix": "GP de Abu Dabi",
-  "Bahrain Grand Prix in Malaysia": "GP de Baréin en Malasia",
-  "Barcelona Grand Prix": "GP de Barcelona",
-};
+//const RACE_NAMES_ES: Record<string, string> = {
+  
+//};
 
 const COUNTRIES_ES: Record<string, string> = {
   Australia: "Australia",
@@ -120,11 +97,11 @@ const COUNTRIES_ES: Record<string, string> = {
   Malaysia: "Malasia",
 };
 
-const translateRaceName = (name: string) => {
-  const translated = RACE_NAMES_ES[name];
-  if (!translated) console.warn(`[f1] Falta traducir el GP: "${name}"`);
-  return translated ?? name;
-};
+//const translateRaceName = (name: string) => {
+//  const translated = RACE_NAMES_ES[name];
+//  if (!translated) console.warn(`[f1] Falta traducir el GP: "${name}"`);
+//  return translated ?? name;
+//};
 const translateCountry = (country: string) => COUNTRIES_ES[country] ?? country;
 
 // ---------- Descarga con caché en memoria ----------

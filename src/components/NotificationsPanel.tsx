@@ -20,13 +20,11 @@ const OPTIONS: Option[] = [
     key: "driver_result",
     title: "Resultado de tu piloto favorito",
     text: "En qué posición terminó tu piloto favorito.",
-    soon: true,
   },
   {
     key: "prediction_reminder",
     title: "Recordatorio de predicciones",
     text: "Un aviso antes de que cierren las predicciones.",
-    soon: true,
   },
 ];
 

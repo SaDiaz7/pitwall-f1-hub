@@ -1,5 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
+import { adminClient, requireEnv } from "./admin";
 
 interface OutboxRow {
   id: number;
@@ -41,14 +41,16 @@ const KEEP_DAYS = 30;
 const ALLOWED_ENDPOINT =
   /^https:\/\/(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com|[a-z0-9.-]+\.notify\.windows\.com)\//;
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Falta la variable de entorno ${name}`);
-  return value;
-}
-
 function text(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function describeResult(positionText: string, position: number): string {
+  if (/^\d+$/.test(positionText)) return `terminó ${positionText}.º`;
+  if (positionText === "R") return "abandonó";
+  if (positionText === "D") return "fue descalificado";
+  if (positionText === "W") return "no largó";
+  return Number.isFinite(position) && position > 0 ? `terminó ${position}.º` : "no fue clasificado";
 }
 
 function buildMessage(type: string, rows: OutboxRow[]): Message | null {
@@ -85,6 +87,36 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
       };
     }
 
+    case "driver_result": {
+      const race = text(payload["race"], "la carrera");
+      const lines = rows.map((row) => {
+        const data = row.payload ?? {};
+        return `${text(data["driver_name"], "Tu piloto")} ${describeResult(text(data["position_text"], ""), Number(data["position"]))}`;
+      });
+      const round = Number(payload["round"]);
+
+      return {
+        title: rows.length === 1 ? "Resultado de tu piloto favorito" : "Resultados de tus pilotos favoritos",
+        body: rows.length === 1 ? `${lines[0]} en ${race}.` : `${race}: ${lines.join("; ")}.`,
+        url: Number.isInteger(round) && round > 0 ? `/gp/${round}` : "/calendario",
+        tag: `driver-${String(payload["season"])}-${String(payload["round"])}`,
+      };
+    }
+
+    case "prediction_reminder": {
+      const closesAt = new Date(text(payload["closes_at"], "")).getTime();
+      const minutes = Math.round((closesAt - Date.now()) / 60000);
+      if (!Number.isFinite(minutes) || minutes <= 0) return null; // ya cerraron
+
+      const when = minutes >= 60 ? "en 1 hora" : `en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
+      return {
+        title: "Cierran las predicciones",
+        body: `Las predicciones de ${text(payload["race"], "la carrera")} cierran ${when}. ¡Hacé la tuya!`,
+        url: "/predicciones",
+        tag: `reminder-${String(payload["season"])}-${String(payload["round"])}`,
+      };
+    }
+
     case "test":
       return {
         title: "Notificación de prueba",
@@ -99,9 +131,7 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
 }
 
 export async function deliverPending(): Promise<DeliveryResult> {
-  const supabase = createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SECRET_KEY"), {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supabase = adminClient();
 
   webpush.setVapidDetails(requireEnv("VAPID_SUBJECT"), requireEnv("VAPID_PUBLIC_KEY"), requireEnv("VAPID_PRIVATE_KEY"));
 
@@ -141,13 +171,17 @@ export async function deliverPending(): Promise<DeliveryResult> {
     subscriptions.set(sub.user_id, [...(subscriptions.get(sub.user_id) ?? []), sub]);
   }
 
-  // Los fondos nuevos del mismo piloto se juntan en un solo aviso; el resto va de a uno.
+  // Se juntan en un solo aviso: los fondos nuevos del mismo piloto y los resultados de una misma carrera.
+  // El resto va de a uno.
   const groups = new Map<string, OutboxRow[]>();
   for (const row of rows) {
-    const key =
-      row.type === "new_wallpaper"
-        ? `${row.user_id}|${row.type}|${String(row.payload?.["driver_id"] ?? "")}`
-        : `row|${row.id}`;
+    const data = row.payload ?? {};
+    let key = `row|${row.id}`;
+    if (row.type === "new_wallpaper") {
+      key = `${row.user_id}|${row.type}|${String(data["driver_id"] ?? "")}`;
+    } else if (row.type === "driver_result") {
+      key = `${row.user_id}|${row.type}|${String(data["season"] ?? "")}|${String(data["round"] ?? "")}`;
+    }
     groups.set(key, [...(groups.get(key) ?? []), row]);
   }
 

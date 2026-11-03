@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { deliverPending } from "../shared/deliver";
+import { runAll } from "../shared/run";
 
 function safeEqual(a: string, b: string): boolean {
   const first = Buffer.from(a);
@@ -15,11 +15,14 @@ export default async (req: Request) => {
     return new Response("No autorizado", { status: 401 });
   }
 
+  // Con ?sync=1 se fuerza la sincronización del calendario.
+  const forceSync = new URL(req.url).searchParams.get("sync") === "1";
+
   try {
-    const result = await deliverPending();
+    const result = await runAll({ forceSync });
     return Response.json(result);
   } catch (error) {
-    console.error("Error al enviar notificaciones:", error);
-    return new Response("Error al enviar notificaciones", { status: 500 });
+    console.error("Error en la tanda de notificaciones:", error);
+    return new Response("Error en la tanda de notificaciones", { status: 500 });
   }
 };
