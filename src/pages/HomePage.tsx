@@ -18,6 +18,8 @@ import { DriverAvatar } from "@/components/DriverAvatar";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { getTeamColor } from "@/lib/team-colors";
 import { TeamStripe } from "@/components/TeamStripe";
+import { ChampionBanner } from "@/components/ChampionBanner";
+import { HeroCarousel } from "@/components/HeroCarousel";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -231,42 +233,69 @@ export function HomePage() {
     <>
       <PageHeader title="Inicio" subtitle="Tu resumen de la temporada." />
 
-      {next && (
-        <section className="relative overflow-hidden rounded-2xl border bg-hero p-6 shadow-glow md:p-8">
-          <div className="grid items-center gap-6 md:grid-cols-[1fr_16rem]">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary">
-                Próxima carrera · Ronda {next.round}
-              </p>
-              <Link to="/gp/$round" params={{ round: String(next.round) }} className="hover:text-primary">
-                <h2 className="mt-2 text-4xl font-bold uppercase italic md:text-6xl">{next.name}</h2>
-              </Link>
-              <p className="mt-3 flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" /> {next.circuit}, {next.country}
-              </p>
-              <p className="mt-1 font-display text-2xl font-semibold capitalize">
-                {formatDate(next.date, { weekday: "long", day: "numeric", month: "long" })}
-              </p>
-              {raceStart && (
-                <div className="mt-4">
-                  <Countdown target={raceStart} />
-                </div>
-              )}
-              <Link
-                to="/gp/$round"
-                params={{ round: String(next.round) }}
-                className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
-              >
-                Ver detalle →
-              </Link>
-            </div>
-            <div className="h-36 text-primary md:h-44">
-              <CircuitMap lat={next.lat} lng={next.lng} label={next.circuit} />
-            </div>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 racing-stripe opacity-60" />
-        </section>
-      )}
+      <HeroCarousel
+        slides={[
+          {
+            key: "champion",
+            glow: "shadow-[0_0_50px_-10px_rgba(251,191,36,0.55)]",
+            content: <ChampionBanner />,
+          },
+          ...(next
+            ? [
+                {
+                  key: "next",
+                  glow: "shadow-glow",
+                  content: (
+                    <section className="relative h-full overflow-hidden rounded-2xl border bg-hero p-6 md:p-8">
+                      <div className="grid items-center gap-6 md:grid-cols-[1fr_16rem]">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                            Próxima carrera · Ronda {next.round}
+                          </p>
+                          <Link
+                            to="/gp/$round"
+                            params={{ round: String(next.round) }}
+                            className="hover:text-primary"
+                          >
+                            <h2 className="mt-2 text-4xl font-bold uppercase italic md:text-6xl">
+                              {next.name}
+                            </h2>
+                          </Link>
+                          <p className="mt-3 flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4" /> {next.circuit}, {next.country}
+                          </p>
+                          <p className="mt-1 font-display text-2xl font-semibold capitalize">
+                            {formatDate(next.date, {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                            })}
+                          </p>
+                          {raceStart && (
+                            <div className="mt-4">
+                              <Countdown target={raceStart} />
+                            </div>
+                          )}
+                          <Link
+                            to="/gp/$round"
+                            params={{ round: String(next.round) }}
+                            className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
+                          >
+                            Ver detalle →
+                          </Link>
+                        </div>
+                        <div className="h-36 text-primary md:h-44">
+                          <CircuitMap lat={next.lat} lng={next.lng} label={next.circuit} />
+                        </div>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 h-1.5 racing-stripe opacity-60" />
+                    </section>
+                  ),
+                },
+              ]
+            : []),
+        ]}
+      />
 
       <MyDrivers drivers={drivers} />
 

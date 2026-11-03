@@ -124,3 +124,97 @@
 @utility racing-stripe {
   background-image: repeating-linear-gradient(-45deg, var(--primary) 0 6px, transparent 6px 12px);
 }
+
+
+@keyframes like-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  55% { transform: scale(0.9); }
+  80% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes like-burst {
+  0% { transform: scale(0.4); opacity: 0.7; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+.animate-like-pop {
+  animation: like-pop 0.45s ease-out;
+}
+
+.animate-like-burst {
+  animation: like-burst 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-like-pop,
+  .animate-like-burst {
+    animation: none;
+  }
+}
+
+/* ---- Banner del campeón ---- */
+.gold-text {
+  background-image: linear-gradient(
+    100deg,
+    #b45309 0%,
+    #fbbf24 25%,
+    #fef3c7 50%,
+    #fbbf24 75%,
+    #b45309 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gold-shimmer 6s linear infinite;
+}
+
+@keyframes gold-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Degradado oscuro sobre la foto: de abajo hacia arriba en celular, de izquierda a derecha en pantallas grandes */
+.champion-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .champion-overlay {
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.92) 0%,
+      rgba(0, 0, 0, 0.65) 38%,
+      rgba(0, 0, 0, 0.1) 62%,
+      transparent 100%
+    );
+  }
+}
+
+/* ---- Animación de las estrellas de favoritos ---- */
+@keyframes star-pop {
+  0% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.45) rotate(25deg); }
+  65% { transform: scale(0.9) rotate(-12deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-star-pop {
+  animation: star-pop 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gold-text,
+  .animate-star-pop {
+    animation: none;
+  }
+}

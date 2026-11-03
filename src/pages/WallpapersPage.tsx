@@ -8,6 +8,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
 import { TeamStripe } from "@/components/TeamStripe";
+import { LikeButton } from "@/components/LikeButton";
 
 interface Filters {
   year: string;
@@ -18,6 +19,8 @@ interface Filters {
 
 const EMPTY_FILTERS: Filters = { year: "", team: "", driver: "", quality: "" };
 const SELECT_CLASS = "h-10 w-full rounded-md border bg-card px-3 text-sm";
+type SortOrder = "recent" | "most" | "least";
+
 
 function uniqueOptions(items: { id: string | null; name: string | null }[]) {
   const map = new Map<string, string>();
@@ -53,10 +56,11 @@ function FilterSelect({
 
 export function WallpapersPage() {
   const isAdmin = useIsAdmin();
-  const { wallpapers, loading, error, reload } = useWallpapers();
+  const { wallpapers, likedIds, loading, error, reload, toggleLike } = useWallpapers();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [showUpload, setShowUpload] = useState(false);
   const [selected, setSelected] = useState<Wallpaper | null>(null);
+  const [sort, setSort] = useState<SortOrder>("recent");
 
   // Las opciones de los filtros salen de los fondos que ya existen.
   const options = useMemo(
@@ -68,17 +72,19 @@ export function WallpapersPage() {
     [wallpapers],
   );
 
-  const filtered = useMemo(
-    () =>
-      wallpapers.filter(
-        (w) =>
-          (!filters.year || String(w.year) === filters.year) &&
-          (!filters.team || w.team_id === filters.team) &&
-          (!filters.driver || w.driver_id === filters.driver) &&
-          (!filters.quality || w.quality === filters.quality),
-      ),
-    [wallpapers, filters],
-  );
+  const filtered = useMemo(() => {
+    const result = wallpapers.filter(
+      (w) =>
+        (!filters.year || String(w.year) === filters.year) &&
+        (!filters.team || w.team_id === filters.team) &&
+        (!filters.driver || w.driver_id === filters.driver) &&
+        (!filters.quality || w.quality === filters.quality),
+    );
+
+    if (sort === "most") result.sort((a, b) => b.likes_count - a.likes_count);
+    if (sort === "least") result.sort((a, b) => a.likes_count - b.likes_count);
+    return result;
+  }, [wallpapers, filters, sort]);
 
   const hasFilters = Object.values(filters).some(Boolean);
   const setFilter = (key: keyof Filters) => (value: string) =>
@@ -102,7 +108,7 @@ export function WallpapersPage() {
 
       {isAdmin && showUpload && <WallpaperUploadForm onUploaded={reload} />}
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <FilterSelect label="Año" value={filters.year} onChange={setFilter("year")}>
           <option value="">Todos</option>
           {options.years.map((y) => (
@@ -132,6 +138,11 @@ export function WallpapersPage() {
           <option value="4k">4K</option>
           <option value="hd">HD</option>
           <option value="sd">Baja</option>
+        </FilterSelect>
+        <FilterSelect label="Ordenar por" value={sort} onChange={(v) => setSort(v as SortOrder)}>
+          <option value="recent">Más recientes</option>
+          <option value="most">Más likes</option>
+          <option value="least">Menos likes</option>
         </FilterSelect>
       </div>
 
@@ -175,34 +186,44 @@ export function WallpapersPage() {
             )}
           </p>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((w) => (
-              <li key={w.id}>
-                <button
-                  type="button"
-                  onClick={() => setSelected(w)}
-                  className="group relative block w-full overflow-hidden rounded-2xl border bg-card text-left"
-                >
-                  <img
-                    src={getWallpaperUrls(w.id).thumb}
-                    alt={w.driver_name ?? w.team_name ?? "Fondo"}
-                    loading="lazy"
-                    className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
+            {filtered.map((w) => {
+              const name = w.driver_name ?? w.team_name ?? "Fondo";
+              return (
+                <li key={w.id} className="relative overflow-hidden rounded-2xl border bg-card">
+                  <button
+                    type="button"
+                    onClick={() => setSelected(w)}
+                    className="group relative block w-full text-left"
+                  >
+                    <img
+                      src={getWallpaperUrls(w.id).thumb}
+                      alt={name}
+                      loading="lazy"
+                      className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <span className="absolute left-2 top-2 rounded-md bg-background/80 px-2 py-0.5 text-xs font-bold backdrop-blur">
+                      {qualityLabel(w.quality)}
+                    </span>
+                    <div className="flex items-center gap-2 p-3">
+                      <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  <LikeButton
+                    active={likedIds.has(w.id)}
+                    count={w.likes_count}
+                    onToggle={() => toggleLike(w.id)}
+                    label={name}
+                    className="absolute right-2 top-2 bg-background/80 backdrop-blur"
                   />
-                  <span className="absolute left-2 top-2 rounded-md bg-background/80 px-2 py-0.5 text-xs font-bold backdrop-blur">
-                    {qualityLabel(w.quality)}
-                  </span>
-                <div className="flex items-center gap-2 p-3">
-                  <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{w.driver_name ?? w.team_name ?? "Fondo"}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
-                    </p>
-                  </div>
-                </div>
-                </button>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </>
       )}
