@@ -48,7 +48,7 @@ export function ProfileFavorites({
 
   if (items === null || items.length === 0) return null;
 
-  const driverNames = new Map(drivers.map((d) => [d.id, d.name]));
+  const driversById = new Map(drivers.map((d) => [d.id, d]));
   const teamNames = new Map(teams.map((t) => [t.id, t.name]));
 
   const favoriteDrivers = items.filter((item) => item.kind === "driver");
@@ -60,17 +60,28 @@ export function ProfileFavorites({
         <div className="space-y-2">
           <h2 className="text-xl font-bold uppercase">Pilotos favoritos</h2>
           <ul className="flex flex-wrap gap-2">
-            {favoriteDrivers.map((item) => (
-              <li key={item.item_id}>
-                <Link
-                  to="/piloto/$id"
-                  params={{ id: item.item_id }}
-                  className="inline-block rounded-full border bg-secondary px-3 py-1 text-sm font-semibold hover:border-primary/50"
-                >
-                  {driverNames.get(item.item_id) ?? prettify(item.item_id)}
-                </Link>
-              </li>
-            ))}
+            {favoriteDrivers.map((item) => {
+              const driver = driversById.get(item.item_id);
+              const name = driver?.name ?? prettify(item.item_id);
+              // Si el piloto ya no corre esta temporada, no sabemos su equipo y queda sin color.
+              const color = driver ? getTeamColor(driver.teamId, driver.teamName) : undefined;
+
+              return (
+                <li key={item.item_id}>
+                  <Link
+                    to="/piloto/$id"
+                    params={{ id: item.item_id }}
+                    style={color ? { borderColor: color } : undefined}
+                    className="flex items-center gap-2 rounded-full border bg-secondary px-3 py-1 text-sm font-semibold hover:border-primary/50 hover:brightness-125"
+                  >
+                    {driver && (
+                      <TeamStripe teamId={driver.teamId} teamName={driver.teamName} className="h-4" />
+                    )}
+                    {name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

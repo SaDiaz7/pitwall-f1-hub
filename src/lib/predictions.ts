@@ -14,7 +14,7 @@ export function seasonOf(gp: GrandPrix): number {
 // Las predicciones cierran cuando empieza la clasificación (la primera, si hay sprint).
 export function predictionDeadline(gp: GrandPrix): string | null {
   const starts = gp.sessions
-    .filter((session) => session.name.startsWith("Clasificación"))
+    .filter((session) => session.name === "Clasificación")
     .map((session) => session.start)
     .sort();
   return starts[0] ?? null;

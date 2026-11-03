@@ -388,15 +388,15 @@ export const getPodiums = createServerFn({ method: "GET" }).handler(async (): Pr
 
 export interface RaceResult {
   position: number;
-  Driver: { driverId: string; givenName: string; familyName: string };
   positionText: string;
+  driverId: string;
   name: string;
   teamName: string;
   grid: number;
   time: string;
   status: string;
   points: number;
-  fastestLapTime: string | null;
+  fastestLapTime: string | null; // solo el piloto que hizo la vuelta rápida
 }
 
 interface RaceResultsResponse {
@@ -410,7 +410,7 @@ interface RaceResultsResponse {
           grid: string;
           status: string;
           Time?: { time: string };
-          FastestLap?: { rank: string; Time?: { time: string } };
+          FastestLap?: { rank: string; Time: { time: string } };
           Driver: { driverId: string; givenName: string; familyName: string };
           Constructor: { name: string };
         }[];
@@ -442,7 +442,7 @@ export const getRaceResults = createServerFn({ method: "GET" })
       time: r.Time?.time ?? "",
       status: r.status,
       points: Number(r.points),
-      fastestLapTime: r.FastestLap?.Time?.time ?? null,
+      fastestLapTime: r.FastestLap?.rank === "1" ? r.FastestLap.Time.time : null,
     }));
   });
 

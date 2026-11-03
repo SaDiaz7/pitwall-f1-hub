@@ -21,6 +21,12 @@ import { TeamStripe } from "@/components/TeamStripe";
 import { ChampionBanner } from "@/components/ChampionBanner";
 import { HeroCarousel } from "@/components/HeroCarousel";
 
+import { PredictionCard } from "@/components/PredictionCard";
+import { PredictionStats } from "@/components/PredictionStats";
+import { usePredictions } from "@/hooks/usePredictions";
+import { seasonOf } from "@/lib/predictions";
+import { RankingPreview } from "@/components/RankingPreview";
+
 const route = getRouteApi("/_privado/inicio");
 
 const MAX_WALLPAPERS = 6;
@@ -83,7 +89,45 @@ function LastRace({ gp, results }: { gp: GrandPrix; results: RaceResult[] }) {
   );
 }
 
-function MyDrivers({ drivers }: { drivers: Driver[] }) {
+// Resultados de pilotos Fav
+
+const NOT_FINISHED: Record<string, string> = {
+  R: "Abandonó",
+  D: "Descalificado",
+  W: "Se retiró",
+  E: "Excluido",
+  F: "No clasificó",
+  N: "No clasificado",
+};
+
+function LastRaceResult({ result }: { result: RaceResult | undefined }) {
+  if (!result) return null;
+
+  const finished = /^\d+$/.test(result.positionText);
+  const fromPits = result.grid === 0;
+  const change = finished && !fromPits ? result.grid - result.position : 0;
+
+  return (
+    <div className="mt-3 border-t pt-2 text-xs">
+      <p className="text-muted-foreground">Última carrera</p>
+      <p className="mt-0.5 flex items-center gap-1.5 font-semibold">
+        <span>
+          {fromPits ? "Boxes" : `P${result.grid}`} →{" "}
+          {finished ? (
+            `P${result.position}`
+          ) : (
+            <span className="text-red-400">{NOT_FINISHED[result.positionText] ?? "No terminó"}</span>
+          )}
+        </span>
+        {change > 0 && <span className="text-emerald-400">▲{change}</span>}
+        {change < 0 && <span className="text-red-400">▼{Math.abs(change)}</span>}
+        <span className="ml-auto font-normal text-muted-foreground">+{result.points} pts</span>
+      </p>
+    </div>
+  );
+}
+
+function MyDrivers({ drivers, results }: { drivers: Driver[]; results: RaceResult[] }) {
   const { favorites, loading } = useFavorites();
   const leaderPoints = drivers[0]?.points ?? 0;
 
@@ -129,6 +173,7 @@ function MyDrivers({ drivers }: { drivers: Driver[] }) {
               <p className="text-xs text-muted-foreground">
                 {position === 1 ? "Líder del campeonato" : `A ${leaderPoints - driver.points} pts del líder`}
               </p>
+              <LastRaceResult result={results.find((r) => r.driverId === driver.id)} />
             </Link>
           </li>
         ))}
@@ -228,6 +273,9 @@ export function HomePage() {
   const next = grandsPrix.find((gp) => gp.status === "proximo");
   const last = [...grandsPrix].reverse().find((gp) => gp.status === "finalizado");
   const raceStart = next?.sessions.find((s) => s.name === "Carrera")?.start;
+  const season = next ? seasonOf(next) : new Date().getFullYear();
+  const { events, predictions, loading: predictionsLoading } = usePredictions(season);
+  const nextEvent = next ? events[next.round] : undefined;
 
   return (
     <>
@@ -294,31 +342,55 @@ export function HomePage() {
                 },
               ]
             : []),
+          ...(next && nextEvent && !predictionsLoading
+            ? [
+                {
+                  key: "predictions",
+                  glow: "shadow-glow",
+                  content: (
+                    <PredictionCard
+                      gp={next}
+                      event={nextEvent}
+                      prediction={predictions[next.round]}
+                      drivers={drivers}
+                    />
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
 
-      <MyDrivers drivers={drivers} />
+      <MyDrivers drivers={drivers} results={lastResults} />
 
+      
       {last && <LastRace gp={last} results={lastResults} />}
 
-      <FavoriteWallpapers />
+      {!predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
 
-      <h2 className="mb-3 mt-10 text-2xl font-bold uppercase">Accesos rápidos</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {navItems.slice(1).map(({ to, label, icon: Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <Icon className="h-5 w-5" />
-            </span>
-            <span className="flex-1 font-semibold">{label}</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
-        ))}
-      </div>
+      <RankingPreview season={season} />
+
+      <FavoriteWallpapers />
+      
+
+      <section className="lg:hidden">
+        <h2 className="mb-3 mt-10 text-2xl font-bold uppercase">Accesos rápidos</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {navItems.slice(1).map(({ to, label, icon: Icon }) => (
+            <Link
+              key={to}
+              to={to}
+              className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Icon className="h-5 w-5" />
+              </span>
+              <span className="flex-1 font-semibold">{label}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

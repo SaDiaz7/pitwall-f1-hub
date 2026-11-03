@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { useWallpapers } from "@/hooks/useWallpapers";
 import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
 import { TeamStripe } from "@/components/TeamStripe";
 import { LikeButton } from "@/components/LikeButton";
+import { Pagination } from "@/components/Pagination";
+
 
 interface Filters {
   year: string;
@@ -20,6 +22,7 @@ interface Filters {
 const EMPTY_FILTERS: Filters = { year: "", team: "", driver: "", quality: "" };
 const SELECT_CLASS = "h-10 w-full rounded-md border bg-card px-3 text-sm";
 type SortOrder = "recent" | "most" | "least";
+const PAGE_SIZE = 20; // fondos por página
 
 
 function uniqueOptions(items: { id: string | null; name: string | null }[]) {
@@ -61,6 +64,8 @@ export function WallpapersPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [selected, setSelected] = useState<Wallpaper | null>(null);
   const [sort, setSort] = useState<SortOrder>("recent");
+  const [page, setPage] = useState(1);
+  const gridTopRef = useRef<HTMLParagraphElement>(null);
 
   // Las opciones de los filtros salen de los fondos que ya existen.
   const options = useMemo(
@@ -85,6 +90,20 @@ export function WallpapersPage() {
     if (sort === "least") result.sort((a, b) => a.likes_count - b.likes_count);
     return result;
   }, [wallpapers, filters, sort]);
+
+  // Vuelve a la página 1 cuando cambian los filtros o el orden.
+  useEffect(() => {
+    setPage(1);
+  }, [filters, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    gridTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const hasFilters = Object.values(filters).some(Boolean);
   const setFilter = (key: keyof Filters) => (value: string) =>
@@ -186,7 +205,7 @@ export function WallpapersPage() {
             )}
           </p>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((w) => {
+            {visible.map((w) => {
               const name = w.driver_name ?? w.team_name ?? "Fondo";
               return (
                 <li key={w.id} className="relative overflow-hidden rounded-2xl border bg-card">
@@ -208,7 +227,7 @@ export function WallpapersPage() {
                       <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p ref={gridTopRef} className="mb-3 scroll-mt-4 text-sm text-muted-foreground">
                           {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
                         </p>
                       </div>
@@ -225,6 +244,7 @@ export function WallpapersPage() {
               );
             })}
           </ul>
+          <Pagination page={currentPage} totalPages={totalPages} onChange={goToPage} />
         </>
       )}
 
