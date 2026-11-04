@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { getInitials, useProfile } from "@/hooks/useProfile";
-import { CalendarDays, Home, Image as ImageIcon, LayoutGrid, LogOut, Medal, Settings, Star, Target, Trophy, Users } from "lucide-react";
+import { CalendarDays, Flag, Home, Image as ImageIcon, LayoutGrid, LogOut, Medal, Settings, Star, Target, Trophy, Users } from "lucide-react";
 import { NewsDialog } from "@/components/NewsDialog";
+import { clearPendingInvite, readPendingInvite } from "@/lib/leagues";
 
 
 export const navItems = [
@@ -15,6 +16,7 @@ export const navItems = [
   { to: "/campeonato", label: "Campeonato", icon: Trophy },
   { to: "/predicciones", label: "Predicciones", icon: Target },
   { to: "/ranking", label: "Ranking", icon: Medal },
+  { to: "/ligas", label: "Ligas", icon: Flag },
   { to: "/amigos", label: "Amigos", icon: Users },
   { to: "/favoritos", label: "Favoritos", icon: Star },
   { to: "/fondos", label: "Fondos", icon: ImageIcon },
@@ -32,6 +34,23 @@ export function AppShell() {
     if (!loading && !session) {
       navigate({ to: "/login" });
     }
+  }, [loading, session, navigate]);
+
+    // Si la persona venía de un link de invitación, la une a la liga apenas entra.
+  const inviteHandled = useRef(false);
+  useEffect(() => {
+    if (loading || !session || inviteHandled.current) return;
+    const code = readPendingInvite();
+    if (!code) return;
+
+    inviteHandled.current = true;
+    clearPendingInvite();
+
+    supabase.rpc("join_league", { p_code: code }).then(({ data }) => {
+      const leagueId = data?.[0]?.joined_league_id;
+      if (leagueId) navigate({ to: "/liga/$id", params: { id: leagueId } });
+      else navigate({ to: "/ligas" });
+    });
   }, [loading, session, navigate]);
 
   const handleLogout = async () => {

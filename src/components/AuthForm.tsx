@@ -58,7 +58,7 @@ function translateError(message: string): string {
   return "No pudimos completar la operación. Probá de nuevo en un momento.";
 }
 
-function GoogleIcon() {
+export function GoogleIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
       <path

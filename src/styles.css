@@ -218,3 +218,29 @@
     animation: none;
   }
 }
+
+/* ---- Trofeos ---- */
+@keyframes trophy-twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes trophy-halo {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+
+.trophy-sparkle {
+  animation: trophy-twinkle 3.2s ease-in-out infinite;
+}
+
+.trophy-halo {
+  animation: trophy-halo 3.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-sparkle,
+  .trophy-halo {
+    animation: none;
+  }
+}

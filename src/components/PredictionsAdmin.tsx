@@ -16,6 +16,7 @@ export function PredictionsAdmin() {
   const [status, setStatus] = useState<Status>(null);
   const [syncing, setSyncing] = useState(false);
   const [busyRound, setBusyRound] = useState<number | null>(null);
+  const [awarding, setAwarding] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -103,6 +104,23 @@ export function PredictionsAdmin() {
 
   if (loading) return <p className="text-sm text-muted-foreground">Cargando…</p>;
 
+    // Entrega la copa de la temporada a quien ganó cada liga (se puede repetir para recalcular).
+  const awardTrophies = async () => {
+    if (!window.confirm(`¿Entregar los trofeos de la temporada ${season}? Si ya se entregaron, se recalculan.`)) return;
+    setStatus(null);
+    setAwarding(true);
+
+    const { data, error } = await supabase.rpc("award_trophies", { p_season: season });
+    setAwarding(false);
+
+    if (error) {
+      console.error("Entregar trofeos:", error);
+      setStatus({ type: "error", text: "No pudimos entregar los trofeos. Revisá la consola para ver el detalle." });
+      return;
+    }
+    setStatus({ type: "ok", text: `Trofeos entregados: ${data ?? 0}.` });
+  };
+
   const finished = schedule.filter((gp) => gp.status === "finalizado");
 
   return (
@@ -158,6 +176,20 @@ export function PredictionsAdmin() {
         )}
       </div>
 
+
+      <div className="space-y-3 rounded-2xl border bg-card p-5 md:p-6">
+        <h2 className="text-xl font-bold uppercase">3. Entregar trofeos</h2>
+        <p className="text-sm text-muted-foreground">
+          Hacelo cuando termine la última carrera de la temporada y estén calculados todos los puntos. Entrega la copa
+          a quien ganó cada liga que tenga el mínimo de miembros (si hay empate, la comparten). Si corregís un
+          resultado, podés volver a entregar y se recalcula.
+        </p>
+        <Button type="button" disabled={awarding} onClick={awardTrophies} className="bg-gradient-primary font-semibold">
+          {awarding ? "Entregando…" : `Entregar trofeos ${season}`}
+        </Button>
+      </div>
+
+      
       {status && (
         <p
           className={

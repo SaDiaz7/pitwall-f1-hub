@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { breakdown } from "@/lib/predictions";
 import { cn } from "@/lib/utils";
 import { ProfileFavorites } from "@/components/ProfileFavorites";
+import { TrophyShowcase } from "@/components/TrophyShowcase";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -194,6 +195,8 @@ export function UserProfilePage() {
         </p>
       </section>
 
+      <TrophyShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
+      
       <ProfileFavorites userId={profile.user_id} drivers={drivers} teams={teams} />
 
       {profile.relation === "friends" && (
