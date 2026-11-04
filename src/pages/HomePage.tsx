@@ -27,6 +27,9 @@ import { usePredictions } from "@/hooks/usePredictions";
 import { seasonOf } from "@/lib/predictions";
 import { RankingPreview } from "@/components/RankingPreview";
 
+import { GuestFeatures } from "@/components/GuestFeatures";
+import { useSession } from "@/hooks/useSession";
+
 const route = getRouteApi("/_privado/inicio");
 
 const MAX_WALLPAPERS = 6;
@@ -276,6 +279,7 @@ export function HomePage() {
   const season = next ? seasonOf(next) : new Date().getFullYear();
   const { events, predictions, loading: predictionsLoading } = usePredictions(season);
   const nextEvent = next ? events[next.round] : undefined;
+  const { session, loading: sessionLoading } = useSession();
 
   return (
     <>
@@ -327,9 +331,9 @@ export function HomePage() {
                           <Link
                             to="/gp/$round"
                             params={{ round: String(next.round) }}
-                            className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
+                            className="mt-4 inline-flex items-center rounded-lg bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-transform hover:scale-105"
                           >
-                            Ver detalle →
+                            Ver horarios y más detalles →
                           </Link>
                         </div>
                         <div className="h-36 text-primary md:h-44">
@@ -342,7 +346,7 @@ export function HomePage() {
                 },
               ]
             : []),
-          ...(next && nextEvent && !predictionsLoading
+          ...(session && next && nextEvent && !predictionsLoading
             ? [
                 {
                   key: "predictions",
@@ -361,19 +365,20 @@ export function HomePage() {
         ]}
       />
 
-      <MyDrivers drivers={drivers} results={lastResults} />
+      {session && <MyDrivers drivers={drivers} results={lastResults} />}
 
       
       {last && <LastRace gp={last} results={lastResults} />}
 
-      {!predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
+      {!sessionLoading && !session && <GuestFeatures />}
 
-      <RankingPreview season={season} />
+      {session && !predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
+      {session && <RankingPreview season={season} />}
 
-      <FavoriteWallpapers />
+      {session && <FavoriteWallpapers />}
       
 
-      <section className="lg:hidden">
+      <section className={cn("lg:hidden", !session && "hidden")}>
         <h2 className="mb-3 mt-10 text-2xl font-bold uppercase">Accesos rápidos</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {navItems.slice(1).map(({ to, label, icon: Icon }) => (

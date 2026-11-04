@@ -304,6 +304,7 @@ export type Database = {
       }
       predictions: {
         Row: {
+          bonus: Json
           created_at: string
           picks: string[]
           points: number | null
@@ -313,6 +314,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bonus?: Json
           created_at?: string
           picks: string[]
           points?: number | null
@@ -322,6 +324,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          bonus?: Json
           created_at?: string
           picks?: string[]
           points?: number | null
@@ -402,6 +405,7 @@ export type Database = {
       }
       race_events: {
         Row: {
+          bonus_results: Json | null
           driver_results_queued_at: string | null
           name: string
           qualifying_at: string | null
@@ -412,6 +416,7 @@ export type Database = {
           season: number
         }
         Insert: {
+          bonus_results?: Json | null
           driver_results_queued_at?: string | null
           name: string
           qualifying_at?: string | null
@@ -422,6 +427,7 @@ export type Database = {
           season: number
         }
         Update: {
+          bonus_results?: Json | null
           driver_results_queued_at?: string | null
           name?: string
           qualifying_at?: string | null
@@ -588,6 +594,7 @@ export type Database = {
     Functions: {
       all_distinct: { Args: { items: string[] }; Returns: boolean }
       award_trophies: { Args: { p_season: number }; Returns: number }
+      bonus_points: { Args: { answers: Json; results: Json }; Returns: number }
       create_league: { Args: { p_name: string }; Returns: string }
       get_friend_predictions: {
         Args: { p_season: number; p_user_id: string }
@@ -729,7 +736,12 @@ export type Database = {
         Returns: undefined
       }
       score_race: {
-        Args: { p_results: string[]; p_round: number; p_season: number }
+        Args: {
+          p_bonus?: Json
+          p_results: string[]
+          p_round: number
+          p_season: number
+        }
         Returns: number
       }
       score_race_system: {

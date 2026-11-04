@@ -1,12 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 
+// Marco de toda la app. Qué páginas piden sesión se define en AppShell (isPublicPath).
 export const Route = createFileRoute("/_privado")({
-  ssr: false, // beforeLoad corre solo en el cliente, donde está la sesión
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login" });
-  },
+  ssr: false, // la sesión vive en el navegador, así que esto se dibuja ahí
   component: AppShell,
 });

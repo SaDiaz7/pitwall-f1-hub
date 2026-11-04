@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
+import { BonusSummary } from "@/components/BonusSummary";
 import { PageHeader } from "@/components/PageHeader";
 import { PredictionEditor } from "@/components/PredictionEditor";
 import { Button } from "@/components/ui/button";
 import { usePredictions, type PredictionRow, type RaceEvent } from "@/hooks/usePredictions";
-import { MAX_POINTS, POSITION_POINTS, breakdown } from "@/lib/predictions";
+import {
+  BONUS_MAX_POINTS,
+  MAX_POINTS,
+  POSITION_POINTS,
+  POSITIONS_MAX_POINTS,
+  bonusOf,
+  breakdown,
+  type BonusAnswers,
+} from "@/lib/predictions";
 import type { Driver, GrandPrix } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +54,7 @@ function RaceCard({
   saving: boolean;
   onEdit: () => void;
   onCancel: () => void;
-  onSave: (picks: string[]) => void;
+  onSave: (picks: string[], bonus: BonusAnswers) => void;
 }) {
   const deadline = event?.qualifying_at ? new Date(event.qualifying_at).getTime() : null;
   const scored = event?.scored_at != null;
@@ -79,6 +88,7 @@ function RaceCard({
         <PredictionEditor
           drivers={drivers}
           initial={prediction?.picks ?? []}
+          initialBonus={bonusOf(prediction?.bonus)}
           saving={saving}
           onSave={onSave}
           onCancel={onCancel}
@@ -86,14 +96,17 @@ function RaceCard({
       ) : (
         <>
           {prediction && !scored && (
-            <ol className="space-y-1 text-sm">
-              {prediction.picks.map((id, index) => (
-                <li key={`${id}-${index}`} className="flex gap-2">
-                  <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">{index + 1}.º</span>
-                  <span className="font-semibold">{nameOf(id)}</span>
-                </li>
-              ))}
-            </ol>
+            <>
+              <ol className="space-y-1 text-sm">
+                {prediction.picks.map((id, index) => (
+                  <li key={`${id}-${index}`} className="flex gap-2">
+                    <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">{index + 1}.º</span>
+                    <span className="font-semibold">{nameOf(id)}</span>
+                  </li>
+                ))}
+              </ol>
+              <BonusSummary answers={bonusOf(prediction.bonus)} results={null} nameOf={nameOf} />
+            </>
           )}
 
           {open && (
@@ -115,23 +128,30 @@ function RaceCard({
           )}
 
           {scored && prediction && event && (
-            <ol className="space-y-1.5 text-sm">
-              {breakdown(prediction.picks, event.results ?? []).map((row) => (
-                <li key={row.position} className="flex items-center gap-2">
-                  <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">{row.position}.º</span>
-                  {row.hit ? (
-                    <Check className="h-4 w-4 shrink-0 text-primary" aria-label="Acertaste" />
-                  ) : (
-                    <X className="h-4 w-4 shrink-0 text-muted-foreground" aria-label="No acertaste" />
-                  )}
-                  <span className={cn("min-w-0 flex-1 truncate", row.hit ? "font-semibold" : "text-muted-foreground")}>
-                    {nameOf(row.pick)}
-                    {!row.hit && <span className="text-xs"> · fue {nameOf(row.result)}</span>}
-                  </span>
-                  <span className="shrink-0 tabular-nums">{row.points > 0 ? `+${row.points}` : "0"}</span>
-                </li>
-              ))}
-            </ol>
+            <>
+              <ol className="space-y-1.5 text-sm">
+                {breakdown(prediction.picks, event.results ?? []).map((row) => (
+                  <li key={row.position} className="flex items-center gap-2">
+                    <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">{row.position}.º</span>
+                    {row.hit ? (
+                      <Check className="h-4 w-4 shrink-0 text-primary" aria-label="Acertaste" />
+                    ) : (
+                      <X className="h-4 w-4 shrink-0 text-muted-foreground" aria-label="No acertaste" />
+                    )}
+                    <span className={cn("min-w-0 flex-1 truncate", row.hit ? "font-semibold" : "text-muted-foreground")}>
+                      {nameOf(row.pick)}
+                      {!row.hit && <span className="text-xs"> · fue {nameOf(row.result)}</span>}
+                    </span>
+                    <span className="shrink-0 tabular-nums">{row.points > 0 ? `+${row.points}` : "0"}</span>
+                  </li>
+                ))}
+              </ol>
+              <BonusSummary
+                answers={bonusOf(prediction.bonus)}
+                results={event.bonus_results ? bonusOf(event.bonus_results) : null}
+                nameOf={nameOf}
+              />
+            </>
           )}
         </>
       )}
@@ -166,10 +186,10 @@ export function PredictionsPage() {
   const totalPoints = Object.values(predictions).reduce((sum, row) => sum + (row.points ?? 0), 0);
   const scoredCount = Object.values(predictions).filter((row) => row.points !== null).length;
 
-  const onSave = async (round: number, picks: string[]) => {
+  const onSave = async (round: number, picks: string[], bonus: BonusAnswers) => {
     setMessage(null);
     setSaving(true);
-    const result = await savePrediction(round, picks);
+    const result = await savePrediction(round, picks, bonus);
     setSaving(false);
 
     if (result.ok) {
@@ -196,7 +216,7 @@ export function PredictionsPage() {
         setEditingRound(gp.round);
       }}
       onCancel={() => setEditingRound(null)}
-      onSave={(picks) => onSave(gp.round, picks)}
+      onSave={(picks, bonus) => onSave(gp.round, picks, bonus)}
     />
   );
 
@@ -212,13 +232,15 @@ export function PredictionsPage() {
           </span>
         </p>
         <p className="text-xs text-muted-foreground">
-          Sumás puntos por cada piloto que acertás en su puesto exacto: {POSITION_POINTS[0]} por el ganador,{" "}
-          {POSITION_POINTS[1]} por el 2.º y el 3.º, y {POSITION_POINTS[3]} por cada uno del 4.º al 10.º. Máximo por
-          carrera: {MAX_POINTS} puntos.
+          Top 10: sumás puntos por cada piloto que acertás en su puesto exacto ({POSITION_POINTS[0]} por el ganador,{" "}
+          {POSITION_POINTS[1]} por el 2.º y el 3.º, y {POSITION_POINTS[3]} por cada uno del 4.º al 10.º). Extras
+          opcionales: pole, vuelta rápida, Safety Car, Virtual Safety Car, bandera roja, abandonos y si puntúa
+          Colapinto. Máximo por carrera: {MAX_POINTS} puntos ({POSITIONS_MAX_POINTS} del top 10 y {BONUS_MAX_POINTS} de
+          los extras).
         </p>
-        <p>
-          <span className="font-semibold">¡Asegurate de predecir antes de que empiece la clasificación!</span> 
-          Una vez que la carrera empieza, no se pueden cambiar las predicciones. 
+        <p className="text-sm">
+          <span className="font-semibold">¡Asegurate de predecir antes de que empiece la clasificación!</span> Una vez
+          que cierran, no se pueden cambiar las predicciones.
         </p>
       </div>
 

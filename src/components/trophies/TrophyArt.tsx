@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { ChromeTrophy } from "@/components/trophies/ChromeTrophy";
 import { FounderTrophy } from "@/components/trophies/FounderTrophy";
 
 export interface TrophyArtProps {
@@ -9,7 +10,7 @@ export interface TrophyArtProps {
 // Cada temporada tiene su propio diseño de copa.
 // Para sumar el de un año nuevo: crear el componente de esa copa y agregarlo acá.
 const DESIGNS: Record<number, ComponentType<TrophyArtProps>> = {
-  2026: ({ year, className }) => <FounderTrophy year={year} className={className} />,
+  2026: ({ year, className }) => <ChromeTrophy year={year} className={className} />,
 };
 
 const NAMES: Record<number, string> = {
@@ -24,6 +25,6 @@ export function TrophyArt({ year, className }: TrophyArtProps) {
   const Design = DESIGNS[year];
   if (Design) return <Design year={year} className={className} />;
 
-  // Mientras un año no tenga diseño propio, usa la copa base con el año correspondiente.
+  // Mientras un año no tenga diseño propio, usa la copa dorada base con el año correspondiente.
   return <FounderTrophy year={year} caption={`TEMPORADA ${year}`} className={className} />;
 }

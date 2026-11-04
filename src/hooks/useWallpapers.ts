@@ -16,16 +16,9 @@ export function useWallpapers() {
   const pending = useRef(new Set<string>());
 
   const reload = useCallback(async () => {
-    if (!userId) {
-      setWallpapers([]);
-      setLikedIds(new Set());
-      setLoading(false);
-      return;
-    }
-
     const [wallpapersResult, likesResult] = await Promise.all([
       supabase.from("wallpapers").select("*").order("created_at", { ascending: false }),
-      supabase.from("wallpaper_likes").select("wallpaper_id"),
+      userId ? supabase.from("wallpaper_likes").select("wallpaper_id") : Promise.resolve(null),
     ]);
 
     if (wallpapersResult.error) {
@@ -35,8 +28,10 @@ export function useWallpapers() {
       setWallpapers(wallpapersResult.data ?? []);
     }
 
-    if (!likesResult.error) {
+    if (likesResult && !likesResult.error) {
       setLikedIds(new Set((likesResult.data ?? []).map((row) => row.wallpaper_id)));
+    } else if (!userId) {
+      setLikedIds(new Set());
     }
     setLoading(false);
   }, [userId]);

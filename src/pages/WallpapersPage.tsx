@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { WallpaperModal } from "@/components/WallpaperModal";
 import { WallpaperUploadForm } from "@/components/WallpaperUploadForm";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useNavigate } from "@tanstack/react-router";
+import { useSession } from "@/hooks/useSession";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
 import { TeamStripe } from "@/components/TeamStripe";
@@ -59,6 +61,9 @@ function FilterSelect({
 
 export function WallpapersPage() {
   const isAdmin = useIsAdmin();
+  const { session } = useSession();
+  const navigate = useNavigate();
+  const isGuest = !session;
   const { wallpapers, likedIds, loading, error, reload, toggleLike } = useWallpapers();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [showUpload, setShowUpload] = useState(false);
@@ -112,6 +117,20 @@ export function WallpapersPage() {
   return (
     <>
       <PageHeader title="Fondos" subtitle="Fondos de pantalla de pilotos y equipos de la F1." />
+
+      {isGuest && (
+        <p className="mb-4 rounded-md bg-primary/10 p-3 text-sm">
+          Estás viendo los fondos como visitante.{" "}
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/login" })}
+            className="font-semibold text-primary hover:underline"
+          >
+            Iniciá sesión
+          </button>{" "}
+          para dar likes y descargarlos.
+        </p>
+      )}
 
       {isAdmin && (
         <div className="mb-4 flex justify-end">
@@ -236,7 +255,7 @@ export function WallpapersPage() {
                   <LikeButton
                     active={likedIds.has(w.id)}
                     count={w.likes_count}
-                    onToggle={() => toggleLike(w.id)}
+                    onToggle={() => (isGuest ? navigate({ to: "/login" }) : toggleLike(w.id))}
                     label={name}
                     className="absolute right-2 top-2 bg-background/80 backdrop-blur"
                   />

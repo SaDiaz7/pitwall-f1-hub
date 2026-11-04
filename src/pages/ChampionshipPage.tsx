@@ -1,4 +1,4 @@
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { DriverComparison } from "@/components/DriverComparison";
 import { PageHeader } from "@/components/PageHeader";
 import { ScenarioBuilder } from "@/components/ScenarioBuilder";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useSession } from "@/hooks/useSession";
 
 const route = getRouteApi("/_privado/campeonato");
 
@@ -25,9 +26,11 @@ export function ChampionshipPage() {
   const { isFavorite, toggle, error } = useFavorites();
   const teamFavorites = useFavoriteTeams();
   const photos = useDriverPhotos(drivers.map((d) => ({ id: d.id, wikiUrl: d.wikiUrl })));
+  const { session } = useSession();
 
   // Las estrellas solo tienen sentido en la temporada en curso.
   const isCurrent = season === undefined || season === CURRENT_YEAR;
+  const showStars = isCurrent && Boolean(session);
   const errorMessage = error ?? teamFavorites.error;
 
   const onSeasonChange = (value: string) => {
@@ -66,6 +69,15 @@ export function ChampionshipPage() {
         </select>
       </label>
 
+      {!session && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          <Link to="/login" className="font-semibold text-primary hover:underline">
+            Iniciá sesión
+          </Link>{" "}
+          para marcar tus pilotos y equipos favoritos.
+        </p>
+      )}
+
       {isCurrent && errorMessage && (
         <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{errorMessage}</p>
       )}
@@ -86,9 +98,9 @@ export function ChampionshipPage() {
             <>
               <StandingsTable
                 rows={driverRows}
-                driverLinks
+                driverLinks={Boolean(session)}
                 photos={photos}
-                {...(isCurrent ? { isFavorite, onToggleFavorite: toggle } : {})}
+                {...(showStars ? { isFavorite, onToggleFavorite: toggle } : {})}
               />
               <p className="mt-3 text-xs text-muted-foreground">
                 Fotos: Wikipedia/Wikimedia Commons, cada imagen con su propia licencia. Los colores de los equipos son
@@ -105,7 +117,7 @@ export function ChampionshipPage() {
             <StandingsTable
               rows={teams}
               showTeam={false}
-              {...(isCurrent
+              {...(showStars
                 ? { isFavorite: teamFavorites.isFavorite, onToggleFavorite: teamFavorites.toggle }
                 : {})}
             />

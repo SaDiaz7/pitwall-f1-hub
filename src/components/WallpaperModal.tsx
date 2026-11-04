@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Download, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteWallpaper, getDownloadUrl, getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
@@ -6,11 +7,13 @@ import { deleteWallpaper, getDownloadUrl, getWallpaperUrls, qualityLabel, type W
 export function WallpaperModal({
   wallpaper,
   isAdmin,
+  canDownload = true,
   onClose,
   onDeleted,
 }: {
   wallpaper: Wallpaper;
   isAdmin: boolean;
+  canDownload?: boolean;
   onClose: () => void;
   onDeleted: () => void;
 }) {
@@ -65,18 +68,31 @@ export function WallpaperModal({
           </button>
         </div>
 
-        <img src={urls.full} alt={title} className="max-h-[60vh] w-full rounded-xl object-contain" />
+        <img
+          src={canDownload ? urls.full : urls.thumb}
+          alt={title}
+          className="max-h-[60vh] w-full rounded-xl object-contain"
+        />
 
         {error && <p className="rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
 
         <div className="flex flex-wrap gap-3">
-          <a
-            href={getDownloadUrl(wallpaper)}
-            rel="noopener"
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground"
-          >
-            <Download className="h-4 w-4" /> Descargar
-          </a>
+          {canDownload ? (
+            <a
+              href={getDownloadUrl(wallpaper)}
+              rel="noopener"
+              className="inline-flex h-10 items-center gap-2 rounded-md bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground"
+            >
+              <Download className="h-4 w-4" /> Descargar
+            </a>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex h-10 items-center gap-2 rounded-md bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground"
+            >
+              <Download className="h-4 w-4" /> Iniciá sesión para descargar
+            </Link>
+          )}
           {isAdmin && (
             <Button type="button" variant="outline" disabled={busy} onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" /> {busy ? "Borrando…" : "Borrar"}

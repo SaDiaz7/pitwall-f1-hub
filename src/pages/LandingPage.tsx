@@ -67,6 +67,14 @@ export function LandingPage() {
             >
               <Link to="/login">Iniciar sesión</Link>
             </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="ghost"
+              className="h-12 px-8 font-semibold uppercase tracking-wide"
+            >
+              <Link to="/inicio">Explorar sin cuenta</Link>
+            </Button>
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-2 racing-stripe opacity-60" />

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useSession } from "@/hooks/useSession";
+import type { BonusAnswers } from "@/lib/predictions";
 import type { ActionResult } from "@/lib/wallpapers";
 
 export type RaceEvent = Database["public"]["Tables"]["race_events"]["Row"];
@@ -47,14 +48,14 @@ export function usePredictions(season: number) {
 
   // Guarda la predicción: si ya existía la actualiza, y si no, la crea.
   const savePrediction = useCallback(
-    async (round: number, picks: string[]): Promise<ActionResult> => {
+    async (round: number, picks: string[], bonus: BonusAnswers = {}): Promise<ActionResult> => {
       if (!userId) return { ok: false, message: "Tenés que iniciar sesión." };
 
       const closedMessage = "Las predicciones de esta carrera ya cerraron o todavía no están habilitadas.";
 
       const { data: updated, error: updateError } = await supabase
         .from("predictions")
-        .update({ picks, updated_at: new Date().toISOString() })
+        .update({ picks, bonus, updated_at: new Date().toISOString() })
         .eq("season", season)
         .eq("round", round)
         .select("round");
@@ -65,7 +66,7 @@ export function usePredictions(season: number) {
       }
 
       if (!updated || updated.length === 0) {
-        const { error: insertError } = await supabase.from("predictions").insert({ season, round, picks });
+        const { error: insertError } = await supabase.from("predictions").insert({ season, round, picks, bonus });
 
         if (insertError) {
           console.error("Crear predicción:", insertError);

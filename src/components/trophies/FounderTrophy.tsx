@@ -18,9 +18,9 @@ export function FounderTrophy({ year = 2026, caption = "EDICIÓN INAUGURAL", cla
       viewBox="0 0 300 420"
       className={className}
       role="img"
-      aria-label={`Copa del Fundador ${year}`}
+      aria-label={`Copa ${year}`}
     >
-      <title>{`Copa del Fundador ${year}`}</title>
+      <title>{`Copa ${year}`}</title>
       <defs>
         <radialGradient id={id("glow")} gradientUnits="userSpaceOnUse" cx="150" cy="175" r="148">
           <stop offset="0" stopColor="#ffd666" stopOpacity="0.30"/>

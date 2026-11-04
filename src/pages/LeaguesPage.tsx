@@ -103,7 +103,7 @@ export function LeaguesPage() {
 
   return (
     <>
-      <PageHeader title="Ligas" subtitle="Competí con tus amigos y ganá el trofeo de la temporada." />
+      <PageHeader title="Ligas" subtitle="Competí con tus amigos y ganá el trofeo de la temporada. El trofeo se entrega al final de cada temporada y cambia visualmente para cada año. Intenta coleccionar los que más puedas!" />
 
       {message && (
         <p
