@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { Driver, GrandPrix, GrandPrixSession, Team } from "@/lib/types";
 import { translateRaceName } from "@/lib/race-names";
+import type { BonusAnswers } from "@/lib/predictions";
 
 const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
@@ -826,4 +827,144 @@ export const getDriverPhotos = createServerFn({ method: "POST" })
     }
 
     return result;
+  });
+
+  
+// ---------- Sugerencias para las predicciones extra ----------
+
+interface QualifyingResponse {
+  MRData: {
+    RaceTable: {
+      Races?: { QualifyingResults?: { position: string; Driver: { driverId: string } }[] }[];
+    };
+  };
+}
+
+interface OpenF1Session {
+  session_key: number;
+  date_start: string;
+}
+
+interface OpenF1Message {
+  category?: string | null;
+  flag?: string | null;
+  message?: string | null;
+}
+
+export interface BonusSuggestion {
+  values: BonusAnswers;
+  notes: string[];
+}
+
+async function fetchOpenF1<T>(path: string): Promise<T> {
+  const res = await fetch(`https://api.openf1.org/v1${path}`, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`OpenF1 respondió con estado ${res.status}`);
+  return (await res.json()) as T;
+}
+
+// Propone los resultados de las preguntas extra de una carrera. Siempre se revisan a mano antes de usarlos.
+export const getBonusSuggestions = createServerFn({ method: "GET" })
+  .inputValidator((data: { round: number }) => {
+    if (!Number.isInteger(data.round) || data.round < 1 || data.round > 30) {
+      throw new Error("Ronda inválida");
+    }
+    return data;
+  })
+  .handler(async ({ data }): Promise<BonusSuggestion> => {
+    const values: BonusAnswers = {};
+    const notes: string[] = [];
+
+    // Pole: clasificación (Jolpica).
+    try {
+      const qualifying = await fetchJolpica<QualifyingResponse>(
+        `/current/${data.round}/qualifying/?limit=100`,
+      );
+      const pole = qualifying.MRData.RaceTable.Races?.[0]?.QualifyingResults?.find((r) => r.position === "1");
+      if (pole) values.pole = pole.Driver.driverId;
+      else notes.push("No encontramos la pole en la API.");
+    } catch (error) {
+      console.error("Pole:", error);
+      notes.push("No pudimos traer la clasificación para saber la pole.");
+    }
+
+    // Horario de la carrera (hace falta para ubicarla en OpenF1).
+    let raceStart: Date | null = null;
+    try {
+      const race = await fetchJolpica<ScheduleResponse>(`/current/${data.round}/`);
+      const raw = race.MRData.RaceTable.Races?.[0];
+      if (raw) raceStart = new Date(`${raw.date}T${raw.time ?? "00:00:00Z"}`);
+    } catch (error) {
+      console.error("Horario de la carrera:", error);
+    }
+
+    // Vuelta rápida, abandonos y Colapinto: resultado de la carrera (Jolpica).
+    try {
+      const resultsJson = await fetchJolpica<RaceResultsResponse>(`/current/${data.round}/results/?limit=100`);
+      const results = resultsJson.MRData.RaceTable.Races?.[0]?.Results ?? [];
+
+      if (results.length === 0) {
+        notes.push("La carrera todavía no tiene resultados en la API.");
+      } else {
+        const fastest = results.find((r) => r.FastestLap?.rank === "1");
+        if (fastest) values.fastest_lap = fastest.Driver.driverId;
+        else notes.push("No encontramos la vuelta rápida en la API.");
+
+        // Cuenta como abandono quien figura como "R" (retirado) en el resultado.
+        const retired = results.filter((r) => r.positionText === "R").length;
+        values.dnf_range = retired === 0 ? "0" : retired <= 2 ? "1-2" : "3+";
+        notes.push(`Abandonos contados: ${retired}.`);
+
+        const colapinto = results.find((r) => r.Driver.driverId === "colapinto");
+        if (colapinto) values.colapinto_points = Number(colapinto.points) > 0 ? "si" : "no";
+        else notes.push("Colapinto no figura en el resultado de esta carrera.");
+      }
+    } catch (error) {
+      console.error("Resultados para los extras:", error);
+      notes.push("No pudimos traer el resultado de la carrera.");
+    }
+
+    // Safety Car, VSC y bandera roja: mensajes de dirección de carrera (OpenF1).
+    try {
+      if (!raceStart) throw new Error("Sin horario de la carrera");
+      const start: Date = raceStart;
+
+      const sessions = await fetchOpenF1<OpenF1Session[]>(
+        `/sessions?year=${start.getUTCFullYear()}&session_name=Race`,
+      );
+      const session = sessions.find(
+        (s) => Math.abs(new Date(s.date_start).getTime() - start.getTime()) < 6 * 60 * 60 * 1000,
+      );
+
+      if (!session) {
+        notes.push("OpenF1 todavía no tiene esta carrera: completá Safety Car, VSC y bandera roja a mano.");
+      } else {
+        const messages = await fetchOpenF1<OpenF1Message[]>(`/race_control?session_key=${session.session_key}`);
+
+        if (messages.length === 0) {
+          notes.push("OpenF1 no devolvió mensajes de la carrera: completá Safety Car, VSC y bandera roja a mano.");
+        } else {
+          const texts = messages.map((m) => `${m.category ?? ""} ${m.message ?? ""}`.toUpperCase());
+
+          const vsc = texts.some((t) => t.includes("VIRTUAL SAFETY CAR") && t.includes("DEPLOYED"));
+          const safetyCar = texts.some(
+            (t) => t.includes("SAFETY CAR") && !t.includes("VIRTUAL") && t.includes("DEPLOYED"),
+          );
+          const redFlag =
+            messages.some((m) => m.flag?.toUpperCase() === "RED") || texts.some((t) => t.includes("RED FLAG"));
+
+          values.safety_car = safetyCar ? "si" : "no";
+          values.vsc = vsc ? "si" : "no";
+          values.red_flag = redFlag ? "si" : "no";
+          notes.push("Safety Car, VSC y bandera roja salen de OpenF1: revisalos antes de confirmar.");
+        }
+      }
+    } catch (error) {
+      console.error("OpenF1:", error);
+      notes.push("No pudimos consultar OpenF1 (puede pasar mientras la sesión sigue en vivo). Completá Safety Car, VSC y bandera roja a mano o probá más tarde.");
+    }
+
+    return { values, notes };
   });
