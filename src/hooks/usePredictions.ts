@@ -47,6 +47,7 @@ export function usePredictions(season: number) {
   }, [sessionLoading, load]);
 
   // Guarda la predicción: si ya existía la actualiza, y si no, la crea.
+    // Guarda la predicción: si ya existía la actualiza, y si no, la crea.
   const savePrediction = useCallback(
     async (round: number, picks: string[], bonus: BonusAnswers = {}): Promise<ActionResult> => {
       if (!userId) return { ok: false, message: "Tenés que iniciar sesión." };
