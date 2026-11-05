@@ -13,6 +13,7 @@ import {
   LogIn,
   LogOut,
   Medal,
+  Puzzle,
   Settings,
   Star,
   Target,
@@ -49,6 +50,7 @@ export const navGroups = [
       { to: "/ranking", label: "Ranking", icon: Medal, public: false },
       { to: "/ligas", label: "Ligas", icon: Flag, public: false },
       { to: "/bingo", label: "Bingo Card", icon: LayoutGrid, public: false },
+      { to: "/juego", label: "Juego diario", icon: Puzzle, public: true },
     ],
   },
   {

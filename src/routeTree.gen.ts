@@ -26,6 +26,7 @@ import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeon
 import { Route as PrivadoFavoritosRouteImport } from './routes/_privado.favoritos'
 import { Route as PrivadoFondosRouteImport } from './routes/_privado.fondos'
 import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
+import { Route as PrivadoJuegoRouteImport } from './routes/_privado.juego'
 import { Route as PrivadoLigasRouteImport } from './routes/_privado.ligas'
 import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predicciones'
 import { Route as PrivadoRankingRouteImport } from './routes/_privado.ranking'
@@ -119,6 +120,11 @@ const PrivadoInicioRoute = PrivadoInicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoJuegoRoute = PrivadoJuegoRouteImport.update({
+  id: '/juego',
+  path: '/juego',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoLigasRoute = PrivadoLigasRouteImport.update({
   id: '/ligas',
   path: '/ligas',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/ranking': typeof PrivadoRankingRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/inicio': typeof PrivadoInicioRoute
+  '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/ranking': typeof PrivadoRankingRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/_privado/favoritos': typeof PrivadoFavoritosRoute
   '/_privado/fondos': typeof PrivadoFondosRoute
   '/_privado/inicio': typeof PrivadoInicioRoute
+  '/_privado/juego': typeof PrivadoJuegoRoute
   '/_privado/ligas': typeof PrivadoLigasRoute
   '/_privado/predicciones': typeof PrivadoPrediccionesRoute
   '/_privado/ranking': typeof PrivadoRankingRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/juego'
     | '/ligas'
     | '/predicciones'
     | '/ranking'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/fondos'
     | '/inicio'
+    | '/juego'
     | '/ligas'
     | '/predicciones'
     | '/ranking'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/_privado/favoritos'
     | '/_privado/fondos'
     | '/_privado/inicio'
+    | '/_privado/juego'
     | '/_privado/ligas'
     | '/_privado/predicciones'
     | '/_privado/ranking'
@@ -455,6 +467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoInicioRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/juego': {
+      id: '/_privado/juego'
+      path: '/juego'
+      fullPath: '/juego'
+      preLoaderRoute: typeof PrivadoJuegoRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/ligas': {
       id: '/_privado/ligas'
       path: '/ligas'
@@ -524,6 +543,7 @@ interface PrivadoRouteChildren {
   PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
   PrivadoFondosRoute: typeof PrivadoFondosRoute
   PrivadoInicioRoute: typeof PrivadoInicioRoute
+  PrivadoJuegoRoute: typeof PrivadoJuegoRoute
   PrivadoLigasRoute: typeof PrivadoLigasRoute
   PrivadoPrediccionesRoute: typeof PrivadoPrediccionesRoute
   PrivadoRankingRoute: typeof PrivadoRankingRoute
@@ -543,6 +563,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoFavoritosRoute: PrivadoFavoritosRoute,
   PrivadoFondosRoute: PrivadoFondosRoute,
   PrivadoInicioRoute: PrivadoInicioRoute,
+  PrivadoJuegoRoute: PrivadoJuegoRoute,
   PrivadoLigasRoute: PrivadoLigasRoute,
   PrivadoPrediccionesRoute: PrivadoPrediccionesRoute,
   PrivadoRankingRoute: PrivadoRankingRoute,

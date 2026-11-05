@@ -168,6 +168,98 @@ export type Database = {
         }
         Relationships: []
       }
+      game_circuits: {
+        Row: {
+          active: boolean
+          altitude_m: number
+          city: string
+          country: string
+          country_code: string
+          first_gp: number
+          id: string
+          length_m: number
+          name: string
+          opened: number
+          path: string | null
+        }
+        Insert: {
+          active?: boolean
+          altitude_m: number
+          city: string
+          country: string
+          country_code: string
+          first_gp: number
+          id: string
+          length_m: number
+          name: string
+          opened: number
+          path?: string | null
+        }
+        Update: {
+          active?: boolean
+          altitude_m?: number
+          city?: string
+          country?: string
+          country_code?: string
+          first_gp?: number
+          id?: string
+          length_m?: number
+          name?: string
+          opened?: number
+          path?: string | null
+        }
+        Relationships: []
+      }
+      game_daily: {
+        Row: {
+          circuit_id: string
+          play_date: string
+        }
+        Insert: {
+          circuit_id: string
+          play_date: string
+        }
+        Update: {
+          circuit_id?: string
+          play_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_daily_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "game_circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_plays: {
+        Row: {
+          finished: boolean
+          finished_at: string | null
+          guesses: string[]
+          play_date: string
+          solved: boolean
+          user_id: string
+        }
+        Insert: {
+          finished?: boolean
+          finished_at?: string | null
+          guesses?: string[]
+          play_date: string
+          solved?: boolean
+          user_id: string
+        }
+        Update: {
+          finished?: boolean
+          finished_at?: string | null
+          guesses?: string[]
+          play_date?: string
+          solved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       league_members: {
         Row: {
           joined_at: string
@@ -647,6 +739,68 @@ export type Database = {
       award_trophies: { Args: { p_season: number }; Returns: number }
       bonus_points: { Args: { answers: Json; results: Json }; Returns: number }
       create_league: { Args: { p_name: string }; Returns: string }
+      game_circuit_list: {
+        Args: never
+        Returns: {
+          city: string
+          id: string
+          name: string
+        }[]
+      }
+      game_clues: {
+        Args: { p_circuit: string; p_misses: number }
+        Returns: Json
+      }
+      game_date: { Args: never; Returns: string }
+      game_ensure_today: { Args: never; Returns: string }
+      game_get_puzzle: {
+        Args: never
+        Returns: {
+          answer_id: string
+          clues: Json
+          is_finished: boolean
+          is_solved: boolean
+          max_attempts: number
+          my_guesses: string[]
+          puzzle_date: string
+          puzzle_path: string
+          streak: number
+        }[]
+      }
+      game_streak: { Args: { p_user: string }; Returns: number }
+      game_submit_guess: {
+        Args: { p_guess: string; p_prior_misses?: number }
+        Returns: {
+          answer_id: string
+          attempts_used: number
+          clues: Json
+          is_correct: boolean
+          is_finished: boolean
+          streak: number
+        }[]
+      }
+      game_weekly_friends_leaderboard: {
+        Args: { p_week_offset?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          solved_days: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      game_weekly_leaderboard: {
+        Args: { p_week_offset?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          solved_days: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_friend_predictions: {
         Args: { p_season: number; p_user_id: string }
         Returns: {

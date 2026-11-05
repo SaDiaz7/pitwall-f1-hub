@@ -20,7 +20,7 @@ import { getTeamColor } from "@/lib/team-colors";
 import { TeamStripe } from "@/components/TeamStripe";
 import { ChampionBanner } from "@/components/ChampionBanner";
 import { HeroCarousel } from "@/components/HeroCarousel";
-
+import { DailyGameCard } from "@/components/DailyGameCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { PredictionStats } from "@/components/PredictionStats";
 import { usePredictions } from "@/hooks/usePredictions";
@@ -346,6 +346,11 @@ export function HomePage() {
                 },
               ]
             : []),
+          {
+            key: "daily-game",
+            glow: "shadow-glow",
+            content: <DailyGameCard />,
+          },
           ...(session && next && nextEvent && !predictionsLoading
             ? [
                 {

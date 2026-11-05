@@ -1,0 +1,40 @@
+﻿0 {"id":"au-1953","Location":"Melbourne","Name":"Albert Park Circuit","opened":1953,"firstgp":1996,"length":5278,"altitude":10}
+1 {"id":"bh-2002","Location":"Sakhir","Name":"Bahrain International Circuit","opened":2002,"firstgp":2004,"length":5412,"altitude":-16}
+2 {"id":"cn-2004","Location":"Shanghai","Name":"Shanghai International Circuit","opened":2004,"firstgp":2004,"length":5451,"altitude":14}
+3 {"id":"es-1991","Location":"Barcelona","Name":"Circuit de Barcelona-Catalunya","opened":1991,"firstgp":1991,"length":4655,"altitude":165}
+4 {"id":"mc-1929","Location":"Monaco","Name":"Circuit de Monaco","opened":1929,"firstgp":1929,"length":3337,"altitude":47}
+5 {"id":"ca-1978","Location":"Montreal","Name":"Circuit Gilles-Villeneuve","opened":1978,"firstgp":1978,"length":4361,"altitude":13}
+6 {"id":"fr-1969","Location":"Le Castellet","Name":"Circuit Paul Ricard","opened":1969,"firstgp":1971,"length":5842,"altitude":408}
+7 {"id":"at-1969","Location":"Spielberg","Name":"Red Bull Ring","opened":1969,"firstgp":1970,"length":4318,"altitude":721}
+8 {"id":"gb-1948","Location":"Silverstone","Name":"Silverstone Circuit","opened":1948,"firstgp":1950,"length":5891,"altitude":196}
+9 {"id":"de-1932","Location":"Hockenheim","Name":"Hockenheimring","opened":1932,"firstgp":1970,"length":4574,"altitude":148}
+10 {"id":"hu-1986","Location":"Budapest","Name":"Hungaroring","opened":1986,"firstgp":1986,"length":4381,"altitude":239}
+11 {"id":"be-1925","Location":"Spa Francorchamps","Name":"Circuit de Spa-Francorchamps","opened":1925,"firstgp":1950,"length":7004,"altitude":413}
+12 {"id":"it-1922","Location":"Monza","Name":"Autodromo Nazionale Monza","opened":1922,"firstgp":1950,"length":5793,"altitude":142}
+13 {"id":"sg-2008","Location":"Singapore","Name":"Marina Bay Street Circuit","opened":2008,"firstgp":2008,"length":4928,"altitude":18}
+14 {"id":"ru-2014","Location":"Sochi","Name":"Sochi Autodrom","opened":2014,"firstgp":2014,"length":5848,"altitude":23}
+15 {"id":"jp-1962","Location":"Suzuka","Name":"Suzuka International Racing Course","opened":1962,"firstgp":1987,"length":5807,"altitude":60}
+16 {"id":"us-2012","Location":"Austin","Name":"Circuit of the Americas","opened":2012,"firstgp":2012,"length":5514,"altitude":130}
+17 {"id":"mx-1962","Location":"Mexico City","Name":"Aut├│dromo Hermanos Rodr├¡guez","opened":1962,"firstgp":1963,"length":4304,"altitude":2232}
+18 {"id":"br-1940","Location":"Sao Paulo","Name":"Aut├│dromo Jos├® Carlos Pace - Interlagos","opened":1940,"firstgp":1973,"length":4309,"altitude":765}
+19 {"id":"ae-2009","Location":"Yas Marina","Name":"Yas Marina Circuit","opened":2009,"firstgp":2009,"length":5281,"altitude":9}
+20 {"id":"it-1953","Location":"Imola","Name":"Autodromo Enzo e Dino Ferrari","opened":1953,"firstgp":1980,"length":4909,"altitude":47}
+21 {"id":"de-1927","Location":"N├╝rburg","Name":"N├╝rburgring","opened":1927,"firstgp":1984,"length":5148,"altitude":627}
+22 {"id":"pt-2008","Location":"Portim├úo","Name":"Aut├│dromo Internacional do Algarve","opened":2008,"firstgp":2020,"length":4653,"altitude":44}
+23 {"id":"it-1914","Location":"Scarperia e San Piero","Name":"Autodromo Internazionale del Mugello","opened":1914,"firstgp":2020,"length":5245,"altitude":292}
+24 {"id":"my-1999","Location":"Sepang","Name":"Sepang International Circuit","opened":1999,"firstgp":1999,"length":5543,"altitude":39}
+25 {"id":"tr-2005","Location":"Istanbul","Name":"Intercity Istanbul Park","opened":2005,"firstgp":2005,"length":5338,"altitude":150}
+26 {"id":"nl-1948","Location":"Zandvoort","Name":"Circuit Zandvoort","opened":1948,"firstgp":1952,"length":4259,"altitude":3}
+27 {"id":"fr-1960","Location":"Magny-Cours","Name":"Circuit de Nevers Magny-Cours","opened":1960,"firstgp":1991,"length":4412,"altitude":230}
+28 {"id":"pt-1972","Location":"Estoril","Name":"Aut├│dromo do Estoril","opened":1972,"firstgp":1984,"length":4349,"altitude":80}
+29 {"id":"br-1977","Location":"Jacarepagu├í","Name":"Aut├│dromo Internacional Nelson Piquet","opened":1977,"firstgp":1978,"length":5031,"altitude":3}
+30 {"id":"sa-2021","Location":"Jeddah","Name":"Jeddah Corniche Circuit","opened":2021,"firstgp":2021,"length":6175,"altitude":12}
+31 {"id":"us-2022","Location":"Miami","Name":"Miami International Autodrome","opened":2022,"firstgp":2022,"length":5412,"altitude":1}
+32 {"id":"qa-2004","Location":"Lusail","Name":"Losail International Circuit","opened":2004,"firstgp":2021,"length":5380,"altitude":5}
+33 {"id":"es-2026","Location":"Madrid","Name":"Circuito de Madring","opened":2026,"firstgp":2026,"length":5474,"altitude":646}
+34 {"id":"az-2016","Location":"Baku","Name":"Baku City Circuit","opened":2016,"firstgp":2016,"length":6003,"altitude":-25}
+35 {"id":"us-2023","Location":"Las Vegas","Name":"Las Vegas Street Circuit","opened":2023,"firstgp":2023,"length":6201,"altitude":610}
+36 {"id":"us-1909","Location":"Indianapolis","Name":"Indianapolis Motor Speedway","opened":1909,"firstgp":2000,"length":4192,"altitude":219}
+37 {"id":"ar-1952","Location":"Buenos Aires","Name":"Aut├│dromo Oscar y Juan G├ílvez","opened":1952,"firstgp":1953,"length":4322,"altitude":8}
+38 {"id":"za-1961","Location":"Johannesburg","Name":"Kyalami Grand Prix Circuit","opened":1961,"firstgp":1967,"length":4529,"altitude":1753}
+39 {"id":"us-1956","Location":"Dix","Name":"Watkins Glen International","opened":1956,"firstgp":1961,"length":5430,"altitude":331}

@@ -11,6 +11,7 @@ import { breakdown } from "@/lib/predictions";
 import { cn } from "@/lib/utils";
 import { ProfileFavorites } from "@/components/ProfileFavorites";
 import { TrophyShowcase } from "@/components/TrophyShowcase";
+import { AvatarLightbox } from "@/components/AvatarLightbox";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -123,12 +124,14 @@ export function UserProfilePage() {
       {back}
 
       <header className="mb-6 flex flex-wrap items-center gap-4">
-        <Avatar className="h-20 w-20">
-          {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="" />}
-          <AvatarFallback className="bg-gradient-primary font-display text-2xl text-primary-foreground">
-            {getInitials(name)}
-          </AvatarFallback>
-        </Avatar>
+        <AvatarLightbox src={profile.avatar_url} name={name}>
+          <Avatar className="h-20 w-20">
+            {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="" />}
+            <AvatarFallback className="bg-gradient-primary font-display text-2xl text-primary-foreground">
+              {getInitials(name)}
+            </AvatarFallback>
+          </Avatar>
+        </AvatarLightbox>
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-3xl font-bold uppercase leading-tight">{name}</h1>
           {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
