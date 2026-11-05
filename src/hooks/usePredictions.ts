@@ -62,7 +62,7 @@ export function usePredictions(season: number) {
 
       if (updateError) {
         console.error("Actualizar predicción:", updateError);
-        return { ok: false, message: updateError.code === "42501" ? closedMessage : "No pudimos guardar tu predicción." };
+        return { ok: false, message: "No pudimos guardar tu predicción. Probá de nuevo." };
       }
 
       if (!updated || updated.length === 0) {
@@ -70,7 +70,9 @@ export function usePredictions(season: number) {
 
         if (insertError) {
           console.error("Crear predicción:", insertError);
-          const blocked = insertError.code === "42501" || insertError.code === "23503";
+          const blocked =
+            (insertError.code === "42501" && insertError.message.includes("row-level security")) ||
+            insertError.code === "23503";
           return { ok: false, message: blocked ? closedMessage : "No pudimos guardar tu predicción." };
         }
       }
