@@ -968,3 +968,87 @@ export const getBonusSuggestions = createServerFn({ method: "GET" })
 
     return { values, notes };
   });
+
+  
+
+
+// ---------- Resultados completos de una carrera, para guardarlos en la base (Análisis) ----------
+
+export type SyncRow = {
+  driver_id: string;
+  driver_code: string | null;
+  driver_name: string;
+  constructor_id: string;
+  constructor_name: string;
+  grid: number;
+  final_position: number;
+  position_text: string;
+  points: number;
+  sprint_points: number;
+  status: string;
+  fastest_lap_rank: number | null;
+};
+
+interface SyncResultsResponse {
+  MRData: {
+    RaceTable: {
+      Races?: {
+        Results?: {
+          position: string;
+          positionText: string;
+          points: string;
+          grid: string;
+          status: string;
+          FastestLap?: { rank: string };
+          Driver: { driverId: string; code?: string; givenName: string; familyName: string };
+          Constructor: { constructorId: string; name: string };
+        }[];
+      }[];
+    };
+  };
+}
+
+interface SyncSprintResponse {
+  MRData: {
+    RaceTable: {
+      Races?: { SprintResults?: { points: string; Driver: { driverId: string } }[] }[];
+    };
+  };
+}
+
+export const getRaceSyncData = createServerFn({ method: "GET" })
+  .inputValidator((data: { round: number; hasSprint: boolean }) => {
+    if (!Number.isInteger(data.round) || data.round < 1 || data.round > 30) {
+      throw new Error("Ronda inválida");
+    }
+    if (typeof data.hasSprint !== "boolean") throw new Error("Pedido inválido");
+    return data;
+  })
+  .handler(async ({ data }): Promise<SyncRow[]> => {
+    const json = await fetchJolpica<SyncResultsResponse>(`/current/${data.round}/results/?limit=100`);
+    const results = json.MRData.RaceTable.Races?.[0]?.Results ?? [];
+
+    // En fines de semana con sprint, los puntos del sprint cuentan para el campeonato.
+    const sprintPoints = new Map<string, number>();
+    if (data.hasSprint && results.length > 0) {
+      const sprint = await fetchJolpica<SyncSprintResponse>(`/current/${data.round}/sprint/?limit=100`);
+      for (const entry of sprint.MRData.RaceTable.Races?.[0]?.SprintResults ?? []) {
+        sprintPoints.set(entry.Driver.driverId, Number(entry.points));
+      }
+    }
+
+    return results.map((r) => ({
+      driver_id: r.Driver.driverId,
+      driver_code: r.Driver.code ?? null,
+      driver_name: `${r.Driver.givenName} ${r.Driver.familyName}`,
+      constructor_id: r.Constructor.constructorId,
+      constructor_name: r.Constructor.name,
+      grid: Number(r.grid),
+      final_position: Number(r.position),
+      position_text: r.positionText,
+      points: Number(r.points),
+      sprint_points: sprintPoints.get(r.Driver.driverId) ?? 0,
+      status: r.status,
+      fastest_lap_rank: r.FastestLap ? Number(r.FastestLap.rank) : null,
+    }));
+  });

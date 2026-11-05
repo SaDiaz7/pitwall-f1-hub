@@ -439,6 +439,57 @@ export type Database = {
         }
         Relationships: []
       }
+      race_results: {
+        Row: {
+          constructor_id: string
+          constructor_name: string
+          driver_code: string | null
+          driver_id: string
+          driver_name: string
+          fastest_lap_rank: number | null
+          final_position: number
+          grid: number
+          points: number
+          position_text: string
+          round: number
+          season: number
+          sprint_points: number
+          status: string
+        }
+        Insert: {
+          constructor_id: string
+          constructor_name: string
+          driver_code?: string | null
+          driver_id: string
+          driver_name: string
+          fastest_lap_rank?: number | null
+          final_position: number
+          grid: number
+          points?: number
+          position_text: string
+          round: number
+          season: number
+          sprint_points?: number
+          status: string
+        }
+        Update: {
+          constructor_id?: string
+          constructor_name?: string
+          driver_code?: string | null
+          driver_id?: string
+          driver_name?: string
+          fastest_lap_rank?: number | null
+          final_position?: number
+          grid?: number
+          points?: number
+          position_text?: string
+          round?: number
+          season?: number
+          sprint_points?: number
+          status?: string
+        }
+        Relationships: []
+      }
       site_news: {
         Row: {
           active: boolean
@@ -710,6 +761,25 @@ export type Database = {
           username: string
         }[]
       }
+      get_season_results: {
+        Args: { p_season: number }
+        Returns: {
+          constructor_id: string
+          constructor_name: string
+          driver_code: string
+          driver_id: string
+          driver_name: string
+          fastest_lap_rank: number
+          final_position: number
+          grid: number
+          points: number
+          position_text: string
+          race_name: string
+          round: number
+          sprint_points: number
+          status: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       join_league: {
         Args: { p_code: string }
@@ -760,6 +830,10 @@ export type Database = {
       }
       send_friend_request: { Args: { p_user_id: string }; Returns: string }
       send_test_notification: { Args: never; Returns: undefined }
+      sync_race_results: {
+        Args: { p_round: number; p_rows: Json; p_season: number }
+        Returns: number
+      }
       username_available: { Args: { candidate: string }; Returns: boolean }
     }
     Enums: {

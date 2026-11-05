@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
+  Activity,
   CalendarDays,
   ChevronDown,
   Ellipsis,
@@ -37,6 +38,7 @@ export const navGroups = [
     items: [
       { to: "/calendario", label: "Calendario", icon: CalendarDays, public: true },
       { to: "/campeonato", label: "Campeonato", icon: Trophy, public: true },
+      { to: "/analisis", label: "Análisis", icon: Activity, public: true },
     ],
   },
   {

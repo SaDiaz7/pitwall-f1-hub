@@ -19,6 +19,7 @@ import { Route as RestablecerRouteImport } from './routes/restablecer'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
 import { Route as PrivadoAmigosRouteImport } from './routes/_privado.amigos'
+import { Route as PrivadoAnalisisRouteImport } from './routes/_privado.analisis'
 import { Route as PrivadoBingoRouteImport } from './routes/_privado.bingo'
 import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
 import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
@@ -81,6 +82,11 @@ const PrivadoAjustesRoute = PrivadoAjustesRouteImport.update({
 const PrivadoAmigosRoute = PrivadoAmigosRouteImport.update({
   id: '/amigos',
   path: '/amigos',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoAnalisisRoute = PrivadoAnalisisRouteImport.update({
+  id: '/analisis',
+  path: '/analisis',
   getParentRoute: () => PrivadoRoute,
 } as any)
 const PrivadoBingoRoute = PrivadoBingoRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/amigos': typeof PrivadoAmigosRoute
+  '/analisis': typeof PrivadoAnalisisRoute
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
   '/amigos': typeof PrivadoAmigosRoute
+  '/analisis': typeof PrivadoAnalisisRoute
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/terminos': typeof TerminosRoute
   '/_privado/ajustes': typeof PrivadoAjustesRoute
   '/_privado/amigos': typeof PrivadoAmigosRoute
+  '/_privado/analisis': typeof PrivadoAnalisisRoute
   '/_privado/bingo': typeof PrivadoBingoRoute
   '/_privado/calendario': typeof PrivadoCalendarioRoute
   '/_privado/campeonato': typeof PrivadoCampeonatoRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/ajustes'
     | '/amigos'
+    | '/analisis'
     | '/bingo'
     | '/calendario'
     | '/campeonato'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/ajustes'
     | '/amigos'
+    | '/analisis'
     | '/bingo'
     | '/calendario'
     | '/campeonato'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/_privado/ajustes'
     | '/_privado/amigos'
+    | '/_privado/analisis'
     | '/_privado/bingo'
     | '/_privado/calendario'
     | '/_privado/campeonato'
@@ -392,6 +404,13 @@ declare module '@tanstack/react-router' {
       path: '/amigos'
       fullPath: '/amigos'
       preLoaderRoute: typeof PrivadoAmigosRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/analisis': {
+      id: '/_privado/analisis'
+      path: '/analisis'
+      fullPath: '/analisis'
+      preLoaderRoute: typeof PrivadoAnalisisRouteImport
       parentRoute: typeof PrivadoRoute
     }
     '/_privado/bingo': {
@@ -498,6 +517,7 @@ declare module '@tanstack/react-router' {
 interface PrivadoRouteChildren {
   PrivadoAjustesRoute: typeof PrivadoAjustesRoute
   PrivadoAmigosRoute: typeof PrivadoAmigosRoute
+  PrivadoAnalisisRoute: typeof PrivadoAnalisisRoute
   PrivadoBingoRoute: typeof PrivadoBingoRoute
   PrivadoCalendarioRoute: typeof PrivadoCalendarioRoute
   PrivadoCampeonatoRoute: typeof PrivadoCampeonatoRoute
@@ -516,6 +536,7 @@ interface PrivadoRouteChildren {
 const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoAjustesRoute: PrivadoAjustesRoute,
   PrivadoAmigosRoute: PrivadoAmigosRoute,
+  PrivadoAnalisisRoute: PrivadoAnalisisRoute,
   PrivadoBingoRoute: PrivadoBingoRoute,
   PrivadoCalendarioRoute: PrivadoCalendarioRoute,
   PrivadoCampeonatoRoute: PrivadoCampeonatoRoute,

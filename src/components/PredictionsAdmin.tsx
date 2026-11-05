@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { RaceEvent } from "@/hooks/usePredictions";
 import { supabase } from "@/integrations/supabase/client";
-import { getBonusSuggestions, getDriverStandings, getRaceResults, getSchedule } from "@/lib/f1";
+import { getBonusSuggestions, getDriverStandings, getRaceResults, getRaceSyncData, getSchedule } from "@/lib/f1";
 import {
   BONUS_QUESTIONS,
   DNF_OPTIONS,
@@ -38,17 +38,21 @@ export function PredictionsAdmin() {
   const [busyRound, setBusyRound] = useState<number | null>(null);
   const [awarding, setAwarding] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
+  const [syncedRounds, setSyncedRounds] = useState<Set<number>>(new Set());
+  const [syncingResults, setSyncingResults] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [races, eventsResult, standings] = await Promise.all([
+      const [races, eventsResult, standings, resultsResult] = await Promise.all([
         getSchedule(),
         supabase.from("race_events").select("*").eq("season", season),
         getDriverStandings().catch((): Driver[] => []),
+        supabase.rpc("get_season_results", { p_season: season }),
       ]);
       setSchedule(races);
       setDrivers(standings);
       setEvents(Object.fromEntries((eventsResult.data ?? []).map((event) => [event.round, event])));
+      setSyncedRounds(new Set((resultsResult.data ?? []).map((row) => row.round)));
     } catch (error) {
       console.error("Cargar herramientas de predicciones:", error);
       setStatus({ type: "error", text: "No pudimos cargar el calendario." });
@@ -179,6 +183,60 @@ export function PredictionsAdmin() {
     }
     setStatus({ type: "ok", text: `Trofeos entregados: ${data ?? 0}.` });
   };
+
+
+    // Guarda en la base los resultados de las carreras terminadas (para la sección Análisis).
+  const syncResults = async (onlyMissing: boolean) => {
+    const targets = schedule.filter(
+      (gp) => gp.status === "finalizado" && (!onlyMissing || !syncedRounds.has(gp.round)),
+    );
+    if (targets.length === 0) {
+      setStatus({ type: "ok", text: "No hay carreras pendientes de sincronizar." });
+      return;
+    }
+
+    setStatus(null);
+    setSyncingResults(true);
+
+    let done = 0;
+    let failure: string | null = null;
+
+    for (const gp of targets) {
+      try {
+        const rows = await getRaceSyncData({
+          data: { round: gp.round, hasSprint: gp.sessions.some((s) => s.name === "Sprint") },
+        });
+        if (rows.length === 0) {
+          failure = `La API todavía no tiene los resultados de ${gp.name}.`;
+          break;
+        }
+
+        const { error } = await supabase.rpc("sync_race_results", {
+          p_season: seasonOf(gp),
+          p_round: gp.round,
+          p_rows: rows,
+        });
+        if (error) throw error;
+        done += 1;
+      } catch (error) {
+        console.error(`Sincronizar ${gp.name}:`, error);
+        failure = `No pudimos sincronizar ${gp.name}. Revisá la consola y probá de nuevo.`;
+        break;
+      }
+
+      // Una pausa corta para no saturar la API gratuita.
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
+    }
+
+    setSyncingResults(false);
+    await load();
+    setStatus(
+      failure
+        ? { type: "error", text: `${failure} (Se guardaron ${done} de ${targets.length}.)` }
+        : { type: "ok", text: `Resultados sincronizados: ${done} ${done === 1 ? "carrera" : "carreras"}.` },
+    );
+  };
+
 
   if (loading) return <p className="text-sm text-muted-foreground">Cargando…</p>;
 
@@ -318,6 +376,32 @@ export function PredictionsAdmin() {
         <Button type="button" disabled={awarding} onClick={awardTrophies} className="bg-gradient-primary font-semibold">
           {awarding ? "Entregando…" : `Entregar trofeos ${season}`}
         </Button>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border bg-card p-5 md:p-6">
+        <h2 className="text-xl font-bold uppercase">4. Sincronizar resultados</h2>
+        <p className="text-sm text-muted-foreground">
+          Guarda en la base los resultados de cada carrera terminada (y de sus sprints). Los usa la sección Análisis.
+          Hacelo después de cada carrera.
+        </p>
+        <p className="text-sm">
+          Carreras sincronizadas:{" "}
+          <span className="font-bold">{finished.filter((gp) => syncedRounds.has(gp.round)).length}</span> de{" "}
+          {finished.length}.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="button"
+            disabled={syncingResults}
+            onClick={() => syncResults(true)}
+            className="bg-gradient-primary font-semibold"
+          >
+            {syncingResults ? "Sincronizando…" : "Sincronizar pendientes"}
+          </Button>
+          <Button type="button" variant="outline" disabled={syncingResults} onClick={() => syncResults(false)}>
+            Resincronizar todas
+          </Button>
+        </div>
       </div>
 
       {status && (
