@@ -65,7 +65,7 @@ export function StandingsTable({
               <td className="px-3 py-3">
                 <div className="flex items-center gap-3">
                   <TeamStripe teamId={r.teamId ?? r.id} teamName={r.team ?? r.name} className="h-9" />
-                  {photos && <DriverAvatar name={r.name} photo={photos[r.id] ?? null} size="sm" />}
+                  {photos && <DriverAvatar name={r.name} photo={photos[r.id] ?? null} size="sm" zoom />}
                   <div className="min-w-0">
                     <div className="font-semibold">
                       {driverLinks ? (

@@ -424,6 +424,153 @@ export const getRaceResults = createServerFn({ method: "GET" })
     }));
   });
 
+
+// ---------- Replay de carrera (posiciones vuelta a vuelta) ----------
+
+interface LapsResponseRaw {
+  MRData: {
+    total: string;
+    RaceTable: {
+      Races?: {
+        Laps?: { number: string; Timings: { driverId: string; position: string }[] }[];
+      }[];
+    };
+  };
+}
+
+interface PitStopsResponseRaw {
+  MRData: {
+    RaceTable: {
+      Races?: {
+        PitStops?: { driverId: string; stop: string; lap: string; duration: string }[];
+      }[];
+    };
+  };
+}
+
+export interface ReplayDriver {
+  id: string;
+  code: string;
+  name: string;
+  teamName: string;
+  grid: number;
+  finish: number;
+  positionText: string;
+  status: string;
+  // Posición en cada vuelta. El índice 0 es la grilla de largada; null = ya no estaba en carrera.
+  positions: (number | null)[];
+}
+
+export interface ReplayPitStop {
+  driverId: string;
+  lap: number;
+  duration: string;
+}
+
+export interface RaceReplay {
+  totalLaps: number;
+  drivers: ReplayDriver[];
+  pitStops: ReplayPitStop[];
+}
+
+const LAPS_PAGE_SIZE = 100;
+const MAX_LAPS_PAGES = 30;
+const LAPS_PAGE_DELAY_MS = 300; // Jolpica permite unos 4 pedidos por segundo
+const REPLAY_TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
+
+const replayCache = new Map<number, { expires: number; data: RaceReplay }>();
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const shortCode = (familyName: string) =>
+  familyName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .slice(0, 3)
+    .toUpperCase();
+
+export const getRaceReplay = createServerFn({ method: "GET" })
+  .inputValidator((data: { round: number }) => {
+    if (!Number.isInteger(data.round) || data.round < 1 || data.round > 30) {
+      throw new Error("Ronda inválida");
+    }
+    return data;
+  })
+  .handler(async ({ data }): Promise<RaceReplay | null> => {
+    const cached = replayCache.get(data.round);
+    if (cached && cached.expires > Date.now()) return cached.data;
+
+    const resultsJson = await fetchJolpica<RaceResultsResponse>(`/current/${data.round}/results/?limit=100`);
+    const results = resultsJson.MRData.RaceTable.Races?.[0]?.Results ?? [];
+    if (results.length === 0) return null;
+
+    // Las vueltas vienen paginadas (pilotos x vueltas), así que se piden de a 100 registros.
+    const byLap = new Map<number, { driverId: string; position: number }[]>();
+    let offset = 0;
+    let total = Infinity;
+
+    for (let page = 0; page < MAX_LAPS_PAGES && offset < total; page++) {
+      if (page > 0) await sleep(LAPS_PAGE_DELAY_MS);
+
+      const json = await fetchJolpica<LapsResponseRaw>(
+        `/current/${data.round}/laps/?limit=${LAPS_PAGE_SIZE}&offset=${offset}`,
+      );
+      total = Number(json.MRData.total) || 0;
+
+      for (const lap of json.MRData.RaceTable.Races?.[0]?.Laps ?? []) {
+        const number = Number(lap.number);
+        const list = byLap.get(number) ?? [];
+        for (const timing of lap.Timings) {
+          list.push({ driverId: timing.driverId, position: Number(timing.position) });
+        }
+        byLap.set(number, list);
+      }
+      offset += LAPS_PAGE_SIZE;
+    }
+
+    const totalLaps = Math.max(0, ...byLap.keys());
+    if (totalLaps === 0) return null;
+
+    // Las paradas son opcionales: si fallan, el replay se muestra igual.
+    let pitStops: ReplayPitStop[] = [];
+    try {
+      const pitJson = await fetchJolpica<PitStopsResponseRaw>(`/current/${data.round}/pitstops/?limit=100`);
+      pitStops = (pitJson.MRData.RaceTable.Races?.[0]?.PitStops ?? []).map((stop) => ({
+        driverId: stop.driverId,
+        lap: Number(stop.lap),
+        duration: stop.duration,
+      }));
+    } catch (error) {
+      console.error("Paradas en boxes:", error);
+    }
+
+    const drivers: ReplayDriver[] = results.map((r) => {
+      const grid = Number(r.grid);
+      // Quien largó desde boxes (grilla 0) se cuenta al final de la fila.
+      const positions: (number | null)[] = [grid > 0 ? grid : results.length];
+      for (let lap = 1; lap <= totalLaps; lap++) {
+        const entry = byLap.get(lap)?.find((timing) => timing.driverId === r.Driver.driverId);
+        positions.push(entry ? entry.position : null);
+      }
+
+      return {
+        id: r.Driver.driverId,
+        code: shortCode(r.Driver.familyName),
+        name: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        teamName: r.Constructor.name,
+        grid,
+        finish: Number(r.position),
+        positionText: r.positionText,
+        status: r.status,
+        positions,
+      };
+    });
+
+    const replay: RaceReplay = { totalLaps, drivers, pitStops };
+    replayCache.set(data.round, { expires: Date.now() + REPLAY_TTL_MS, data: replay });
+    return replay;
+  });
+
 // ---------- Pronóstico del tiempo (Open-Meteo) ----------
 
 export interface WeatherDay {

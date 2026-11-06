@@ -108,6 +108,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dotd_votes: {
+        Row: {
+          created_at: string
+          driver_id: string
+          round: number
+          season: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          round: number
+          season: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          round?: number
+          season?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorite_constructors: {
         Row: {
           constructor_id: string
@@ -742,6 +769,29 @@ export type Database = {
       award_trophies: { Args: { p_season: number }; Returns: number }
       bonus_points: { Args: { answers: Json; results: Json }; Returns: number }
       create_league: { Args: { p_name: string }; Returns: string }
+      dotd_get: {
+        Args: { p_round: number; p_season: number }
+        Returns: {
+          my_vote: string
+          status: string
+          tally: Json
+          total_votes: number
+        }[]
+      }
+      dotd_season_ranking: {
+        Args: { p_season: number }
+        Returns: {
+          awards: number
+          driver_id: string
+          total_votes: number
+        }[]
+      }
+      dotd_vote: {
+        Args: { p_driver: string; p_round: number; p_season: number }
+        Returns: {
+          result: string
+        }[]
+      }
       game_circuit_list: {
         Args: never
         Returns: {

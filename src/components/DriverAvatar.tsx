@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AvatarLightbox } from "@/components/AvatarLightbox";
 import { getInitials } from "@/hooks/useProfile";
 import type { DriverPhoto } from "@/lib/f1";
 import { cn } from "@/lib/utils";
@@ -11,18 +12,21 @@ const SIZES = {
 } as const;
 
 // Foto del piloto en un círculo; si no hay foto (o no carga), sus iniciales.
+// Con zoom, al clickear la foto se abre en grande (no usar dentro de un link).
 export function DriverAvatar({
   name,
   photo,
   size = "md",
+  zoom = false,
 }: {
   name: string;
   photo?: DriverPhoto | null | undefined;
   size?: keyof typeof SIZES;
+  zoom?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
 
-  return (
+  const avatar = (
     <span
       className={cn(
         "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display font-bold",
@@ -43,4 +47,14 @@ export function DriverAvatar({
       )}
     </span>
   );
+
+  if (zoom && photo && !failed) {
+    return (
+      <AvatarLightbox src={photo.url} name={name}>
+        {avatar}
+      </AvatarLightbox>
+    );
+  }
+
+  return avatar;
 }

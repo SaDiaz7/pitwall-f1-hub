@@ -22,6 +22,7 @@ import type { RaceResult, WeatherForecast } from "@/lib/f1";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { TeamStripe } from "@/components/TeamStripe";
+import { RaceReplayPlayer } from "@/components/RaceReplayPlayer";
 
 const route = getRouteApi("/_privado/gp/$round");
 
@@ -247,6 +248,12 @@ export function GrandPrixPage() {
           )}
         </div>
       </div>
+      
+      {finished && (
+        <div className="mt-6">
+          <RaceReplayPlayer round={gp.round} />
+        </div>
+      )}
     </>
   );
 }

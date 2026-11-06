@@ -181,7 +181,7 @@ export function DriverPage() {
       <header className="mb-6 flex items-start justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <TeamStripe teamId={current?.driver.teamId} teamName={lastTeam} className="h-20" />
-          <DriverAvatar name={profile.name} photo={photo} size="xl" />
+          <DriverAvatar name={profile.name} photo={photo} size="xl" zoom />
           {profile.number !== null && (
             <span className="font-display text-5xl font-bold leading-none text-primary">{profile.number}</span>
           )}
