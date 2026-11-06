@@ -7,7 +7,8 @@ export type PrefKey =
   | "new_wallpaper"
   | "points_scored"
   | "driver_result"
-  | "prediction_reminder";
+  | "prediction_reminder"
+  | "daily_game";
 
 export type Prefs = Record<PrefKey, boolean>;
 
@@ -17,6 +18,7 @@ const DEFAULT_PREFS: Prefs = {
   points_scored: true,
   driver_result: true,
   prediction_reminder: true,
+  daily_game: true,
 };
 
 export function useNotificationPrefs() {
@@ -53,6 +55,7 @@ export function useNotificationPrefs() {
           points_scored: data.points_scored,
           driver_result: data.driver_result,
           prediction_reminder: data.prediction_reminder,
+          daily_game: data.daily_game,
         });
       }
       setLoading(false);

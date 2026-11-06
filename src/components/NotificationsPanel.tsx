@@ -26,6 +26,11 @@ const OPTIONS: Option[] = [
     title: "Recordatorio de predicciones",
     text: "Un aviso antes de que cierren las predicciones.",
   },
+  {
+    key: "daily_game",
+    title: "Juego diario",
+    text: "Un aviso al mediodía si todavía no jugaste el circuito del día.",
+  },
 ];
 
 type Message = { type: "ok" | "error"; text: string } | null;

@@ -117,6 +117,19 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
       };
     }
 
+    case "daily_game": {
+      const streak = typeof payload["streak"] === "number" ? payload["streak"] : 0;
+      return {
+        title: "Ya está el circuito de hoy",
+        body:
+          streak > 0
+            ? `Tu racha de ${streak} ${streak === 1 ? "día" : "días"} está en juego. ¿Lo reconocés por su trazado?`
+            : "Un circuito nuevo te espera. ¿Lo reconocés por su trazado?",
+        url: "/juego",
+        tag: `daily-game-${text(payload["date"], "hoy")}`,
+      };
+    }
+
     case "test":
       return {
         title: "Notificación de prueba",

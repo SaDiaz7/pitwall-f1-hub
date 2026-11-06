@@ -43,6 +43,7 @@ export interface TaskSummary {
   scoredRaces: number[];
   driverResultsQueued: number;
   remindersQueued: number;
+  dailyGameQueued: number;
   errors: string[];
 }
 
@@ -216,6 +217,13 @@ async function queueReminders(supabase: AdminClient): Promise<number> {
   return typeof data === "number" ? data : 0;
 }
 
+// 5. Aviso del juego diario (la lógica de horario y de quién lo recibe vive en la base de datos).
+async function queueDailyGame(supabase: AdminClient): Promise<number> {
+  const { data, error } = await supabase.rpc("queue_daily_game_reminders");
+  if (error) throw new Error(`No se pudo preparar el aviso del juego diario: ${error.message}`);
+  return typeof data === "number" ? data : 0;
+}
+
 export async function runRaceTasks(options: { forceSync: boolean }): Promise<TaskSummary> {
   const supabase = adminClient();
   const summary: TaskSummary = {
@@ -223,6 +231,7 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
     scoredRaces: [],
     driverResultsQueued: 0,
     remindersQueued: 0,
+    dailyGameQueued: 0,
     errors: [],
   };
 
@@ -254,6 +263,10 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
 
   await attempt("recordatorios", async () => {
     summary.remindersQueued = await queueReminders(supabase);
+  });
+
+  await attempt("aviso del juego diario", async () => {
+    summary.dailyGameQueued = await queueDailyGame(supabase);
   });
 
   return summary;
