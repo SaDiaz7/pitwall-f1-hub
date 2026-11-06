@@ -114,6 +114,7 @@ export function RaceReplayPlayer({ round }: { round: number }) {
 
         const colors: Record<string, string> = {};
         for (const driver of standings ?? []) {
+          if (!driver.teamName) continue;
           colors[driver.teamName] = getTeamColor(driver.teamId, driver.teamName);
         }
         setTeamColors(colors);
