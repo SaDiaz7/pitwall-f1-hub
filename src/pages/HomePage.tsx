@@ -31,6 +31,10 @@ import { DailyGameRankingCard } from "@/components/DailyGameRankingCard";
 import { DriverOfTheDayCard } from "@/components/DriverOfTheDayCard";
 import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
 
+import { DriverOfTheDaySection } from "@/components/DriverOfTheDaySection";
+import { TopFiveCard } from "@/components/TopFiveCard";
+import { WeekendCard } from "@/components/WeekendCard";
+
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 
@@ -387,10 +391,17 @@ export function HomePage() {
         ]}
       />
 
+      {(drivers.length > 0 || next) && (
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
+          {next && <WeekendCard gp={next} />}
+        </div>
+      )}
+
       {session && <MyDrivers drivers={drivers} results={lastResults} />}
 
       
-      {last && <LastRace gp={last} results={lastResults} />}
+      {last && <DriverOfTheDaySection gp={last} results={lastResults} drivers={drivers} dotd={dotd} />}
 
       {!sessionLoading && !session && <GuestFeatures />}
 

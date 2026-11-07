@@ -252,8 +252,8 @@ export function DriverOfTheDay({ season, round, results }: { season: number; rou
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border bg-card p-5">
-      <div>
+    <section id="piloto-del-dia" className="scroll-mt-6 space-y-4 rounded-2xl border bg-card p-5">      
+    <div>
         <h2 className="text-xl font-bold uppercase">Piloto del día</h2>
         <p className="text-sm text-muted-foreground">
           Votá al mejor piloto de la carrera. La votación dura 72 horas después de la largada y el resultado se ve
