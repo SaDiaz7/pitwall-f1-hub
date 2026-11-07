@@ -27,6 +27,10 @@ import { usePredictions } from "@/hooks/usePredictions";
 import { seasonOf } from "@/lib/predictions";
 import { RankingPreview } from "@/components/RankingPreview";
 
+import { DailyGameRankingCard } from "@/components/DailyGameRankingCard";
+import { DriverOfTheDayCard } from "@/components/DriverOfTheDayCard";
+import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
+
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 
@@ -280,6 +284,8 @@ export function HomePage() {
   const { events, predictions, loading: predictionsLoading } = usePredictions(season);
   const nextEvent = next ? events[next.round] : undefined;
   const { session, loading: sessionLoading } = useSession();
+  const lastSeason = last ? seasonOf(last) : season;
+  const dotd = useDriverOfTheDay(lastSeason, last?.round ?? 0);
 
   return (
     <>
@@ -351,6 +357,17 @@ export function HomePage() {
             glow: "shadow-glow",
             content: <DailyGameCard />,
           },
+          ...(last && dotd.status === "open" && !dotd.loading
+            ? [
+                {
+                  key: "driver-of-the-day",
+                  glow: "shadow-[0_0_50px_-10px_rgba(251,191,36,0.55)]",
+                  content: (
+                    <DriverOfTheDayCard gp={last} results={lastResults} drivers={drivers} myVote={dotd.myVote} />
+                  ),
+                },
+              ]
+            : []),
           ...(session && next && nextEvent && !predictionsLoading
             ? [
                 {
@@ -378,7 +395,11 @@ export function HomePage() {
       {!sessionLoading && !session && <GuestFeatures />}
 
       {session && !predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
-      {session && <RankingPreview season={season} />}
+      
+      <div className={cn("grid gap-x-6", session && "md:grid-cols-2")}>
+        {session && <RankingPreview season={season} />}
+        <DailyGameRankingCard />
+      </div>
 
       {session && <FavoriteWallpapers />}
       
