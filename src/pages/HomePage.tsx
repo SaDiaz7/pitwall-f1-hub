@@ -156,14 +156,14 @@ function MyDrivers({ drivers, results }: { drivers: Driver[]; results: RaceResul
         </Link>
       </div>
 
-      <ul className="flex gap-3 overflow-x-auto pb-2">
+      <ul className="flex gap-3 overflow-x-auto pb-3 pt-1">
         {mine.map(({ driver, position }) => (
           <li key={driver.id} className="min-w-60 shrink-0">
             <Link
               to="/piloto/$id"
               params={{ id: driver.id }}
               style={{ borderLeftColor: getTeamColor(driver.teamId, driver.teamName) }}
-              className="block rounded-2xl border border-l-4 bg-card p-4 transition-colors hover:bg-accent/40"
+              className="card-link block rounded-2xl border border-l-4 bg-card p-4 hover:bg-accent/40"
             >
               <div className="flex items-center gap-3">
                 <DriverAvatar name={driver.name} photo={photos[driver.id] ?? null} size="md" />
@@ -234,7 +234,7 @@ function FavoriteWallpapers() {
               <button
                 type="button"
                 onClick={() => setSelected(w)}
-                className="group relative block w-full overflow-hidden rounded-2xl border bg-card text-left"
+                className="card-link group relative block w-full overflow-hidden rounded-2xl border bg-card text-left"
               >
                 <img
                   src={getWallpaperUrls(w.id).thumb}
@@ -411,7 +411,7 @@ export function HomePage() {
             <Link
               key={to}
               to={to}
-              className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/50"
+              className="card-link flex items-center gap-3 rounded-2xl border bg-card p-4"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Icon className="h-5 w-5" />

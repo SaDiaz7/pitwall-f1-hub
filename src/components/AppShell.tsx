@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { NewsDialog } from "@/components/NewsDialog";
+import { NavProgress } from "@/components/NavProgress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
@@ -145,6 +146,11 @@ export function AppShell() {
   const { profile } = useProfile();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const navigating = useRouterState({ select: (state) => state.isLoading });
+  // Cambia recién cuando la página nueva terminó de cargar (así la animación de entrada se ve en el momento justo).
+  const pageKey = useRouterState({
+    select: (state) => state.resolvedLocation?.pathname ?? state.location.pathname,
+  });
 
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [moreOpen, setMoreOpen] = useState(false);
@@ -284,6 +290,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen md:flex">
+      <NavProgress />
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar p-5 md:flex">
         <Logo to="/inicio" />
         <nav className="mt-8 flex flex-col gap-1">
@@ -314,8 +321,17 @@ export function AppShell() {
             </Link>
           )}
         </header>
-        <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 md:px-8 md:pb-10 md:pt-10">
-          {blocked ? <p className="text-sm text-muted-foreground">Cargando…</p> : <Outlet />}
+        <main
+          data-navigating={navigating ? "true" : "false"}
+          className="nav-dim mx-auto w-full max-w-5xl px-4 pb-28 pt-6 md:px-8 md:pb-10 md:pt-10"
+        >
+          {blocked ? (
+            <p className="text-sm text-muted-foreground">Cargando…</p>
+          ) : (
+            <div key={pageKey} className="page-enter">
+              <Outlet />
+            </div>
+          )}
         </main>
       </div>
 

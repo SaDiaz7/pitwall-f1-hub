@@ -42,7 +42,7 @@ function Board({ rows, userId }: { rows: LeaderboardRow[]; userId: string | unde
               to="/usuario/$id"
               params={{ id: row.user_id }}
               className={cn(
-                "flex items-center gap-3 rounded-2xl border bg-card p-3 transition-colors hover:bg-accent/40",
+                "card-link flex items-center gap-3 rounded-2xl border bg-card p-3 hover:bg-accent/40",
                 mine && "border-primary/60",
               )}
             >
