@@ -1199,3 +1199,165 @@ export const getRaceSyncData = createServerFn({ method: "GET" })
       fastest_lap_rank: r.FastestLap ? Number(r.FastestLap.rank) : null,
     }));
   });
+
+  
+// ---------- Resultados de prácticas, clasificación y sprint (OpenF1) ----------
+
+interface OpenF1SessionInfo {
+  session_key: number;
+  session_type?: string | null;
+  session_name?: string | null;
+  date_start: string;
+  date_end?: string | null;
+}
+
+interface OpenF1ResultRaw {
+  position?: number | null;
+  driver_number: number;
+  number_of_laps?: number | null;
+  dnf?: boolean;
+  dns?: boolean;
+  dsq?: boolean;
+  duration?: number | (number | null)[] | null;
+  gap_to_leader?: number | string | (number | null)[] | null;
+}
+
+interface OpenF1DriverRaw {
+  driver_number: number;
+  first_name?: string | null;
+  last_name?: string | null;
+  full_name?: string | null;
+  name_acronym?: string | null;
+  team_name?: string | null;
+  team_colour?: string | null;
+}
+
+export type SessionResultKind = "practice" | "qualifying" | "race";
+
+export interface SessionResultRow {
+  position: number | null;
+  code: string;
+  name: string;
+  teamName: string;
+  teamColor: string | null;
+  laps: number | null;
+  // Prácticas: mejor vuelta. Carrera o sprint: tiempo del ganador. Clasificación: mejor tiempo del piloto.
+  best: string | null;
+  gap: string | null;
+  // Solo clasificación: tiempos de Q1, Q2 y Q3 (null si no llegó a esa ronda).
+  q: (string | null)[] | null;
+  status: "dnf" | "dns" | "dsq" | null;
+}
+
+export interface SessionResults {
+  kind: SessionResultKind;
+  rows: SessionResultRow[];
+}
+
+const OPENF1_SESSION_TOLERANCE_MS = 45 * 60 * 1000;
+const openF1Cache = new Map<string, { expires: number; data: unknown }>();
+
+async function fetchOpenF1Cached<T>(path: string, ttlMs: number): Promise<T> {
+  const cached = openF1Cache.get(path);
+  if (cached && cached.expires > Date.now()) return cached.data as T;
+  const data = await fetchOpenF1<T>(path);
+  openF1Cache.set(path, { expires: Date.now() + ttlMs, data });
+  return data;
+}
+
+// 80.267 -> "1:20.267"
+function formatLapTime(seconds: unknown): string | null {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds)) return null;
+  const total = Math.round(seconds * 1000);
+  const hours = Math.floor(total / 3_600_000);
+  const minutes = Math.floor((total % 3_600_000) / 60_000);
+  const rest = (total % 60_000) / 1000;
+  const secs = rest.toFixed(3).padStart(6, "0");
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, "0")}:${secs}`;
+  if (minutes > 0) return `${minutes}:${secs}`;
+  return rest.toFixed(3);
+}
+
+function formatGap(gap: unknown): string | null {
+  if (typeof gap === "number") return gap > 0 ? `+${gap.toFixed(3)}` : null;
+  if (typeof gap === "string" && gap.trim()) return gap;
+  return null;
+}
+
+// Resultados de una sesión (práctica, clasificación o sprint). Se ubica la sesión por su horario de inicio.
+export const getSessionResults = createServerFn({ method: "GET" })
+  .inputValidator((data: { start: string }) => {
+    if (!Number.isFinite(Date.parse(data.start))) throw new Error("Horario inválido");
+    return data;
+  })
+  .handler(async ({ data }): Promise<SessionResults | null> => {
+    const target = Date.parse(data.start);
+    const year = new Date(target).getUTCFullYear();
+    if (year < 2023 || year > 2100) throw new Error("Año inválido");
+
+    const sessions = await fetchOpenF1Cached<OpenF1SessionInfo[]>(`/sessions?year=${year}`, 10 * 60_000);
+    if (!Array.isArray(sessions)) return null;
+
+    let match: OpenF1SessionInfo | null = null;
+    let bestDiff = Infinity;
+    for (const session of sessions) {
+      const diff = Math.abs(Date.parse(session.date_start) - target);
+      if (diff < bestDiff) {
+        match = session;
+        bestDiff = diff;
+      }
+    }
+    if (!match || bestDiff > OPENF1_SESSION_TOLERANCE_MS) return null;
+
+    // Si la sesión todavía no terminó, no se muestran resultados parciales.
+    const sessionEnd = Date.parse(match.date_end ?? match.date_start);
+    if (!Number.isFinite(sessionEnd) || sessionEnd > Date.now()) return null;
+
+    const [results, drivers] = await Promise.all([
+      fetchOpenF1Cached<OpenF1ResultRaw[]>(`/session_result?session_key=${match.session_key}`, 5 * 60_000),
+      fetchOpenF1Cached<OpenF1DriverRaw[]>(`/drivers?session_key=${match.session_key}`, 30 * 60_000),
+    ]);
+    if (!Array.isArray(results) || results.length === 0) return null;
+
+    const type = (match.session_type ?? "").toLowerCase();
+    const kind: SessionResultKind = type === "qualifying" ? "qualifying" : type === "race" ? "race" : "practice";
+
+    const byNumber = new Map((Array.isArray(drivers) ? drivers : []).map((d) => [d.driver_number, d]));
+
+    const rows = results.map((r): SessionResultRow => {
+      const driver = byNumber.get(r.driver_number);
+      const fullName = `${driver?.first_name ?? ""} ${driver?.last_name ?? ""}`.trim();
+
+      let best: string | null = null;
+      let gap: string | null = null;
+      let q: (string | null)[] | null = null;
+
+      if (kind === "qualifying" && Array.isArray(r.duration)) {
+        const times = r.duration;
+        q = [0, 1, 2].map((index) => formatLapTime(times[index]));
+        best = [...q].reverse().find((value) => value !== null) ?? null;
+      } else if (kind === "race") {
+        best = r.position === 1 && typeof r.duration === "number" ? formatLapTime(r.duration) : null;
+        gap = r.position === 1 ? null : formatGap(r.gap_to_leader);
+      } else {
+        best = typeof r.duration === "number" ? formatLapTime(r.duration) : null;
+        gap = formatGap(r.gap_to_leader);
+      }
+
+      return {
+        position: typeof r.position === "number" ? r.position : null,
+        code: driver?.name_acronym ?? `#${r.driver_number}`,
+        name: fullName || driver?.full_name || `Piloto ${r.driver_number}`,
+        teamName: driver?.team_name ?? "",
+        teamColor: driver?.team_colour ? `#${driver.team_colour}` : null,
+        laps: typeof r.number_of_laps === "number" ? r.number_of_laps : null,
+        best,
+        gap,
+        q,
+        status: r.dsq ? "dsq" : r.dns ? "dns" : r.dnf ? "dnf" : null,
+      };
+    });
+
+    rows.sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
+    return { kind, rows };
+  });

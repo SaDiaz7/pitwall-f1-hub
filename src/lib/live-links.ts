@@ -4,7 +4,7 @@ export const LIVE_LINKS = [
     key: "dash",
     label: "Dashboard en vivo",
     hint: "F1 Dash: posiciones, neumáticos, sectores y paradas (sitio de terceros, no oficial)",
-    url: "https://f1-dash.com",
+    url: "https://app.formula1dashboard.com/live-timing/",
   },
   {
     key: "stream",
@@ -14,8 +14,8 @@ export const LIVE_LINKS = [
   },
   {
     key: "f1",
-    label: "Página oficial de la F1",
+    label: "Página oficial de la F1 TV",
     hint: "formula1.com",
-    url: "https://www.formula1.com",
+    url: "https://f1tv.formula1.com",
   },
 ] as const;

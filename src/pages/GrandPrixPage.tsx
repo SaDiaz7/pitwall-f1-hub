@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -8,7 +9,10 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
+  Crown,
   Droplets,
+  MapPin,
+  Play,
   Sun,
   Wind,
   type LucideIcon,
@@ -18,6 +22,8 @@ import { CircuitMap } from "@/components/CircuitMap";
 import { PageHeader } from "@/components/PageHeader";
 import { SessionsList } from "@/components/SessionsList";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
 import type { RaceResult, WeatherForecast } from "@/lib/f1";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -25,6 +31,7 @@ import { TeamStripe } from "@/components/TeamStripe";
 import { RaceReplayPlayer } from "@/components/RaceReplayPlayer";
 import { DriverOfTheDay } from "@/components/DriverOfTheDay";
 import { LiveBanner } from "@/components/LiveBanner";
+import { SessionResultsTabs } from "@/components/SessionResultsTabs";
 
 const route = getRouteApi("/_privado/gp/$round");
 
@@ -74,7 +81,12 @@ const dayFormatter = new Intl.DateTimeFormat("es-AR", {
   timeZone: "UTC",
 });
 
+// Cantidad de filas que se ven al principio; el resto se abre con "Ver los ...".
+const COMPACT_ROWS = 10;
+
 function ResultsTable({ results }: { results: RaceResult[] }) {
+  const [showAll, setShowAll] = useState(false);
+
   if (results.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -83,50 +95,64 @@ function ResultsTable({ results }: { results: RaceResult[] }) {
     );
   }
 
+  const rows = showAll ? results : results.slice(0, COMPACT_ROWS);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-xs uppercase tracking-wider text-muted-foreground">
-          <tr>
-            <th className="px-2 py-2 text-left">Pos</th>
-            <th className="px-2 py-2 text-left">Piloto</th>
-            <th className="hidden px-2 py-2 text-left sm:table-cell">Equipo</th>
-            <th className="px-2 py-2 text-right">Tiempo / estado</th>
-            <th className="px-2 py-2 text-right">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((r) => (
-            <tr key={`${r.position}-${r.name}`} className="border-t">
-              <td className="px-2 py-2">
-                <span
-                  className={cn(
-                    "inline-flex h-6 min-w-6 items-center justify-center rounded-md px-1 font-display text-sm font-bold",
-                    r.position === 1
-                      ? "bg-gradient-primary text-primary-foreground"
-                      : "bg-secondary",
-                  )}
-                >
-                  {r.positionText}
-                </span>
-              </td>
-              <td className="px-2 py-2 font-semibold">
-                <span className="flex items-center gap-2">
-                  <TeamStripe teamName={r.teamName} className="h-5" />
-                  {r.name}
-                </span>
-              </td>
-              <td className="hidden px-2 py-2 text-muted-foreground sm:table-cell">{r.teamName}</td>
-              <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
-                {r.time || formatStatus(r.status)}
-              </td>
-              <td className="px-2 py-2 text-right font-display font-bold tabular-nums">
-                {r.points}
-              </td>
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-xs uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Pos</th>
+              <th className="px-2 py-1.5 text-left">Piloto</th>
+              <th className="hidden px-2 py-1.5 text-left sm:table-cell">Equipo</th>
+              <th className="px-2 py-1.5 text-right">Tiempo / estado</th>
+              <th className="px-2 py-1.5 text-right">Pts</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={`${r.position}-${r.name}`} className="border-t">
+                <td className="px-2 py-1.5">
+                  <span
+                    className={cn(
+                      "inline-flex h-6 min-w-6 items-center justify-center rounded-md px-1 font-display text-sm font-bold",
+                      r.position === 1
+                        ? "bg-gradient-primary text-primary-foreground"
+                        : "bg-secondary",
+                    )}
+                  >
+                    {r.positionText}
+                  </span>
+                </td>
+                <td className="px-2 py-1.5 font-semibold">
+                  <span className="flex items-center gap-2">
+                    <TeamStripe teamName={r.teamName} className="h-5" />
+                    {r.name}
+                  </span>
+                </td>
+                <td className="hidden px-2 py-1.5 text-muted-foreground sm:table-cell">{r.teamName}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">
+                  {r.time || formatStatus(r.status)}
+                </td>
+                <td className="px-2 py-1.5 text-right font-display font-bold tabular-nums">
+                  {r.points}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {results.length > COMPACT_ROWS && (
+        <button
+          type="button"
+          onClick={() => setShowAll((value) => !value)}
+          className="mt-3 text-sm font-semibold text-primary hover:underline"
+        >
+          {showAll ? "Ver menos" : `Ver los ${results.length}`}
+        </button>
+      )}
     </div>
   );
 }
@@ -199,10 +225,61 @@ function WeatherCard({
   );
 }
 
+const CHIP_CLASS =
+  "inline-flex shrink-0 items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:border-primary/60 active:scale-95";
+
+// Atajos siempre a la vista (también en celular) hacia las secciones de más abajo.
+function QuickNav({ season, round, results }: { season: number; round: number; results: RaceResult[] }) {
+  const dotd = useDriverOfTheDay(season, round);
+
+  const go = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const winner = dotd.status === "closed" ? dotd.tally[0] : undefined;
+  const winnerName = winner ? (results.find((r) => r.driverId === winner.driver_id)?.name ?? null) : null;
+  const open = dotd.status === "open";
+
+  let dotdLabel = "Piloto del día";
+  if (open) dotdLabel = "Piloto del día · votación abierta";
+  else if (dotd.status === "closed" && winnerName) dotdLabel = `Piloto del día: ${winnerName}`;
+  else if (dotd.status === "not_open" && !dotd.loading && !dotd.error) dotdLabel = "Piloto del día · pronto";
+
+  return (
+    <nav aria-label="Atajos de la página" className="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 py-1">
+      <button
+        type="button"
+        onClick={() => go("piloto-del-dia")}
+        className={cn(CHIP_CLASS, open && "border-primary/60 text-primary")}
+      >
+        {open && (
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+          </span>
+        )}
+        {dotd.status === "closed" && winnerName && <Crown className="h-4 w-4 text-amber-400" />}
+        {dotdLabel}
+      </button>
+
+      <button type="button" onClick={() => go("replay")} className={CHIP_CLASS}>
+        <Play className="h-4 w-4 text-primary" />
+        Replay de la carrera
+      </button>
+
+      <button type="button" onClick={() => go("circuito")} className={cn(CHIP_CLASS, "lg:hidden")}>
+        <MapPin className="h-4 w-4 text-primary" />
+        Circuito
+      </button>
+    </nav>
+  );
+}
+
 export function GrandPrixPage() {
   const { gp, results, weather } = route.useLoaderData();
   const finished = gp.status === "finalizado";
   const raceStart = gp.sessions.find((s) => s.name === "Carrera")?.start;
+  const season = Number(gp.date.slice(0, 4));
 
   return (
     <>
@@ -215,7 +292,7 @@ export function GrandPrixPage() {
 
       <PageHeader title={gp.name} subtitle={`${gp.circuit} · ${gp.country}`} />
 
-      <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
+      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
         <StatusBadge status={gp.status} />
         <span className="text-muted-foreground">
           Ronda {gp.round} ·{" "}
@@ -224,23 +301,43 @@ export function GrandPrixPage() {
       </div>
 
       {!finished && <LiveBanner gp={gp} className="mb-6" />}
+      {finished && <QuickNav season={season} round={gp.round} results={results} />}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start">
+        {/* Circuito: a la izquierda en computadora; al final en celular */}
+        <aside id="circuito" className="order-last scroll-mt-6 space-y-6 lg:sticky lg:top-6 lg:order-none">
           <section className="rounded-2xl border bg-card p-5">
-            <div className="h-64 text-primary">
+            <div className="h-48 text-primary lg:h-56">
               <CircuitMap lat={gp.lat} lng={gp.lng} label={gp.circuit} />
             </div>
           </section>
           <CircuitFacts circuitId={gp.circuitId} circuitName={gp.circuit} />
-        </div>
+        </aside>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {finished ? (
-            <section className="space-y-3 rounded-2xl border bg-card p-5">
-              <h2 className="text-xl font-bold uppercase">Clasificación de la carrera</h2>
-              <ResultsTable results={results} />
-            </section>
+            <>
+              <section className="rounded-2xl border bg-card p-5">
+                <Tabs defaultValue="carrera">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="carrera">Carrera</TabsTrigger>
+                    <TabsTrigger value="sesiones">Otras sesiones</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="carrera">
+                    <ResultsTable results={results} />
+                  </TabsContent>
+                  <TabsContent value="sesiones">
+                    <SessionResultsTabs gp={gp} embedded />
+                  </TabsContent>
+                </Tabs>
+              </section>
+
+              <DriverOfTheDay season={season} round={gp.round} results={results} />
+
+              <div id="replay" className="scroll-mt-6">
+                <RaceReplayPlayer round={gp.round} />
+              </div>
+            </>
           ) : (
             <>
               <section className="space-y-3 rounded-2xl border bg-card p-5">
@@ -248,22 +345,11 @@ export function GrandPrixPage() {
                 <SessionsList sessions={gp.sessions} />
               </section>
               <WeatherCard weather={weather} raceStart={raceStart} fallbackDate={gp.date} />
+              <SessionResultsTabs gp={gp} />
             </>
           )}
         </div>
       </div>
-      
-      {finished && (
-        <div className="mt-6">
-          <DriverOfTheDay season={Number(gp.date.slice(0, 4))} round={gp.round} results={results} />
-        </div>
-      )}
-
-      {finished && (
-        <div className="mt-6">
-          <RaceReplayPlayer round={gp.round} />
-        </div>
-      )}
     </>
   );
 }
