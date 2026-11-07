@@ -34,7 +34,7 @@ import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
 import { DriverOfTheDaySection } from "@/components/DriverOfTheDaySection";
 import { TopFiveCard } from "@/components/TopFiveCard";
 import { WeekendCard } from "@/components/WeekendCard";
-
+import { LiveBanner } from "@/components/LiveBanner";
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 
@@ -391,15 +391,14 @@ export function HomePage() {
         ]}
       />
 
+      {next && <LiveBanner gp={next} className="mt-10" />}
+
       {(drivers.length > 0 || next) && (
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
           {next && <WeekendCard gp={next} />}
         </div>
       )}
-
-      {session && <MyDrivers drivers={drivers} results={lastResults} />}
-
       
       {last && <DriverOfTheDaySection gp={last} results={lastResults} drivers={drivers} dotd={dotd} />}
 
@@ -411,6 +410,8 @@ export function HomePage() {
         {session && <RankingPreview season={season} />}
         <DailyGameRankingCard />
       </div>
+
+      {session && <MyDrivers drivers={drivers} results={lastResults} />}
 
       {session && <FavoriteWallpapers />}
       

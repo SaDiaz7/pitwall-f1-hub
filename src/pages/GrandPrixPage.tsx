@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { TeamStripe } from "@/components/TeamStripe";
 import { RaceReplayPlayer } from "@/components/RaceReplayPlayer";
 import { DriverOfTheDay } from "@/components/DriverOfTheDay";
+import { LiveBanner } from "@/components/LiveBanner";
 
 const route = getRouteApi("/_privado/gp/$round");
 
@@ -221,6 +222,8 @@ export function GrandPrixPage() {
           {formatDate(gp.date, { day: "numeric", month: "long", year: "numeric" })}
         </span>
       </div>
+
+      {!finished && <LiveBanner gp={gp} className="mb-6" />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
