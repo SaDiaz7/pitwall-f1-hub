@@ -402,6 +402,8 @@ export function HomePage() {
 
       <NewToF1Card className="mt-10" />
 
+      {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
+
       {(drivers.length > 0 || next) && (
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
@@ -409,7 +411,7 @@ export function HomePage() {
         </div>
       )}
       
-      {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
+
 
       {!sessionLoading && !session && <GuestFeatures />}
 
