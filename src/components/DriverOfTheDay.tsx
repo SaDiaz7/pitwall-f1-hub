@@ -13,6 +13,13 @@ import { cn } from "@/lib/utils";
 interface DriverInfo {
   name: string;
   wikiUrl: string | null;
+  teamName: string;
+}
+
+interface Candidate {
+  driverId: string;
+  name: string;
+  teamName: string;
 }
 
 interface SeasonRankRow {
@@ -77,14 +84,23 @@ export function DriverOfTheDay({ season, round, results }: { season: number; rou
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // Nombres y links de Wikipedia de los pilotos de la temporada (para las fotos).
+  // Si se llegó con un link (#piloto-del-dia), baja hasta esta sección.
+  useEffect(() => {
+    if (window.location.hash === "#piloto-del-dia") {
+      document.getElementById("piloto-del-dia")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
+  // Nombres, equipos y links de Wikipedia de los pilotos de la temporada (para las fotos y los candidatos).
   useEffect(() => {
     let cancelled = false;
     getDriverStandings()
       .then((drivers) => {
         if (cancelled) return;
         const next: Record<string, DriverInfo> = {};
-        for (const driver of drivers) next[driver.id] = { name: driver.name, wikiUrl: driver.wikiUrl ?? null };
+        for (const driver of drivers) {
+          next[driver.id] = { name: driver.name, wikiUrl: driver.wikiUrl ?? null, teamName: driver.teamName ?? "" };
+        }
         setInfo(next);
       })
       .catch(() => {});
@@ -109,10 +125,22 @@ export function DriverOfTheDay({ season, round, results }: { season: number; rou
     };
   }, [season]);
 
-  const photos = useDriverPhotos(results.map((r) => ({ id: r.driverId, wikiUrl: info[r.driverId]?.wikiUrl ?? null })));
+  // Con la clasificación oficial se vota entre quienes corrieron; mientras tanto, entre los pilotos de la temporada.
+  const candidates: Candidate[] =
+    results.length > 0
+      ? results.map((r) => ({ driverId: r.driverId, name: r.name, teamName: r.teamName }))
+      : Object.entries(info).map(([driverId, driver]) => ({
+          driverId,
+          name: driver.name,
+          teamName: driver.teamName,
+        }));
+
+  const photos = useDriverPhotos(
+    candidates.map((c) => ({ id: c.driverId, wikiUrl: info[c.driverId]?.wikiUrl ?? null })),
+  );
 
   const nameOf = (driverId: string) =>
-    results.find((r) => r.driverId === driverId)?.name ?? info[driverId]?.name ?? driverId;
+    candidates.find((c) => c.driverId === driverId)?.name ?? info[driverId]?.name ?? driverId;
 
   const onVote = async () => {
     if (!selected) return;
@@ -154,36 +182,37 @@ export function DriverOfTheDay({ season, round, results }: { season: number; rou
   } else if (status === "not_open") {
     body = (
       <p className="text-sm text-muted-foreground">
-        La votación abre unas horas después de que termine la carrera. ¡Volvé en un rato!
+        La votación abre en las últimas vueltas de la carrera (unos 75 minutos después de la largada). ¡Volvé en un
+        rato!
       </p>
     );
   } else if (showVote) {
     body =
-      results.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No pudimos cargar los pilotos de la carrera.</p>
+      candidates.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Cargando los pilotos de la carrera…</p>
       ) : (
         <div className="space-y-3">
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((r) => (
-              <li key={r.driverId}>
+            {candidates.map((c) => (
+              <li key={c.driverId}>
                 <button
                   type="button"
-                  onClick={() => setSelected(r.driverId)}
-                  aria-pressed={selected === r.driverId}
+                  onClick={() => setSelected(c.driverId)}
+                  aria-pressed={selected === c.driverId}
                   className={cn(
                     "flex w-full items-center gap-2 rounded-xl border bg-background/40 p-2 text-left transition-all hover:-translate-y-0.5 hover:border-primary/60 active:scale-95",
-                    selected === r.driverId && "border-primary bg-primary/15",
+                    selected === c.driverId && "border-primary bg-primary/15",
                   )}
                 >
-                  <DriverAvatar name={r.name} photo={photos[r.driverId] ?? null} size="md" />
+                  <DriverAvatar name={c.name} photo={photos[c.driverId] ?? null} size="md" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{r.name}</span>
+                    <span className="block truncate text-sm font-semibold">{c.name}</span>
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <TeamStripe teamName={r.teamName} className="h-3" />
-                      <span className="truncate">{r.teamName}</span>
+                      <TeamStripe teamName={c.teamName} className="h-3" />
+                      <span className="truncate">{c.teamName}</span>
                     </span>
                   </span>
-                  {selected === r.driverId && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                  {selected === c.driverId && <Check className="h-4 w-4 shrink-0 text-primary" />}
                 </button>
               </li>
             ))}
@@ -252,12 +281,12 @@ export function DriverOfTheDay({ season, round, results }: { season: number; rou
   }
 
   return (
-    <section id="piloto-del-dia" className="scroll-mt-6 space-y-4 rounded-2xl border bg-card p-5">      
-    <div>
+    <section id="piloto-del-dia" className="scroll-mt-6 space-y-4 rounded-2xl border bg-card p-5">
+      <div>
         <h2 className="text-xl font-bold uppercase">Piloto del día</h2>
         <p className="text-sm text-muted-foreground">
-          Votá al mejor piloto de la carrera. La votación dura 72 horas después de la largada y el resultado se ve
-          cuando votás.
+          Votá al mejor piloto de la carrera. La votación abre en las últimas vueltas, dura 72 horas después de la
+          largada y el resultado se ve cuando votás.
         </p>
       </div>
 

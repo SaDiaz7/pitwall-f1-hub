@@ -13,7 +13,7 @@ import type { Driver, GrandPrix } from "@/lib/types";
 type DotdState = ReturnType<typeof useDriverOfTheDay>;
 
 const HOUR = 3_600_000;
-const OPENS_AFTER = 3 * HOUR; // la votación abre 3 horas después de la largada
+const OPENS_AFTER = 75 * 60_000; // la votación abre 75 minutos después de la largada (últimas vueltas)
 const CLOSES_AFTER = 72 * HOUR; // y cierra a las 72 horas
 
 const BUTTON_PRIMARY =
@@ -44,7 +44,11 @@ export function DriverOfTheDaySection({
 }) {
   const now = useNow(30_000);
 
-  const top = results.slice(0, 5);
+  // Sin clasificación oficial todavía, se muestran los líderes del campeonato.
+  const top: { driverId: string; name: string }[] =
+    results.length > 0
+      ? results.slice(0, 5)
+      : drivers.slice(0, 5).map((driver) => ({ driverId: driver.id, name: driver.name })); 
   const winner = dotd.status === "closed" ? dotd.tally[0] : undefined;
   const wikiById = new Map(drivers.map((driver) => [driver.id, driver.wikiUrl ?? null]));
   const photoIds = [...new Set([...top.map((r) => r.driverId), ...(winner ? [winner.driver_id] : [])])];
@@ -174,7 +178,7 @@ export function DriverOfTheDaySection({
         </p>
         <p className="text-sm text-muted-foreground">
           {opensIn
-            ? `Abre en ${opensIn}, 3 horas después de la largada de ${gp.name}.`
+            ? `Abre en ${opensIn}, 75 minutos después de la largada de ${gp.name}.`
             : `Abre unas horas después de que termine ${gp.name}.`}
         </p>
         <GoLink round={gp.round} className={BUTTON_GHOST}>

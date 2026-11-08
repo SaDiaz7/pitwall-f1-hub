@@ -15,7 +15,10 @@ export function DriverOfTheDayCard({
   drivers: Driver[];
   myVote: string | null;
 }) {
-  const top = results.slice(0, 5);
+  const top: { driverId: string; name: string }[] =
+    results.length > 0
+      ? results.slice(0, 5)
+      : drivers.slice(0, 5).map((driver) => ({ driverId: driver.id, name: driver.name }));
   const wikiById = new Map(drivers.map((driver) => [driver.id, driver.wikiUrl ?? null]));
   const photos = useDriverPhotos(top.map((r) => ({ id: r.driverId, wikiUrl: wikiById.get(r.driverId) ?? null })));
   const votedName = myVote ? (results.find((r) => r.driverId === myVote)?.name ?? null) : null;

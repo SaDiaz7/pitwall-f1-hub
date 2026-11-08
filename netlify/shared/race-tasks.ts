@@ -43,6 +43,7 @@ export interface TaskSummary {
   scoredRaces: number[];
   driverResultsQueued: number;
   remindersQueued: number;
+  dotdOpenQueued: number;
   dailyGameQueued: number;
   errors: string[];
 }
@@ -224,6 +225,13 @@ async function queueDailyGame(supabase: AdminClient): Promise<number> {
   return typeof data === "number" ? data : 0;
 }
 
+// 6. Aviso de "se abrió la votación del Piloto del día" (la lógica de horario vive en la base de datos).
+async function queueDotdOpen(supabase: AdminClient): Promise<number> {
+  const { data, error } = await supabase.rpc("queue_dotd_open_notifications");
+  if (error) throw new Error(`No se pudo preparar el aviso del Piloto del día: ${error.message}`);
+  return typeof data === "number" ? data : 0;
+}
+
 export async function runRaceTasks(options: { forceSync: boolean }): Promise<TaskSummary> {
   const supabase = adminClient();
   const summary: TaskSummary = {
@@ -232,6 +240,7 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
     driverResultsQueued: 0,
     remindersQueued: 0,
     dailyGameQueued: 0,
+    dotdOpenQueued: 0,
     errors: [],
   };
 
@@ -267,6 +276,10 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
 
   await attempt("aviso del juego diario", async () => {
     summary.dailyGameQueued = await queueDailyGame(supabase);
+  });
+
+  await attempt("aviso del piloto del día", async () => {
+    summary.dotdOpenQueued = await queueDotdOpen(supabase);
   });
 
   return summary;

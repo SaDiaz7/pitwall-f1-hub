@@ -24,6 +24,7 @@ import { SessionsList } from "@/components/SessionsList";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
+import { useNow } from "@/hooks/useNow";
 import type { RaceResult, WeatherForecast } from "@/lib/f1";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -229,7 +230,17 @@ const CHIP_CLASS =
   "inline-flex shrink-0 items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:border-primary/60 active:scale-95";
 
 // Atajos siempre a la vista (también en celular) hacia las secciones de más abajo.
-function QuickNav({ season, round, results }: { season: number; round: number; results: RaceResult[] }) {
+function QuickNav({
+  season,
+  round,
+  results,
+  showReplay,
+}: {
+  season: number;
+  round: number;
+  results: RaceResult[];
+  showReplay: boolean;
+}) {  
   const dotd = useDriverOfTheDay(season, round);
 
   const go = (id: string) => {
@@ -262,10 +273,12 @@ function QuickNav({ season, round, results }: { season: number; round: number; r
         {dotdLabel}
       </button>
 
-      <button type="button" onClick={() => go("replay")} className={CHIP_CLASS}>
-        <Play className="h-4 w-4 text-primary" />
-        Replay de la carrera
-      </button>
+      {showReplay && (
+        <button type="button" onClick={() => go("replay")} className={CHIP_CLASS}>
+          <Play className="h-4 w-4 text-primary" />
+          Replay de la carrera
+        </button>
+      )}
 
       <button type="button" onClick={() => go("circuito")} className={cn(CHIP_CLASS, "lg:hidden")}>
         <MapPin className="h-4 w-4 text-primary" />
@@ -280,6 +293,11 @@ export function GrandPrixPage() {
   const finished = gp.status === "finalizado";
   const raceStart = gp.sessions.find((s) => s.name === "Carrera")?.start;
   const season = Number(gp.date.slice(0, 4));
+
+    // El Piloto del día abre 75 minutos después de la largada, aunque la carrera todavía no figure como finalizada.
+  const now = useNow(30_000);
+  const dotdOpensAt = raceStart ? Date.parse(raceStart) + 75 * 60_000 : null;
+  const dotdOpen = finished || (now !== null && dotdOpensAt !== null && now >= dotdOpensAt);
 
   return (
     <>
@@ -301,7 +319,7 @@ export function GrandPrixPage() {
       </div>
 
       {!finished && <LiveBanner gp={gp} className="mb-6" />}
-      {finished && <QuickNav season={season} round={gp.round} results={results} />}
+      {dotdOpen && <QuickNav season={season} round={gp.round} results={results} showReplay={finished} />}
 
       <div className="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start">
         {/* Circuito: a la izquierda en computadora; al final en celular */}
@@ -345,6 +363,7 @@ export function GrandPrixPage() {
                 <SessionsList sessions={gp.sessions} />
               </section>
               <WeatherCard weather={weather} raceStart={raceStart} fallbackDate={gp.date} />
+              {dotdOpen && <DriverOfTheDay season={season} round={gp.round} results={[]} />}
               <SessionResultsTabs gp={gp} />
             </>
           )}

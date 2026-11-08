@@ -29,6 +29,7 @@ import { RankingPreview } from "@/components/RankingPreview";
 
 import { DailyGameRankingCard } from "@/components/DailyGameRankingCard";
 import { DriverOfTheDayCard } from "@/components/DriverOfTheDayCard";
+import { useNow } from "@/hooks/useNow";
 import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
 
 import { DriverOfTheDaySection } from "@/components/DriverOfTheDaySection";
@@ -289,8 +290,13 @@ export function HomePage() {
   const { events, predictions, loading: predictionsLoading } = usePredictions(season);
   const nextEvent = next ? events[next.round] : undefined;
   const { session, loading: sessionLoading } = useSession();
-  const lastSeason = last ? seasonOf(last) : season;
-  const dotd = useDriverOfTheDay(lastSeason, last?.round ?? 0);
+  // El Piloto del día es el de la carrera de este fin de semana apenas abre la votación
+  // (75 minutos después de la largada); antes de eso, el de la última carrera.
+  const clock = useNow(30_000);
+  const nextRaceMs = raceStart ? Date.parse(raceStart) : null;
+  const dotdGp = next && clock !== null && nextRaceMs !== null && clock >= nextRaceMs + 75 * 60_000 ? next : last;
+  const dotdResults: RaceResult[] = dotdGp === last ? lastResults : [];
+  const dotd = useDriverOfTheDay(dotdGp ? seasonOf(dotdGp) : season, dotdGp?.round ?? 0);
 
   return (
     <>
@@ -362,13 +368,13 @@ export function HomePage() {
             glow: "shadow-glow",
             content: <DailyGameCard />,
           },
-          ...(last && dotd.status === "open" && !dotd.loading
+          ...(dotdGp && dotd.status === "open" && !dotd.loading
             ? [
                 {
                   key: "driver-of-the-day",
                   glow: "shadow-[0_0_50px_-10px_rgba(251,191,36,0.55)]",
                   content: (
-                    <DriverOfTheDayCard gp={last} results={lastResults} drivers={drivers} myVote={dotd.myVote} />
+                    <DriverOfTheDayCard gp={dotdGp} results={dotdResults} drivers={drivers} myVote={dotd.myVote} />
                   ),
                 },
               ]
@@ -403,7 +409,7 @@ export function HomePage() {
         </div>
       )}
       
-      {last && <DriverOfTheDaySection gp={last} results={lastResults} drivers={drivers} dotd={dotd} />}
+      {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
 
       {!sessionLoading && !session && <GuestFeatures />}
 

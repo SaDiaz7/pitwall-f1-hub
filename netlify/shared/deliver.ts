@@ -130,6 +130,17 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
       };
     }
 
+    case "dotd_open": {
+      const race = text(payload["race"], "la carrera");
+      const round = Number(payload["round"]);
+      return {
+        title: "Se abrió la votación del Piloto del día",
+        body: `¿Quién fue el mejor de ${race}? Votá ahora.`,
+        url: Number.isInteger(round) && round > 0 ? `/gp/${round}#piloto-del-dia` : "/inicio",
+        tag: `dotd-${String(payload["season"])}-${String(payload["round"])}`,
+      };
+    }
+
     case "test":
       return {
         title: "Notificación de prueba",

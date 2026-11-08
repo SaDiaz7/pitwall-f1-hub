@@ -31,6 +31,11 @@ const OPTIONS: Option[] = [
     title: "Juego diario",
     text: "Un aviso al mediodía si todavía no jugaste el circuito del día.",
   },
+  {
+    key: "dotd_open",
+    title: "Piloto del día",
+    text: "Un aviso cuando se abre la votación, en las últimas vueltas de cada carrera.",
+  },
 ];
 
 type Message = { type: "ok" | "error"; text: string } | null;
