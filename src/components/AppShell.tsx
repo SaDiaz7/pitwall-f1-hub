@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Activity,
+  BookOpen,
   CalendarDays,
   ChevronDown,
   Ellipsis,
   Flag,
+  GraduationCap,
   Home,
   Image as ImageIcon,
   LayoutGrid,
@@ -40,7 +42,7 @@ export const navGroups = [
     items: [
       { to: "/calendario", label: "Calendario", icon: CalendarDays, public: true },
       { to: "/campeonato", label: "Campeonato", icon: Trophy, public: true },
-      { to: "/analisis", label: "Análisis", icon: Activity, public: true },
+      { to: "/guia", label: "Guía de la F1", icon: BookOpen, public: true },
     ],
   },
   {
@@ -52,6 +54,8 @@ export const navGroups = [
       { to: "/ligas", label: "Ligas", icon: Flag, public: false },
       { to: "/bingo", label: "Bingo Card", icon: LayoutGrid, public: false },
       { to: "/juego", label: "Juego diario", icon: Puzzle, public: true },
+      { to: "/quiz", label: "Quiz de F1", icon: GraduationCap, public: true },
+
     ],
   },
   {

@@ -35,6 +35,7 @@ import { DriverOfTheDaySection } from "@/components/DriverOfTheDaySection";
 import { TopFiveCard } from "@/components/TopFiveCard";
 import { WeekendCard } from "@/components/WeekendCard";
 import { LiveBanner } from "@/components/LiveBanner";
+import { NewToF1Card } from "@/components/NewToF1Card";
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 
@@ -392,6 +393,8 @@ export function HomePage() {
       />
 
       {next && <LiveBanner gp={next} className="mt-10" />}
+
+      <NewToF1Card className="mt-10" />
 
       {(drivers.length > 0 || next) && (
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
