@@ -880,6 +880,68 @@ export const getDriverSeasonStandings = createServerFn({ method: "GET" })
       }),
     );
   });
+
+// ---------- Resultados de un piloto en la temporada en curso ----------
+
+export interface DriverRaceResult {
+  round: number;
+  raceName: string;
+  teamName: string;
+  grid: number;
+  position: number;
+  positionText: string;
+  points: number;
+  status: string;
+}
+
+interface DriverSeasonResultsResponse {
+  MRData: {
+    RaceTable: {
+      Races?: {
+        round: string;
+        raceName: string;
+        Results?: {
+          position: string;
+          positionText: string;
+          points: string;
+          grid: string;
+          status: string;
+          Constructor: { name: string };
+        }[];
+      }[];
+    };
+  };
+}
+
+export const getDriverSeasonResults = createServerFn({ method: "GET" })
+  .inputValidator((data: { id: string }) => {
+    if (!/^[a-z0-9_-]{1,50}$/i.test(data.id)) throw new Error("Piloto inválido");
+    return data;
+  })
+  .handler(async ({ data }): Promise<DriverRaceResult[]> => {
+    const json = await fetchJolpica<DriverSeasonResultsResponse>(
+      `/current/drivers/${data.id}/results/?limit=100`,
+    );
+
+    const results: DriverRaceResult[] = [];
+    for (const race of json.MRData.RaceTable.Races ?? []) {
+      const result = race.Results?.[0];
+      if (!result) continue;
+
+      results.push({
+        round: Number(race.round),
+        raceName: translateRaceName(race.raceName),
+        teamName: result.Constructor.name,
+        grid: Number(result.grid),
+        position: Number(result.position),
+        positionText: result.positionText,
+        points: Number(result.points),
+        status: result.status,
+      });
+    }
+    return results;
+  });
+
   // ---------- Fotos de pilotos (Wikipedia) ----------
 
 export interface DriverPhoto {

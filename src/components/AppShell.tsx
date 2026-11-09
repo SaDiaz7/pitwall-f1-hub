@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Ellipsis,
   Flag,
+  Gauge,
   GraduationCap,
   Home,
   Image as ImageIcon,
@@ -42,6 +43,7 @@ export const navGroups = [
     items: [
       { to: "/calendario", label: "Calendario", icon: CalendarDays, public: true },
       { to: "/campeonato", label: "Campeonato", icon: Trophy, public: true },
+      { to: "/analisis", label: "Análisis", icon: Activity, public: true },
       { to: "/guia", label: "Guía de la F1", icon: BookOpen, public: true },
     ],
   },
@@ -70,6 +72,7 @@ export const navGroups = [
     key: "espacio",
     label: "Mi espacio",
     items: [
+      { to: "/mi-piloto", label: "Mi piloto", icon: Gauge, public: false },
       { to: "/favoritos", label: "Favoritos", icon: Star, public: false },
       { to: "/ajustes", label: "Ajustes", icon: Settings, public: false },
     ],
