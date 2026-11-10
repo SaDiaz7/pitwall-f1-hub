@@ -16,6 +16,7 @@ import {
   LogIn,
   LogOut,
   Medal,
+  Newspaper,
   Puzzle,
   Settings,
   Star,
@@ -45,6 +46,7 @@ export const navGroups = [
       { to: "/campeonato", label: "Campeonato", icon: Trophy, public: true },
       { to: "/analisis", label: "Análisis", icon: Activity, public: true },
       { to: "/guia", label: "Guía de la F1", icon: BookOpen, public: true },
+      { to: "/noticias", label: "Noticias", icon: Newspaper, public: true },
     ],
   },
   {

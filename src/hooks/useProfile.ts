@@ -9,17 +9,33 @@ const PROFILE_EVENT = "pitwall:profile-updated";
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 
+const HEADER_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const HEADER_MAX_INPUT_BYTES = 10 * 1024 * 1024; // 10 MB (después se achica)
+const HEADER_WIDTH = 1500;
+
+export const BIO_MAX = 160;
+
 export interface Profile {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  header_url: string | null;
   is_public: boolean;
   show_favorites: boolean;
 }
 
 export type SaveResult = { ok: true } | { ok: false; message: string };
 
-const EMPTY_PROFILE: Profile = { username: null, display_name: null, avatar_url: null, is_public: true, show_favorites: true };
+const EMPTY_PROFILE: Profile = {
+  username: null,
+  display_name: null,
+  avatar_url: null,
+  bio: null,
+  header_url: null,
+  is_public: true,
+  show_favorites: true,
+};
 
 // Devuelve las iniciales para mostrar cuando no hay foto.
 export function getInitials(source?: string | null): string {
@@ -30,6 +46,32 @@ export function getInitials(source?: string | null): string {
   const second = parts[1]?.[0] ?? "";
   const letters = second ? first + second : base.slice(0, 2);
   return letters ? letters.toUpperCase() : "PW";
+}
+
+// Achica el header a 1500 px de ancho y lo pasa a WebP, así pesa poco.
+async function prepareHeader(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, HEADER_WIDTH / bitmap.width);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("No se pudo preparar la imagen.");
+  }
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("No se pudo preparar la imagen."))),
+      "image/webp",
+      0.85,
+    );
+  });
 }
 
 export function useProfile() {
@@ -49,7 +91,7 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_url, is_public, show_favorites")
+      .select("username, display_name, avatar_url, bio, header_url, is_public, show_favorites")
       .eq("id", userId)
       .maybeSingle();
 
@@ -85,7 +127,7 @@ export function useProfile() {
         if (error.code === "23514") {
           return {
             ok: false,
-            message: "El nombre de usuario o el nombre visible no cumplen el formato.",
+            message: "El nombre de usuario, el nombre visible o la biografía no cumplen el formato.",
           };
         }
         return { ok: false, message: "No pudimos guardar los cambios. Probá de nuevo." };
@@ -127,5 +169,52 @@ export function useProfile() {
     [userId, save],
   );
 
-  return { profile, loading, save, uploadAvatar };
+  // Sube el header (foto larga del perfil): se achica y se guarda en tu carpeta del bucket "profile-headers".
+  const uploadHeader = useCallback(
+    async (file: File): Promise<SaveResult> => {
+      if (!userId) return { ok: false, message: "Tenés que iniciar sesión." };
+
+      if (!HEADER_TYPES.includes(file.type)) {
+        return { ok: false, message: "El header tiene que ser JPG, PNG o WebP." };
+      }
+      if (file.size > HEADER_MAX_INPUT_BYTES) {
+        return { ok: false, message: "El header no puede pesar más de 10 MB." };
+      }
+
+      let blob: Blob;
+      try {
+        blob = await prepareHeader(file);
+      } catch (error) {
+        console.error("Preparar header:", error);
+        return { ok: false, message: "No pudimos procesar la imagen." };
+      }
+
+      const path = `${userId}/header`;
+      const { error: uploadError } = await supabase.storage
+        .from("profile-headers")
+        .upload(path, blob, { upsert: true, contentType: "image/webp" });
+
+      if (uploadError) {
+        console.error("Subir header:", uploadError);
+        return { ok: false, message: "No pudimos subir la imagen. Probá de nuevo." };
+      }
+
+      const { data } = supabase.storage.from("profile-headers").getPublicUrl(path);
+      return save({ header_url: `${data.publicUrl}?v=${Date.now()}` });
+    },
+    [userId, save],
+  );
+
+  const removeHeader = useCallback(async (): Promise<SaveResult> => {
+    if (!userId) return { ok: false, message: "Tenés que iniciar sesión." };
+
+    const result = await save({ header_url: null });
+    if (result.ok) {
+      // Si no se puede borrar el archivo no pasa nada: el perfil ya no lo muestra.
+      await supabase.storage.from("profile-headers").remove([`${userId}/header`]);
+    }
+    return result;
+  }, [userId, save]);
+
+  return { profile, loading, save, uploadAvatar, uploadHeader, removeHeader };
 }

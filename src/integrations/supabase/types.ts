@@ -446,7 +446,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           display_name: string | null
+          header_url: string | null
           id: string
           is_public: boolean
           show_favorites: boolean
@@ -455,7 +457,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           display_name?: string | null
+          header_url?: string | null
           id: string
           is_public?: boolean
           show_favorites?: boolean
@@ -464,7 +468,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           display_name?: string | null
+          header_url?: string | null
           id?: string
           is_public?: boolean
           show_favorites?: boolean
@@ -916,6 +922,21 @@ export type Database = {
           name: string
         }[]
       }
+      get_profile_badge_stats: {
+        Args: { p_user_id: string }
+        Returns: {
+          dotd_vote_count: number
+          friend_count: number
+          game_first_try: number
+          game_solved: number
+          pred_best_points: number
+          pred_exact_hits: number
+          pred_perfect_podiums: number
+          pred_races: number
+          streak_best: number
+          streak_current: number
+        }[]
+      }
       get_profile_favorites: {
         Args: { p_user_id: string }
         Returns: {
@@ -938,7 +959,9 @@ export type Database = {
         Args: { p_season: number; p_user_id: string }
         Returns: {
           avatar_url: string
+          bio: string
           display_name: string
+          header_url: string
           relation: string
           scored_races: number
           total_points: number

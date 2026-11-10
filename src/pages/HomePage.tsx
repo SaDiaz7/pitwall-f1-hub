@@ -20,6 +20,7 @@ import { getTeamColor } from "@/lib/team-colors";
 import { TeamStripe } from "@/components/TeamStripe";
 import { ChampionBanner } from "@/components/ChampionBanner";
 import { HeroCarousel } from "@/components/HeroCarousel";
+import { HomeNews } from "@/components/HomeNews";
 import { DailyGameCard } from "@/components/DailyGameCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { PredictionStats } from "@/components/PredictionStats";
@@ -421,6 +422,8 @@ export function HomePage() {
       {next && <LiveBanner gp={next} className="mt-10" />}
 
       <NewToF1Card className="mt-10" />
+
+      <HomeNews />
 
       <div className="mt-10 grid grid-cols-1 items-start gap-x-6 gap-y-10 md:grid-cols-2 xl:block xl:columns-3 xl:gap-x-6 [&>section]:mt-0 xl:[&>section]:mb-6 xl:[&>section]:break-inside-avoid">
         {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}

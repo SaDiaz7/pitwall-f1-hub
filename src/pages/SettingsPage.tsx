@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { ImagePlus } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getInitials, useProfile } from "@/hooks/useProfile";
+import { BIO_MAX, getInitials, useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { translateAuthError } from "@/lib/auth-errors";
@@ -27,7 +28,7 @@ const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 type Status = { type: "ok" | "error"; text: string } | null;
 
 function Panel({ children }: { children: ReactNode }) {
-  return <div className="space-y-5 rounded-2xl border bg-card p-5 md:p-6">{children}</div>;
+  return <div className="max-w-3xl space-y-5 rounded-2xl border bg-card p-5 md:p-6">{children}</div>;
 }
 
 function StatusMessage({ status }: { status: Status }) {
@@ -46,21 +47,25 @@ function StatusMessage({ status }: { status: Status }) {
 
 function ProfilePanel() {
   const { session } = useSession();
-  const { profile, loading, save, uploadAvatar } = useProfile();
+  const { profile, loading, save, uploadAvatar, uploadHeader, removeHeader } = useProfile();
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [headerBusy, setHeaderBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const headerInput = useRef<HTMLInputElement>(null);
 
   // Cuando llegan los datos guardados, los carga en el formulario.
   useEffect(() => {
     setUsername(profile.username ?? "");
     setDisplayName(profile.display_name ?? "");
-  }, [profile.username, profile.display_name]);
+    setBio(profile.bio ?? "");
+  }, [profile.username, profile.display_name, profile.bio]);
 
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -77,6 +82,7 @@ function ProfilePanel() {
     const result = await save({
       username: cleanUsername || null,
       display_name: displayName.trim() || null,
+      bio: bio.trim() || null,
     });
     setSaving(false);
 
@@ -98,16 +104,80 @@ function ProfilePanel() {
     setStatus(result.ok ? { type: "ok", text: "Avatar actualizado." } : { type: "error", text: result.message });
   };
 
+  const onHeaderChange = async (ev: ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+
+    setStatus(null);
+    setHeaderBusy(true);
+    const result = await uploadHeader(file);
+    setHeaderBusy(false);
+
+    if (headerInput.current) headerInput.current.value = "";
+
+    setStatus(result.ok ? { type: "ok", text: "Header actualizado." } : { type: "error", text: result.message });
+  };
+
+  const onHeaderRemove = async () => {
+    setStatus(null);
+    setHeaderBusy(true);
+    const result = await removeHeader();
+    setHeaderBusy(false);
+
+    setStatus(result.ok ? { type: "ok", text: "Header quitado." } : { type: "error", text: result.message });
+  };
+
   if (loading) {
     return (
       <Panel>
-        <p className="text-sm text-muted-foreground">Cargando tu perfil…</p>
+        <div className="skeleton h-32 w-full sm:h-44" />
+        <div className="skeleton h-16 w-full" />
       </Panel>
     );
   }
 
   return (
     <Panel>
+      <div className="space-y-3">
+        <div className="fade-up relative h-32 overflow-hidden rounded-2xl border bg-hero sm:h-44">
+          {profile.header_url && (
+            <img src={profile.header_url} alt="Tu header" className="h-full w-full object-cover" />
+          )}
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 racing-stripe opacity-60" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={headerInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={onHeaderChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={headerBusy}
+            onClick={() => headerInput.current?.click()}
+            className="transition-transform active:scale-95"
+          >
+            <ImagePlus className="mr-2 h-4 w-4" />
+            {headerBusy ? "Procesando…" : profile.header_url ? "Cambiar header" : "Subir header"}
+          </Button>
+          {profile.header_url && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={headerBusy}
+              onClick={onHeaderRemove}
+              className="transition-transform active:scale-95"
+            >
+              Quitar
+            </Button>
+          )}
+          <p className="text-xs text-muted-foreground">JPG, PNG o WebP. Ideal: 1500 × 500 px.</p>
+        </div>
+      </div>
+
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
           {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="Tu avatar" />}
@@ -123,7 +193,13 @@ function ProfilePanel() {
             className="hidden"
             onChange={onAvatarChange}
           />
-          <Button type="button" variant="outline" disabled={uploading} onClick={() => fileInput.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => fileInput.current?.click()}
+            className="transition-transform active:scale-95"
+          >
             {uploading ? "Subiendo…" : "Cambiar avatar"}
           </Button>
           <p className="text-xs text-muted-foreground">JPG, PNG o WebP, hasta 2 MB.</p>
@@ -153,10 +229,24 @@ function ProfilePanel() {
             onChange={(e) => setDisplayName(e.target.value)}
           />
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="bio">Biografía</Label>
+          <Textarea
+            id="bio"
+            rows={3}
+            value={bio}
+            maxLength={BIO_MAX}
+            placeholder="Contá algo sobre vos: tu equipo, tu piloto, cómo arrancaste con la F1…"
+            onChange={(e) => setBio(e.target.value)}
+          />
+          <p className="text-right text-xs tabular-nums text-muted-foreground">
+            {bio.length}/{BIO_MAX}
+          </p>
+        </div>
 
         <StatusMessage status={status} />
 
-        <Button type="submit" disabled={saving} className="bg-gradient-primary font-semibold">
+        <Button type="submit" disabled={saving} className="bg-gradient-primary font-semibold transition-transform active:scale-95">
           {saving ? "Guardando…" : "Guardar cambios"}
         </Button>
       </form>

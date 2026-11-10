@@ -30,6 +30,7 @@ import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
 import { Route as PrivadoJuegoRouteImport } from './routes/_privado.juego'
 import { Route as PrivadoLigasRouteImport } from './routes/_privado.ligas'
 import { Route as PrivadoMiPilotoRouteImport } from './routes/_privado.mi-piloto'
+import { Route as PrivadoNoticiasRouteImport } from './routes/_privado.noticias'
 import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predicciones'
 import { Route as PrivadoQuizRouteImport } from './routes/_privado.quiz'
 import { Route as PrivadoRankingRouteImport } from './routes/_privado.ranking'
@@ -143,6 +144,11 @@ const PrivadoMiPilotoRoute = PrivadoMiPilotoRouteImport.update({
   path: '/mi-piloto',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoNoticiasRoute = PrivadoNoticiasRouteImport.update({
+  id: '/noticias',
+  path: '/noticias',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoPrediccionesRoute = PrivadoPrediccionesRouteImport.update({
   id: '/predicciones',
   path: '/predicciones',
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/noticias': typeof PrivadoNoticiasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
   '/ranking': typeof PrivadoRankingRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/noticias': typeof PrivadoNoticiasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
   '/ranking': typeof PrivadoRankingRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/_privado/juego': typeof PrivadoJuegoRoute
   '/_privado/ligas': typeof PrivadoLigasRoute
   '/_privado/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/_privado/noticias': typeof PrivadoNoticiasRoute
   '/_privado/predicciones': typeof PrivadoPrediccionesRoute
   '/_privado/quiz': typeof PrivadoQuizRoute
   '/_privado/ranking': typeof PrivadoRankingRoute
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/juego'
     | '/ligas'
     | '/mi-piloto'
+    | '/noticias'
     | '/predicciones'
     | '/quiz'
     | '/ranking'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/juego'
     | '/ligas'
     | '/mi-piloto'
+    | '/noticias'
     | '/predicciones'
     | '/quiz'
     | '/ranking'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/_privado/juego'
     | '/_privado/ligas'
     | '/_privado/mi-piloto'
+    | '/_privado/noticias'
     | '/_privado/predicciones'
     | '/_privado/quiz'
     | '/_privado/ranking'
@@ -531,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoMiPilotoRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/noticias': {
+      id: '/_privado/noticias'
+      path: '/noticias'
+      fullPath: '/noticias'
+      preLoaderRoute: typeof PrivadoNoticiasRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/predicciones': {
       id: '/_privado/predicciones'
       path: '/predicciones'
@@ -604,6 +623,7 @@ interface PrivadoRouteChildren {
   PrivadoJuegoRoute: typeof PrivadoJuegoRoute
   PrivadoLigasRoute: typeof PrivadoLigasRoute
   PrivadoMiPilotoRoute: typeof PrivadoMiPilotoRoute
+  PrivadoNoticiasRoute: typeof PrivadoNoticiasRoute
   PrivadoPrediccionesRoute: typeof PrivadoPrediccionesRoute
   PrivadoQuizRoute: typeof PrivadoQuizRoute
   PrivadoRankingRoute: typeof PrivadoRankingRoute
@@ -627,6 +647,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoJuegoRoute: PrivadoJuegoRoute,
   PrivadoLigasRoute: PrivadoLigasRoute,
   PrivadoMiPilotoRoute: PrivadoMiPilotoRoute,
+  PrivadoNoticiasRoute: PrivadoNoticiasRoute,
   PrivadoPrediccionesRoute: PrivadoPrediccionesRoute,
   PrivadoQuizRoute: PrivadoQuizRoute,
   PrivadoRankingRoute: PrivadoRankingRoute,
