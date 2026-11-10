@@ -330,7 +330,7 @@ export function AppShell() {
         </header>
         <main
           data-navigating={navigating ? "true" : "false"}
-          className="nav-dim mx-auto w-full max-w-5xl px-4 pb-28 pt-6 md:px-8 md:pb-10 md:pt-10"
+          className="nav-dim mx-auto w-full max-w-7xl px-4 pb-28 pt-6 md:px-8 md:pb-10 md:pt-10 2xl:max-w-[1500px]"
         >
           {blocked ? (
             <p className="text-sm text-muted-foreground">Cargando…</p>

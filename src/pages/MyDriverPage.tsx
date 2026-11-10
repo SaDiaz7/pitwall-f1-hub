@@ -2,8 +2,10 @@ import type { CSSProperties } from "react";
 import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Star } from "lucide-react";
 import { DriverAvatar } from "@/components/DriverAvatar";
+import { DriverComparison } from "@/components/DriverComparison";
 import { DriverSeasonResults } from "@/components/DriverSeasonResults";
 import { TeamStripe } from "@/components/TeamStripe";
+import { TeammateDuel } from "@/components/TeammateDuel";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { useFavorites } from "@/hooks/useFavorites";
 import { getTeamColor } from "@/lib/team-colors";
@@ -57,7 +59,13 @@ export function MyDriverPage() {
   // Prioridad: el de la dirección, después tu primer favorito, después el líder.
   const selected = entries.find((e) => e.driver.id === piloto) ?? favoriteEntries[0] ?? entries[0];
 
-  const photoTargets = [...new Map([selected, ...favoriteEntries].filter((e): e is Entry => e !== undefined).map((e) => [e.driver.id, e])).values()];
+  const photoTargets = [
+    ...new Map(
+      [selected, ...favoriteEntries]
+        .filter((e): e is Entry => e !== undefined)
+        .map((e) => [e.driver.id, e]),
+    ).values(),
+  ];
   const photos = useDriverPhotos(
     photoTargets.map(({ driver }) => ({ id: driver.id, wikiUrl: driver.wikiUrl })),
   );
@@ -81,6 +89,10 @@ export function MyDriverPage() {
   const photo = photos[driver.id] ?? null;
   const leaderPoints = drivers[0]?.points ?? 0;
 
+  // Compañero de equipo; si no hay, se compara con el líder (o con el 2.º si es el líder).
+  const mate = entries.find((e) => e.driver.teamId === driver.teamId && e.driver.id !== driver.id)?.driver;
+  const rival = mate ?? (position === 1 ? entries[1]?.driver : entries[0]?.driver);
+
   return (
     <>
       <div>
@@ -100,7 +112,9 @@ export function MyDriverPage() {
                     type="button"
                     onClick={() => choose(entry.driver.id)}
                     aria-pressed={active}
-                    style={active ? { borderColor: getTeamColor(entry.driver.teamId, entry.driver.teamName) } : undefined}
+                    style={
+                      active ? { borderColor: getTeamColor(entry.driver.teamId, entry.driver.teamName) } : undefined
+                    }
                     className={cn(
                       "flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100",
                       active
@@ -141,64 +155,85 @@ export function MyDriverPage() {
         )}
       </div>
 
-      <section
-        key={driver.id}
-        className="relative overflow-hidden rounded-3xl border p-5 md:p-8"
-        style={{
-          borderColor: color,
-          backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${color} 32%, transparent), transparent 65%)`,
-        }}
-      >
-        {driver.number > 0 && (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-6 right-2 select-none font-display text-[9rem] font-bold leading-none opacity-10 md:text-[12rem]"
+      <div className="mt-6 grid grid-cols-1 items-start gap-x-6 gap-y-6 xl:grid-cols-2 [&>section]:my-0">
+        <div className="min-w-0 space-y-6">
+          <section
+            key={driver.id}
+            className="fade-up relative overflow-hidden rounded-3xl border p-5 md:p-8"
+            style={{
+              borderColor: color,
+              backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${color} 32%, transparent), transparent 65%)`,
+            }}
           >
-            {driver.number}
-          </span>
-        )}
-
-        <div className="relative flex flex-wrap items-center gap-4 md:gap-6">
-          <DriverAvatar name={driver.name} photo={photo} size="xl" zoom />
-          <div className="min-w-0">
             {driver.number > 0 && (
-              <p className="font-display text-5xl font-bold leading-none text-primary">{driver.number}</p>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-6 right-2 select-none font-display text-[9rem] font-bold leading-none opacity-10 md:text-[12rem]"
+              >
+                {driver.number}
+              </span>
             )}
-            <h2 className="font-display text-3xl font-bold uppercase leading-tight md:text-5xl">{driver.name}</h2>
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TeamStripe teamId={driver.teamId} teamName={driver.teamName} className="h-4" />
-              {driver.teamName}
-            </p>
-          </div>
-        </div>
 
-        <div className="relative mt-6 grid grid-cols-3 gap-3">
-          <StatCard index={0} label="Posición" value={`P${position}`} />
-          <StatCard index={1} label="Puntos" value={String(driver.points)} />
-          <StatCard index={2} label="Victorias" value={String(driver.wins)} />
-        </div>
+            <div className="relative flex flex-wrap items-center gap-4 md:gap-6">
+              <DriverAvatar name={driver.name} photo={photo} size="xl" zoom />
+              <div className="min-w-0">
+                {driver.number > 0 && (
+                  <p className="font-display text-5xl font-bold leading-none text-primary">{driver.number}</p>
+                )}
+                <h2 className="font-display text-3xl font-bold uppercase leading-tight md:text-5xl">{driver.name}</h2>
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <TeamStripe teamId={driver.teamId} teamName={driver.teamName} className="h-4" />
+                  {driver.teamName}
+                </p>
+              </div>
+            </div>
 
-        <div className="relative mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          <p>{position === 1 ? "Líder del campeonato" : `A ${leaderPoints - driver.points} pts del líder`}</p>
-          {photo && (
-            <p className="text-xs">
-              Foto:{" "}
-              <a href={photo.page} target="_blank" rel="noopener noreferrer" className="underline">
-                Wikipedia
-              </a>
-            </p>
+            <div className="relative mt-6 grid grid-cols-3 gap-3">
+              <StatCard index={0} label="Posición" value={`P${position}`} />
+              <StatCard index={1} label="Puntos" value={String(driver.points)} />
+              <StatCard index={2} label="Victorias" value={String(driver.wins)} />
+            </div>
+
+            <div className="relative mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <p>{position === 1 ? "Líder del campeonato" : `A ${leaderPoints - driver.points} pts del líder`}</p>
+              {photo && (
+                <p className="text-xs">
+                  Foto:{" "}
+                  <a href={photo.page} target="_blank" rel="noopener noreferrer" className="underline">
+                    Wikipedia
+                  </a>
+                </p>
+              )}
+            </div>
+          </section>
+
+          {drivers.length >= 2 && (
+            <section
+              key={`vs-${driver.id}`}
+              className="fade-up space-y-3"
+              style={{ "--i": 2 } as CSSProperties}
+            >
+              <h2 className="text-xl font-bold uppercase">{mate ? "Cara a cara con su compañero" : "Cara a cara"}</h2>
+              <DriverComparison drivers={drivers} initialAId={driver.id} initialBId={rival?.id} />
+              {mate && (
+                <TeammateDuel
+                  driver={driver}
+                  mate={mate}
+                  colorA={color}
+                  colorB={getTeamColor(mate.teamId, mate.teamName)}
+                />
+              )}
+            </section>
           )}
         </div>
-      </section>
 
-
-
-      <DriverSeasonResults key={driver.id} driverId={driver.id} color={color} />
+        <DriverSeasonResults key={driver.id} driverId={driver.id} color={color} />
+      </div>
 
       <Link
         to="/piloto/$id"
         params={{ id: driver.id }}
-        className="card-link flex items-center justify-between gap-3 rounded-2xl border bg-card p-4 text-sm font-semibold"
+        className="card-link mt-6 flex items-center justify-between gap-3 rounded-2xl border bg-card p-4 text-sm font-semibold"
       >
         Ver la ficha completa de {driver.name}
         <ArrowRight className="h-4 w-4 text-primary" />

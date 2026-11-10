@@ -6,6 +6,7 @@ import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { getTeamColor } from "@/lib/team-colors";
 import type { Driver } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Activity } from "lucide-react";
 
 const ROW_CLASS = "fade-up card-link flex items-center gap-3 rounded-2xl border border-l-4 bg-card p-3";
 
@@ -20,9 +21,17 @@ export function TopFiveCard({ drivers, linked }: { drivers: Driver[]; linked: bo
     <section>
       <div className="mb-3 flex items-end justify-between gap-4">
         <h2 className="text-2xl font-bold uppercase">Top 5 del campeonato</h2>
-        <Link to="/campeonato" className="text-sm font-semibold text-primary hover:underline">
-          Ver completo
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+              to="/analisis"
+              className="inline-flex items-center gap-1.5 rounded-full border bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide transition hover:border-primary/50 hover:text-primary active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
+            >
+              <Activity className="h-3.5 w-3.5" /> Sección "Análisis"
+            </Link>
+          <Link to="/campeonato" className="text-sm font-semibold text-primary hover:underline">
+            Ver completo
+          </Link>
+        </div>
       </div>
 
       <ol className="space-y-2">

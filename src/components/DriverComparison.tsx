@@ -82,9 +82,17 @@ function DriverHeader({ entry, align }: { entry: Entry; align: "left" | "right" 
   );
 }
 
-export function DriverComparison({ drivers }: { drivers: Driver[] }) {
-  const [aId, setAId] = useState("");
-  const [bId, setBId] = useState("");
+export function DriverComparison({
+  drivers,
+  initialAId,
+  initialBId,
+}: {
+  drivers: Driver[];
+  initialAId?: string | undefined;
+  initialBId?: string | undefined;
+}) {
+  const [aId, setAId] = useState(initialAId ?? "");
+  const [bId, setBId] = useState(initialBId ?? "");
 
   if (drivers.length < 2) {
     return (

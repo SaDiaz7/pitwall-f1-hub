@@ -44,7 +44,7 @@ export function PredictionStats({ events, predictions }: PredictionStatsProps) {
           y armá tu top 10 de la próxima carrera.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3">
           <Stat label="Puntos totales" value={String(totalPoints)} />
           <Stat label="Carreras puntuadas" value={String(scored.length)} />
           <Stat

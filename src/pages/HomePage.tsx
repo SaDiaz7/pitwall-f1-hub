@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
-import { ChevronRight, MapPin } from "lucide-react";
+import { ChevronRight, Gauge, MapPin } from "lucide-react";
 import { CircuitMap } from "@/components/CircuitMap";
 import { Countdown } from "@/components/Countdown";
 import { PageHeader } from "@/components/PageHeader";
@@ -157,9 +157,17 @@ function MyDrivers({ drivers, results }: { drivers: Driver[]; results: RaceResul
     <section className="mt-10">
       <div className="mb-3 flex items-end justify-between gap-4">
         <h2 className="text-2xl font-bold uppercase">Tus pilotos</h2>
-        <Link to="/favoritos" className="text-sm font-semibold text-primary hover:underline">
-          Ver favoritos
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/mi-piloto"
+            className="inline-flex items-center gap-1.5 rounded-full border bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide transition hover:border-primary/50 hover:text-primary active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
+          >
+            <Gauge className="h-3.5 w-3.5" /> Sección "Mi piloto"
+          </Link>
+          <Link to="/favoritos" className="text-sm font-semibold text-primary hover:underline">
+            Ver favoritos
+          </Link>
+        </div>
       </div>
 
       <ul className="flex gap-3 overflow-x-auto pb-3 pt-1">
@@ -302,6 +310,14 @@ export function HomePage() {
     <>
       <PageHeader title="Inicio" subtitle="Tu resumen de la temporada." />
 
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-x-6 gap-y-10 [&>section]:mt-0",
+          dotdGp &&
+            "xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:[&>section]:flex xl:[&>section]:flex-col xl:[&>section]:pb-5 xl:[&>section>div]:flex-1",
+        )}
+      >
+        <div className={cn(dotdGp && "xl:pt-11")}>
       <HeroCarousel
         slides={[
           {
@@ -397,34 +413,33 @@ export function HomePage() {
             : []),
         ]}
       />
+        </div>
+
+        {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
+      </div>
 
       {next && <LiveBanner gp={next} className="mt-10" />}
 
       <NewToF1Card className="mt-10" />
 
-      {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
-
-      {(drivers.length > 0 || next) && (
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
-          {next && <WeekendCard gp={next} />}
-        </div>
-      )}
-      
-
+      <div className="mt-10 grid grid-cols-1 items-start gap-x-6 gap-y-10 md:grid-cols-2 xl:block xl:columns-3 xl:gap-x-6 [&>section]:mt-0 xl:[&>section]:mb-6 xl:[&>section]:break-inside-avoid">
+        {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
+        {next && <WeekendCard gp={next} />}
+        {session && <RankingPreview season={season} />}
+        <DailyGameRankingCard />
+        {session && !predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
+      </div>
 
       {!sessionLoading && !session && <GuestFeatures />}
 
-      {session && !predictionsLoading && <PredictionStats events={events} predictions={predictions} />}
-      
-      <div className={cn("grid gap-x-6", session && "md:grid-cols-2")}>
-        {session && <RankingPreview season={season} />}
-        <DailyGameRankingCard />
-      </div>
-
-      {session && <MyDrivers drivers={drivers} results={lastResults} />}
-
-      {session && <FavoriteWallpapers />}
+      {session && (
+        <div className="mt-10 grid grid-cols-1 items-start gap-x-6 gap-y-10 xl:grid-cols-3 [&>section]:mt-0">
+          <MyDrivers drivers={drivers} results={lastResults} />
+          <div className="xl:col-span-2 [&>section]:mt-0">
+            <FavoriteWallpapers />
+          </div>
+        </div>
+      )}
       
 
       <section className={cn("lg:hidden", !session && "hidden")}>

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { TrophyArt, trophyName } from "@/components/trophies/TrophyArt";
+import { AnimatedBar } from "@/components/AnimatedBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { computeRanks } from "@/hooks/useLeaderboards";
@@ -149,115 +150,126 @@ export function LeaguePage() {
 
       {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
 
-      <div className="space-y-6">
-        <section className="flex items-center gap-4 rounded-2xl border bg-card p-4">
-          <TrophyArt year={season} className="w-24 shrink-0" />
-          <div className="min-w-0">
-            <p className="font-display text-xl font-bold uppercase">En juego: {trophyName(season)}</p>
-            <p className="text-sm text-muted-foreground">
-              Quien termine primero la temporada {season} se queda con la copa en su vitrina. Si hay empate, la
-              comparten.
-            </p>
-          </div>
-        </section>
-
-        <section className="space-y-3 rounded-2xl border bg-card p-5">
-          <h2 className="text-xl font-bold uppercase">Invitá a tus amigos</h2>
-          <p className="text-sm text-muted-foreground">
-            Cualquier miembro puede compartir el link. Quien lo abra se registra (o entra) y queda dentro de la liga.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-md bg-secondary px-3 py-2 text-xs">{link}</code>
-            <Button type="button" variant="outline" size="sm" onClick={copyLink}>
-              {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-              {copied ? "Copiado" : "Copiar"}
-            </Button>
-            <a
-              href={whatsapp}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-8 items-center rounded-md bg-gradient-primary px-3 text-sm font-semibold text-primary-foreground"
-            >
-              Compartir por WhatsApp
-            </a>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            O pasales el código: <span className="font-mono font-semibold">{info.invite_code}</span>
-          </p>
-        </section>
-
-        {!info.active ? (
-          <section className="space-y-4 rounded-2xl border bg-card p-5">
-            <div>
-              <h2 className="text-xl font-bold uppercase">Liga en formación</h2>
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+        <div className="space-y-6">
+          <section className="fade-up flex items-center gap-4 rounded-2xl border bg-card p-4">
+            <TrophyArt year={season} className="w-24 shrink-0" />
+            <div className="min-w-0">
+              <p className="font-display text-xl font-bold uppercase">En juego: {trophyName(season)}</p>
               <p className="text-sm text-muted-foreground">
-                Faltan {missing} {missing === 1 ? "persona" : "personas"} para que la liga arranque. Hasta entonces la
-                tabla de posiciones está oculta.
+                Quien termine primero la temporada {season} se queda con la copa en su vitrina. Si hay empate, la
+                comparten.
               </p>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${Math.min(100, (info.member_count / info.min_members) * 100)}%` }}
-              />
-            </div>
-            <ul className="space-y-2">
-              {members.map((member) => (
-                <li key={member.user_id} className="flex items-center gap-3">
-                  <MemberAvatar member={member} />
-                  <span className="min-w-0 truncate font-semibold">
-                    {member.display_name || member.username || "Sin nombre"}
-                    {member.user_id === userId && <span className="ml-2 text-xs font-normal text-primary">(vos)</span>}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </section>
-        ) : (
-          <section className="space-y-3">
-            <h2 className="text-xl font-bold uppercase">Tabla de posiciones</h2>
-            <ol className="space-y-2">
-              {ranked.map((member, index) => {
-                const mine = member.user_id === userId;
-                const name = member.display_name || member.username || "Sin nombre";
-                return (
-                  <li
-                    key={member.user_id}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl border bg-card p-3",
-                      mine && "border-primary/60",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md font-display text-base font-bold",
-                        ranks[index] === 1 ? "bg-gradient-primary text-primary-foreground" : "bg-secondary",
-                      )}
-                    >
-                      {ranks[index]}
-                    </span>
-                    <MemberAvatar member={member} />
-                    <p className="min-w-0 flex-1 truncate font-semibold">
-                      {name}
-                      {mine && <span className="ml-2 text-xs font-normal text-primary">(vos)</span>}
-                    </p>
-                    <div className="text-right">
-                      <p className="font-display text-xl font-bold tabular-nums">{member.total_points}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {member.scored_races} {member.scored_races === 1 ? "carrera" : "carreras"}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        )}
 
-        <div>
-          <Button type="button" variant="outline" size="sm" onClick={leave}>
-            Salir de la liga
-          </Button>
+          <section
+            className="fade-up space-y-3 rounded-2xl border bg-card p-5"
+            style={{ "--i": 1 } as CSSProperties}
+          >
+            <h2 className="text-xl font-bold uppercase">Invitá a tus amigos</h2>
+            <p className="text-sm text-muted-foreground">
+              Cualquier miembro puede compartir el link. Quien lo abra se registra (o entra) y queda dentro de la liga.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded-md bg-secondary px-3 py-2 text-xs">{link}</code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={copyLink}
+                className="transition-transform active:scale-95"
+              >
+                {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? "Copiado" : "Copiar"}
+              </Button>
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-8 items-center rounded-md bg-gradient-primary px-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+              >
+                Compartir por WhatsApp
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              O pasales el código: <span className="font-mono font-semibold">{info.invite_code}</span>
+            </p>
+          </section>
+
+          <div>
+            <Button type="button" variant="outline" size="sm" onClick={leave} className="transition-transform active:scale-95">
+              Salir de la liga
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          {!info.active ? (
+            <section className="fade-up space-y-4 rounded-2xl border bg-card p-5">
+              <div>
+                <h2 className="text-xl font-bold uppercase">Liga en formación</h2>
+                <p className="text-sm text-muted-foreground">
+                  Faltan {missing} {missing === 1 ? "persona" : "personas"} para que la liga arranque. Hasta entonces
+                  la tabla de posiciones está oculta.
+                </p>
+              </div>
+              <AnimatedBar percent={Math.min(100, (info.member_count / info.min_members) * 100)} className="h-2" />
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3">
+                {members.map((member) => (
+                  <li key={member.user_id} className="flex items-center gap-3">
+                    <MemberAvatar member={member} />
+                    <span className="min-w-0 truncate font-semibold">
+                      {member.display_name || member.username || "Sin nombre"}
+                      {member.user_id === userId && (
+                        <span className="ml-2 text-xs font-normal text-primary">(vos)</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <section className="space-y-3">
+              <h2 className="text-xl font-bold uppercase">Tabla de posiciones</h2>
+              <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-2">
+                {ranked.map((member, index) => {
+                  const mine = member.user_id === userId;
+                  const name = member.display_name || member.username || "Sin nombre";
+                  return (
+                    <li
+                      key={member.user_id}
+                      className={cn(
+                        "fade-up flex items-center gap-3 rounded-2xl border bg-card p-3",
+                        mine && "border-primary/60",
+                      )}
+                      style={{ "--i": Math.min(index, 10) } as CSSProperties}
+                    >
+                      <span
+                        className={cn(
+                          "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md font-display text-base font-bold",
+                          ranks[index] === 1 ? "bg-gradient-primary text-primary-foreground" : "bg-secondary",
+                        )}
+                      >
+                        {ranks[index]}
+                      </span>
+                      <MemberAvatar member={member} />
+                      <p className="min-w-0 flex-1 truncate font-semibold">
+                        {name}
+                        {mine && <span className="ml-2 text-xs font-normal text-primary">(vos)</span>}
+                      </p>
+                      <div className="text-right">
+                        <p className="font-display text-xl font-bold tabular-nums">{member.total_points}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {member.scored_races} {member.scored_races === 1 ? "carrera" : "carreras"}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          )}
         </div>
       </div>
     </>

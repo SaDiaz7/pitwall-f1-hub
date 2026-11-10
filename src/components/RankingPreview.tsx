@@ -60,7 +60,7 @@ export function RankingPreview({ season }: { season: number }) {
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-bold uppercase">Ranking</h2>
+        <h2 className="text-2xl font-bold uppercase">Ranking de Predicciones</h2>
         <Link to="/ranking" className="text-sm font-semibold text-primary hover:underline">
           Ver ranking completo
         </Link>

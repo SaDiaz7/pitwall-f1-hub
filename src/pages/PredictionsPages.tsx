@@ -61,7 +61,7 @@ function RaceCard({
   const open = event !== undefined && !scored && deadline !== null && now < deadline;
 
   return (
-    <article className="space-y-3 rounded-2xl border bg-card p-5">
+    <article className={cn("space-y-3 rounded-2xl border bg-card p-5", open && editing && "col-span-full")}>
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs text-muted-foreground">Ronda {gp.round}</p>
@@ -224,24 +224,29 @@ export function PredictionsPage() {
     <>
       <PageHeader title="Predicciones" subtitle="Predecí el top 10 de cada carrera y sumá puntos." />
 
-      <div className="mb-6 space-y-2 rounded-2xl border bg-card p-5">
-        <p className="text-sm">
-          <span className="font-display text-2xl font-bold">{totalPoints} pts</span>{" "}
-          <span className="text-muted-foreground">
+      <div className="mb-6 flex flex-col gap-4 rounded-2xl border bg-card p-5 md:flex-row md:items-center md:gap-8">
+        <div className="shrink-0">
+          <p className="font-display text-5xl font-bold leading-none tabular-nums">
+            {totalPoints}
+            <span className="ml-1 text-xl text-muted-foreground">pts</span>
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
             en {scoredCount} {scoredCount === 1 ? "carrera puntuada" : "carreras puntuadas"}
-          </span>
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Top 10: sumás puntos por cada piloto que acertás en su puesto exacto ({POSITION_POINTS[0]} por el ganador,{" "}
-          {POSITION_POINTS[1]} por el 2.º y el 3.º, y {POSITION_POINTS[3]} por cada uno del 4.º al 10.º). Extras
-          opcionales: pole, vuelta rápida, Safety Car, Virtual Safety Car, bandera roja, abandonos y si puntúa
-          Colapinto. Máximo por carrera: {MAX_POINTS} puntos ({POSITIONS_MAX_POINTS} del top 10 y {BONUS_MAX_POINTS} de
-          los extras).
-        </p>
-        <p className="text-sm">
-          <span className="font-semibold">¡Asegurate de predecir antes de que empiece la clasificación!</span> Una vez
-          que cierran, no se pueden cambiar las predicciones.
-        </p>
+          </p>
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Top 10: sumás puntos por cada piloto que acertás en su puesto exacto ({POSITION_POINTS[0]} por el ganador,{" "}
+            {POSITION_POINTS[1]} por el 2.º y el 3.º, y {POSITION_POINTS[3]} por cada uno del 4.º al 10.º). Extras
+            opcionales: pole, vuelta rápida, Safety Car, Virtual Safety Car, bandera roja, abandonos y si puntúa
+            Colapinto. Máximo por carrera: {MAX_POINTS} puntos ({POSITIONS_MAX_POINTS} del top 10 y {BONUS_MAX_POINTS}{" "}
+            de los extras).
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold">¡Asegurate de predecir antes de que empiece la clasificación!</span> Una
+            vez que cierran, no se pueden cambiar las predicciones.
+          </p>
+        </div>
       </div>
 
       {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
@@ -265,14 +270,18 @@ export function PredictionsPage() {
             {upcoming.length === 0 ? (
               <p className="text-sm text-muted-foreground">No quedan carreras por disputar en esta temporada.</p>
             ) : (
-              <div className="grid gap-4 lg:grid-cols-2">{upcoming.map(card)}</div>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-4">
+                {upcoming.map(card)}
+              </div>
             )}
           </section>
 
           {past.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-xl font-bold uppercase">Anteriores</h2>
-              <div className="grid gap-4 lg:grid-cols-2">{past.map(card)}</div>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-4">
+                {past.map(card)}
+              </div>
             </section>
           )}
         </div>

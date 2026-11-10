@@ -14,7 +14,7 @@ function Row({ row, rank, mine }: { row: GameLeaderboardRow; rank: number; mine:
   const name = row.display_name || row.username || "Sin nombre";
 
   return (
-    <li>
+    <li className="fade-up">
       <Link
         to="/usuario/$id"
         params={{ id: row.user_id }}
@@ -169,13 +169,13 @@ export function GameLeaderboard({ refreshKey = 0 }: { refreshKey?: number }) {
           Todavía no hay nadie en este ranking.
         </div>
       ) : (
-        <ol className="space-y-2">
+        <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-2">
           {rows.slice(0, TOP).map((row, index) => (
             <Row key={row.user_id} row={row} rank={ranks[index] ?? index + 1} mine={row.user_id === userId} />
           ))}
           {myRow && myIndex >= TOP && (
             <>
-              <li aria-hidden className="text-center text-xs text-muted-foreground">
+              <li aria-hidden className="col-span-full text-center text-xs text-muted-foreground">
                 ⋯
               </li>
               <Row row={myRow} rank={ranks[myIndex] ?? myIndex + 1} mine />

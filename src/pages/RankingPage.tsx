@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,18 +31,18 @@ function Board({ rows, userId }: { rows: LeaderboardRow[]; userId: string | unde
   const ranks = computeRanks(rows);
 
   return (
-    <ol className="space-y-2">
+    <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,21rem),1fr))] gap-3">
       {rows.map((row, index) => {
         const mine = row.user_id === userId;
         const name = row.display_name || row.username || "Sin nombre";
 
         return (
-          <li key={row.user_id}>
+          <li key={row.user_id} className="fade-up" style={{ "--i": Math.min(index, 10) } as CSSProperties}>
             <Link
               to="/usuario/$id"
               params={{ id: row.user_id }}
               className={cn(
-                "card-link flex items-center gap-3 rounded-2xl border bg-card p-3 hover:bg-accent/40",
+                "card-link flex h-full items-center gap-3 rounded-2xl border bg-card p-3 hover:bg-accent/40",
                 mine && "border-primary/60",
               )}
             >
