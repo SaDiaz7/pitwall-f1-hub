@@ -13,6 +13,8 @@ import { ProfileFavorites } from "@/components/ProfileFavorites";
 import { TrophyShowcase } from "@/components/TrophyShowcase";
 import { BadgeShowcase } from "@/components/BadgeShowcase";
 import { AvatarLightbox } from "@/components/AvatarLightbox";
+import { CountryFlag } from "@/components/CountryFlag";
+import { countryName } from "@/lib/countries";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -23,6 +25,7 @@ interface PublicProfile {
   avatar_url: string | null;
   bio: string | null;
   header_url: string | null;
+  country: string | null;
   total_points: number;
   scored_races: number;
   relation: string;
@@ -149,7 +152,15 @@ export function UserProfilePage() {
 
           <div className="min-w-0 flex-1 pt-2">
             <h1 className="font-display text-3xl font-bold uppercase leading-tight">{name}</h1>
-            {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {profile.username && <span>@{profile.username}</span>}
+              {profile.country && (
+                <span className="inline-flex items-center gap-1.5">
+                  <CountryFlag code={profile.country} className="h-3.5" />
+                  {countryName(profile.country)}
+                </span>
+              )}
+            </p>
           </div>
 
           <div className="flex gap-2 pt-2">

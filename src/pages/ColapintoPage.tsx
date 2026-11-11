@@ -183,12 +183,12 @@ export function ColapintoPage() {
 
         {current && position !== null ? (
           <>
-            <div className="relative mt-6 grid grid-cols-3 gap-3">
+            <div className="relative mt-6 grid max-w-2xl grid-cols-3 gap-3">
               <StatCard index={0} label="Posición" value={`P${position}`} />
               <StatCard index={1} label="Puntos" value={String(current.points)} />
               <StatCard index={2} label="Victorias" value={String(current.wins)} />
             </div>
-            <div className="relative mt-4 space-y-1.5">
+            <div className="relative mt-4 max-w-2xl space-y-1.5">
               <AnimatedBar
                 percent={leaderPoints > 0 ? Math.round((current.points / leaderPoints) * 100) : 0}
                 color={color}
@@ -205,6 +205,10 @@ export function ColapintoPage() {
           </p>
         )}
       </section>
+      
+      <div className="mb-6">
+        <ColapintoNews />
+      </div>
 
       <div className="grid grid-cols-1 items-start gap-x-6 gap-y-6 xl:grid-cols-2">
         <div className="min-w-0 space-y-6">
@@ -250,7 +254,7 @@ export function ColapintoPage() {
       </div>
 
       <div className="mt-8 space-y-8">
-        <ColapintoNews />
+
         <ColapintoWallpapers driverId={driverId} />
 
         <section className="fade-up relative overflow-hidden rounded-2xl border border-primary/40 bg-hero p-5 md:p-6">

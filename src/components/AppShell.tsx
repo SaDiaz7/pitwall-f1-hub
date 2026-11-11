@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { CountryGate } from "@/components/CountryGate";
 import { NewsDialog } from "@/components/NewsDialog";
 import { NavProgress } from "@/components/NavProgress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -154,7 +155,7 @@ function NavEntry({
 
 export function AppShell() {
   const { session, loading } = useSession();
-  const { profile } = useProfile();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigating = useRouterState({ select: (state) => state.isLoading });
@@ -167,6 +168,9 @@ export function AppShell() {
   const [moreOpen, setMoreOpen] = useState(false);
 
   const guest = !session;
+    // Quien inició sesión y todavía no eligió nacionalidad tiene que elegirla antes de seguir.
+  const needsCountry = !guest && !profileLoading && profile.country === null;
+
   const publicPath = isPublicPath(pathname);
   // En una página privada, no mostramos el contenido hasta confirmar que hay sesión.
   const blocked = !publicPath && (loading || guest);
@@ -391,7 +395,7 @@ export function AppShell() {
         </div>
       )}
 
-      {session && <NewsDialog />}
+      {session && !profileLoading && (needsCountry ? <CountryGate /> : <NewsDialog />)}
     </div>
   );
 }

@@ -21,6 +21,7 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   header_url: string | null;
+  country: string | null;
   is_public: boolean;
   show_favorites: boolean;
 }
@@ -33,6 +34,7 @@ const EMPTY_PROFILE: Profile = {
   avatar_url: null,
   bio: null,
   header_url: null,
+  country: null,
   is_public: true,
   show_favorites: true,
 };
@@ -91,7 +93,7 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_url, bio, header_url, is_public, show_favorites")
+      .select("username, display_name, avatar_url, bio, header_url, is_public, show_favorites, country")
       .eq("id", userId)
       .maybeSingle();
 

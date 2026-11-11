@@ -18,6 +18,8 @@ import { InstallPanel } from "@/components/InstallPanel";
 import { NewsEditor } from "@/components/NewsEditor";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
+import { CountryFlag } from "@/components/CountryFlag";
+import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { PredictionsAdmin } from "@/components/PredictionsAdmin";
 import { PrivacyPanel } from "@/components/PrivacyPanel";
 
@@ -52,6 +54,7 @@ function ProfilePanel() {
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+  const [country, setCountry] = useState("");
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [saving, setSaving] = useState(false);
@@ -65,7 +68,8 @@ function ProfilePanel() {
     setUsername(profile.username ?? "");
     setDisplayName(profile.display_name ?? "");
     setBio(profile.bio ?? "");
-  }, [profile.username, profile.display_name, profile.bio]);
+    setCountry(profile.country ?? "");
+  }, [profile.username, profile.display_name, profile.bio, profile.country]);
 
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -83,6 +87,7 @@ function ProfilePanel() {
       username: cleanUsername || null,
       display_name: displayName.trim() || null,
       bio: bio.trim() || null,
+      country: country || null,
     });
     setSaving(false);
 
@@ -185,6 +190,26 @@ function ProfilePanel() {
             {getInitials(profile.display_name || profile.username || session?.user.email)}
           </AvatarFallback>
         </Avatar>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="country">Nacionalidad</Label>
+          <div className="flex items-center gap-3">
+            <select
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              {COUNTRY_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            {country && <CountryFlag code={country} className="h-6 shrink-0" />}
+          </div>
+        </div>
+
         <div className="space-y-1.5">
           <input
             ref={fileInput}
