@@ -1,31 +1,41 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { WallpaperModal } from "@/components/WallpaperModal";
 import { WallpaperUploadForm } from "@/components/WallpaperUploadForm";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useNavigate } from "@tanstack/react-router";
+import { getInitials } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
+import { useWallpaperUploaders, uploaderName } from "@/hooks/useWallpaperUploaders";
 import { useWallpapers } from "@/hooks/useWallpapers";
-import { getWallpaperUrls, qualityLabel, type Wallpaper } from "@/lib/wallpapers";
+import {
+  ORIENTATION_LABELS,
+  getWallpaperUrls,
+  orientationOf,
+  qualityLabel,
+  type Orientation,
+} from "@/lib/wallpapers";
 import { TeamStripe } from "@/components/TeamStripe";
 import { LikeButton } from "@/components/LikeButton";
 import { Pagination } from "@/components/Pagination";
-
 
 interface Filters {
   year: string;
   team: string;
   driver: string;
   quality: string;
+  format: string;
 }
 
-const EMPTY_FILTERS: Filters = { year: "", team: "", driver: "", quality: "" };
+const EMPTY_FILTERS: Filters = { year: "", team: "", driver: "", quality: "", format: "" };
 const SELECT_CLASS = "h-10 w-full rounded-md border bg-card px-3 text-sm";
 type SortOrder = "recent" | "most" | "least";
 const PAGE_SIZE = 20; // fondos por página
-
+const GRID = "grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]";
 
 function uniqueOptions(items: { id: string | null; name: string | null }[]) {
   const map = new Map<string, string>();
@@ -58,19 +68,27 @@ function FilterSelect({
   );
 }
 
-
 export function WallpapersPage() {
   const isAdmin = useIsAdmin();
   const { session } = useSession();
   const navigate = useNavigate();
   const isGuest = !session;
   const { wallpapers, likedIds, loading, error, reload, toggleLike } = useWallpapers();
+  const { uploaders, reload: reloadUploaders } = useWallpaperUploaders();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [showUpload, setShowUpload] = useState(false);
-  const [selected, setSelected] = useState<Wallpaper | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOrder>("recent");
   const [page, setPage] = useState(1);
   const gridTopRef = useRef<HTMLParagraphElement>(null);
+
+  // El fondo abierto se busca en la lista, así al editarlo se ve actualizado.
+  const selected = selectedId ? (wallpapers.find((w) => w.id === selectedId) ?? null) : null;
+
+  const reloadAll = () => {
+    void reload();
+    void reloadUploaders();
+  };
 
   // Las opciones de los filtros salen de los fondos que ya existen.
   const options = useMemo(
@@ -88,7 +106,8 @@ export function WallpapersPage() {
         (!filters.year || String(w.year) === filters.year) &&
         (!filters.team || w.team_id === filters.team) &&
         (!filters.driver || w.driver_id === filters.driver) &&
-        (!filters.quality || w.quality === filters.quality),
+        (!filters.quality || w.quality === filters.quality) &&
+        (!filters.format || orientationOf(w.width, w.height) === filters.format),
     );
 
     if (sort === "most") result.sort((a, b) => b.likes_count - a.likes_count);
@@ -137,16 +156,20 @@ export function WallpapersPage() {
           <Button
             type="button"
             onClick={() => setShowUpload((v) => !v)}
-            className="bg-gradient-primary font-semibold"
+            className="bg-gradient-primary font-semibold transition-transform active:scale-95"
           >
             <Plus className="mr-2 h-4 w-4" /> {showUpload ? "Cerrar" : "Subir fondo"}
           </Button>
         </div>
       )}
 
-      {isAdmin && showUpload && <WallpaperUploadForm onUploaded={reload} />}
+      {isAdmin && showUpload && (
+        <div className="max-w-3xl">
+          <WallpaperUploadForm onUploaded={reloadAll} />
+        </div>
+      )}
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] gap-3">
         <FilterSelect label="Año" value={filters.year} onChange={setFilter("year")}>
           <option value="">Todos</option>
           {options.years.map((y) => (
@@ -177,6 +200,14 @@ export function WallpapersPage() {
           <option value="hd">HD</option>
           <option value="sd">Baja</option>
         </FilterSelect>
+        <FilterSelect label="Formato" value={filters.format} onChange={setFilter("format")}>
+          <option value="">Todos</option>
+          {(Object.keys(ORIENTATION_LABELS) as Orientation[]).map((key) => (
+            <option key={key} value={key}>
+              {ORIENTATION_LABELS[key]}
+            </option>
+          ))}
+        </FilterSelect>
         <FilterSelect label="Ordenar por" value={sort} onChange={(v) => setSort(v as SortOrder)}>
           <option value="recent">Más recientes</option>
           <option value="most">Más likes</option>
@@ -189,7 +220,11 @@ export function WallpapersPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Cargando fondos…</p>
+        <ul className={GRID}>
+          {Array.from({ length: 10 }, (_, index) => (
+            <li key={index} className="skeleton aspect-[4/3]" />
+          ))}
+        </ul>
       ) : wallpapers.length === 0 ? (
         <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
           Todavía no hay fondos cargados.
@@ -208,7 +243,7 @@ export function WallpapersPage() {
         </div>
       ) : (
         <>
-          <p className="mb-3 text-sm text-muted-foreground">
+          <p ref={gridTopRef} className="mb-3 scroll-mt-4 text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? "fondo" : "fondos"}
             {hasFilters && (
               <>
@@ -223,22 +258,32 @@ export function WallpapersPage() {
               </>
             )}
           </p>
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {visible.map((w) => {
+          <ul className={GRID}>
+            {visible.map((w, index) => {
               const name = w.driver_name ?? w.team_name ?? "Fondo";
+              const uploader = w.uploaded_by ? uploaders.get(w.uploaded_by) : undefined;
+              // Cada fondo conserva su proporción (con un límite para que ninguno quede enorme).
+              const ratio = Math.min(2, Math.max(0.5, w.width / w.height));
+
               return (
-                <li key={w.id} className="relative overflow-hidden rounded-2xl border bg-card">
+                <li
+                  key={w.id}
+                  className="fade-up relative overflow-hidden rounded-2xl border bg-card"
+                  style={{ "--i": Math.min(index, 10) } as CSSProperties}
+                >
                   <button
                     type="button"
-                    onClick={() => setSelected(w)}
+                    onClick={() => setSelectedId(w.id)}
                     className="group relative block w-full text-left"
                   >
-                    <img
-                      src={getWallpaperUrls(w.id).thumb}
-                      alt={name}
-                      loading="lazy"
-                      className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
-                    />
+                    <div className="overflow-hidden" style={{ aspectRatio: String(ratio) }}>
+                      <img
+                        src={getWallpaperUrls(w.id).thumb}
+                        alt={name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                      />
+                    </div>
                     <span className="absolute left-2 top-2 rounded-md bg-background/80 px-2 py-0.5 text-xs font-bold backdrop-blur">
                       {qualityLabel(w.quality)}
                     </span>
@@ -246,9 +291,20 @@ export function WallpapersPage() {
                       <TeamStripe teamId={w.team_id} teamName={w.team_name} className="h-8" />
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{name}</p>
-                        <p ref={gridTopRef} className="mb-3 scroll-mt-4 text-sm text-muted-foreground">
+                        <p className="truncate text-sm text-muted-foreground">
                           {[w.driver_name ? w.team_name : null, w.year].filter(Boolean).join(" · ")}
                         </p>
+                        {uploader && (
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Avatar className="h-4 w-4">
+                              {uploader.avatar_url && <AvatarImage src={uploader.avatar_url} alt="" />}
+                              <AvatarFallback className="bg-secondary text-[8px] font-bold">
+                                {getInitials(uploaderName(uploader))}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{uploaderName(uploader)}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -271,10 +327,13 @@ export function WallpapersPage() {
         <WallpaperModal
           wallpaper={selected}
           isAdmin={isAdmin}
-          onClose={() => setSelected(null)}
+          canDownload={!isGuest}
+          uploader={selected.uploaded_by ? (uploaders.get(selected.uploaded_by) ?? null) : null}
+          onClose={() => setSelectedId(null)}
+          onUpdated={reloadAll}
           onDeleted={() => {
-            setSelected(null);
-            reload();
+            setSelectedId(null);
+            reloadAll();
           }}
         />
       )}

@@ -184,3 +184,51 @@ export async function deleteWallpaper(id: string): Promise<ActionResult> {
   await supabase.storage.from("wallpapers").remove([`${id}/full`, `${id}/thumb`]);
   return { ok: true };
 }
+
+export type Orientation = "landscape" | "portrait" | "square";
+
+export const ORIENTATION_LABELS: Record<Orientation, string> = {
+  landscape: "Horizontal · computadora",
+  portrait: "Vertical · celular",
+  square: "Cuadrado",
+};
+
+// Según la proporción de la imagen: apaisada = pensada para pantallas de compu, vertical = para celulares.
+export function orientationOf(width: number, height: number): Orientation {
+  const ratio = width / height;
+  if (ratio >= 1.2) return "landscape";
+  if (ratio <= 0.83) return "portrait";
+  return "square";
+}
+
+export interface WallpaperEdit {
+  year: number;
+  driver: { id: string; name: string } | null;
+  team: { id: string; name: string } | null;
+  credit: string;
+}
+
+export async function updateWallpaper(id: string, edit: WallpaperEdit): Promise<ActionResult> {
+  const { data, error } = await supabase
+    .from("wallpapers")
+    .update({
+      year: edit.year,
+      driver_id: edit.driver?.id ?? null,
+      driver_name: edit.driver?.name ?? null,
+      team_id: edit.team?.id ?? null,
+      team_name: edit.team?.name ?? null,
+      credit: edit.credit.trim() || null,
+    })
+    .eq("id", id)
+    .select("id");
+
+  if (error) {
+    console.error("Editar fondo:", error);
+    return { ok: false, message: "No pudimos guardar los cambios." };
+  }
+  // Si la base no deja editar, no da error: simplemente no cambia ninguna fila.
+  if (!data || data.length === 0) {
+    return { ok: false, message: "No pudimos guardar: el fondo no existe o no tenés permiso." };
+  }
+  return { ok: true };
+}

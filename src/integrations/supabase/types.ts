@@ -988,6 +988,15 @@ export type Database = {
           status: string
         }[]
       }
+      get_wallpaper_uploaders: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          user_id: string
+          username: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       join_league: {
         Args: { p_code: string }
