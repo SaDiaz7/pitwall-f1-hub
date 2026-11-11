@@ -26,7 +26,8 @@ import {
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { CountryGate } from "@/components/CountryGate";
+import { ProfileGate } from "@/components/ProfileGate";
+import { countryFromMetadata } from "@/lib/countries";
 import { NewsDialog } from "@/components/NewsDialog";
 import { NavProgress } from "@/components/NavProgress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -155,7 +156,7 @@ function NavEntry({
 
 export function AppShell() {
   const { session, loading } = useSession();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, save: saveProfile } = useProfile();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigating = useRouterState({ select: (state) => state.isLoading });
@@ -168,8 +169,28 @@ export function AppShell() {
   const [moreOpen, setMoreOpen] = useState(false);
 
   const guest = !session;
-    // Quien inició sesión y todavía no eligió nacionalidad tiene que elegirla antes de seguir.
-  const needsCountry = !guest && !profileLoading && profile.country === null;
+
+  // Si la nacionalidad ya viene del registro, se guarda sola y no hace falta preguntarla.
+  const metaCountry = countryFromMetadata(session?.user.user_metadata);
+  const countryApplied = useRef(false);
+  const [countryApplyFailed, setCountryApplyFailed] = useState(false);
+
+  useEffect(() => {
+    if (guest || profileLoading || countryApplied.current) return;
+    if (profile.country || !metaCountry) return;
+    countryApplied.current = true;
+    saveProfile({ country: metaCountry }).then((result) => {
+      if (!result.ok) setCountryApplyFailed(true);
+    });
+  }, [guest, profileLoading, profile.country, metaCountry, saveProfile]);
+
+  // Quien inició sesión tiene que tener nombre de usuario, nombre visible y nacionalidad antes de seguir.
+  const needsProfile =
+    !guest &&
+    !profileLoading &&
+    (!profile.username ||
+      !profile.display_name?.trim() ||
+      (!profile.country && (!metaCountry || countryApplyFailed)));
 
   const publicPath = isPublicPath(pathname);
   // En una página privada, no mostramos el contenido hasta confirmar que hay sesión.
@@ -395,7 +416,7 @@ export function AppShell() {
         </div>
       )}
 
-      {session && !profileLoading && (needsCountry ? <CountryGate /> : <NewsDialog />)}
+      {session && !profileLoading && (needsProfile ? <ProfileGate /> : <NewsDialog />)}
     </div>
   );
 }

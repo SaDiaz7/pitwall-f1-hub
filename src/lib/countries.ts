@@ -32,3 +32,15 @@ export const COUNTRY_OPTIONS: { code: string; name: string }[] = COUNTRY_CODES.m
 export function flagUrl(code: string, width: 20 | 40 | 80 = 40): string {
   return `https://flagcdn.com/w${width}/${code.toLowerCase()}.png`;
 }
+
+// País del idioma del navegador (por ejemplo "es-AR" → AR), si es un código válido. Solo se usa en el navegador.
+export function guessCountry(): string {
+  const region = navigator.language.split("-")[1]?.toUpperCase();
+  return region && COUNTRY_CODES.includes(region) ? region : "";
+}
+
+// Nacionalidad guardada en los datos de la cuenta al registrarse (si es un código válido).
+export function countryFromMetadata(metadata: Record<string, unknown> | undefined): string | null {
+  const value = metadata?.["country"];
+  return typeof value === "string" && COUNTRY_CODES.includes(value.toUpperCase()) ? value.toUpperCase() : null;
+}

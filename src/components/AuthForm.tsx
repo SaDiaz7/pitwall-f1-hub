@@ -1,15 +1,19 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CountryFlag } from "@/components/CountryFlag";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { COUNTRY_OPTIONS, guessCountry } from "@/lib/countries";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Mode = "login" | "registro";
-type Errors = Partial<Record<"email" | "password" | "confirm" | "terms" | "username" | "displayName", string>>;
+type Errors = Partial<
+  Record<"email" | "password" | "confirm" | "terms" | "username" | "displayName" | "country", string>
+>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
@@ -23,6 +27,7 @@ export function validateAuth(
     terms?: boolean;
     username?: string;
     displayName?: string;
+    country?: string;
   },
 ): Errors {
   const e: Errors = {};
@@ -43,6 +48,10 @@ export function validateAuth(
     const displayName = v.displayName.trim();
     if (!displayName) e.displayName = "Ingresá tu nombre visible.";
     else if (displayName.length < 2) e.displayName = "El nombre visible tiene que tener al menos 2 caracteres.";
+  }
+
+  if (mode === "registro" && v.country !== undefined && !v.country) {
+    e.country = "Elegí tu nacionalidad.";
   }
 
   return e;
@@ -82,7 +91,14 @@ export function GoogleIcon() {
 }
 
 export function AuthForm({ mode }: { mode: Mode }) {
-  const [values, setValues] = useState({ email: "", password: "", confirm: "", username: "", displayName: "" });
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+    confirm: "",
+    username: "",
+    displayName: "",
+    country: "",
+  });
   const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -92,6 +108,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const isLogin = mode === "login";
+
+  // Preselecciona el país del idioma del navegador (se hace acá porque en el servidor no existe el navegador).
+  useEffect(() => {
+    setValues((s) => (s.country ? s : { ...s, country: guessCountry() }));
+  }, []);
 
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -140,6 +161,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             data: {
               username,
               display_name: displayName,
+              country: values.country,
               accepted_terms_at: new Date().toISOString(),
             },
           },
@@ -262,6 +284,32 @@ export function AuthForm({ mode }: { mode: Mode }) {
           {!isLogin &&
             field("username", "Nombre de usuario", "text", "off", "De 3 a 20 caracteres: minúsculas, números o guion bajo.")}
           {!isLogin && field("displayName", "Nombre visible", "text", "name")}
+
+          {!isLogin && (
+            <div className="space-y-1.5">
+              <Label htmlFor="country">Nacionalidad</Label>
+              <div className="flex items-center gap-3">
+                <select
+                  id="country"
+                  value={values.country}
+                  aria-invalid={!!errors.country}
+                  onChange={(e) => setValues((s) => ({ ...s, country: e.target.value }))}
+                  className="h-11 w-full rounded-md border bg-background px-3 text-sm"
+                >
+                  <option value="" disabled>
+                    Elegí un país…
+                  </option>
+                  {COUNTRY_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+                {values.country && <CountryFlag code={values.country} className="h-6 shrink-0" />}
+              </div>
+              {errors.country && <p className="text-sm text-destructive">{errors.country}</p>}
+            </div>
+          )}
 
           {field("email", "Email", "email", "email")}
           {field("password", "Contraseña", "password", isLogin ? "current-password" : "new-password")}
