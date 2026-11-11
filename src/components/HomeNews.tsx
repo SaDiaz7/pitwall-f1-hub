@@ -9,7 +9,7 @@ const COUNT = 4;
 // Fecha fija (UTC) para el primer dibujo, así no hay diferencias entre servidor y navegador.
 const dateFormatter = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", timeZone: "UTC" });
 
-function timeAgo(iso: string, now: number | null): string {
+export function timeAgo(iso: string, now: number | null): string {
   const published = Date.parse(iso);
   if (now === null) return dateFormatter.format(published);
 
@@ -23,7 +23,7 @@ function timeAgo(iso: string, now: number | null): string {
   return dateFormatter.format(published);
 }
 
-function Thumb({ src }: { src: string | null }) {
+export function Thumb({ src }: { src: string | null }) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {

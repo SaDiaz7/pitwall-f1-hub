@@ -19,6 +19,7 @@ import {
   Newspaper,
   Puzzle,
   Settings,
+  Sparkles,
   Star,
   Target,
   Trophy,
@@ -47,6 +48,7 @@ export const navGroups = [
       { to: "/analisis", label: "Análisis", icon: Activity, public: true },
       { to: "/guia", label: "Guía de la F1", icon: BookOpen, public: true },
       { to: "/noticias", label: "Noticias", icon: Newspaper, public: true },
+      { to: "/colapinto", label: "Zona Colapinto", icon: Sparkles, public: true },
     ],
   },
   {

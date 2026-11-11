@@ -23,6 +23,7 @@ import { Route as PrivadoAnalisisRouteImport } from './routes/_privado.analisis'
 import { Route as PrivadoBingoRouteImport } from './routes/_privado.bingo'
 import { Route as PrivadoCalendarioRouteImport } from './routes/_privado.calendario'
 import { Route as PrivadoCampeonatoRouteImport } from './routes/_privado.campeonato'
+import { Route as PrivadoColapintoRouteImport } from './routes/_privado.colapinto'
 import { Route as PrivadoFavoritosRouteImport } from './routes/_privado.favoritos'
 import { Route as PrivadoFondosRouteImport } from './routes/_privado.fondos'
 import { Route as PrivadoGuiaRouteImport } from './routes/_privado.guia'
@@ -107,6 +108,11 @@ const PrivadoCalendarioRoute = PrivadoCalendarioRouteImport.update({
 const PrivadoCampeonatoRoute = PrivadoCampeonatoRouteImport.update({
   id: '/campeonato',
   path: '/campeonato',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoColapintoRoute = PrivadoColapintoRouteImport.update({
+  id: '/colapinto',
+  path: '/colapinto',
   getParentRoute: () => PrivadoRoute,
 } as any)
 const PrivadoFavoritosRoute = PrivadoFavoritosRouteImport.update({
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
+  '/colapinto': typeof PrivadoColapintoRoute
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/guia': typeof PrivadoGuiaRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/bingo': typeof PrivadoBingoRoute
   '/calendario': typeof PrivadoCalendarioRoute
   '/campeonato': typeof PrivadoCampeonatoRoute
+  '/colapinto': typeof PrivadoColapintoRoute
   '/favoritos': typeof PrivadoFavoritosRoute
   '/fondos': typeof PrivadoFondosRoute
   '/guia': typeof PrivadoGuiaRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/_privado/bingo': typeof PrivadoBingoRoute
   '/_privado/calendario': typeof PrivadoCalendarioRoute
   '/_privado/campeonato': typeof PrivadoCampeonatoRoute
+  '/_privado/colapinto': typeof PrivadoColapintoRoute
   '/_privado/favoritos': typeof PrivadoFavoritosRoute
   '/_privado/fondos': typeof PrivadoFondosRoute
   '/_privado/guia': typeof PrivadoGuiaRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/calendario'
     | '/campeonato'
+    | '/colapinto'
     | '/favoritos'
     | '/fondos'
     | '/guia'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/calendario'
     | '/campeonato'
+    | '/colapinto'
     | '/favoritos'
     | '/fondos'
     | '/guia'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/_privado/bingo'
     | '/_privado/calendario'
     | '/_privado/campeonato'
+    | '/_privado/colapinto'
     | '/_privado/favoritos'
     | '/_privado/fondos'
     | '/_privado/guia'
@@ -494,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoCampeonatoRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/colapinto': {
+      id: '/_privado/colapinto'
+      path: '/colapinto'
+      fullPath: '/colapinto'
+      preLoaderRoute: typeof PrivadoColapintoRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/favoritos': {
       id: '/_privado/favoritos'
       path: '/favoritos'
@@ -616,6 +635,7 @@ interface PrivadoRouteChildren {
   PrivadoBingoRoute: typeof PrivadoBingoRoute
   PrivadoCalendarioRoute: typeof PrivadoCalendarioRoute
   PrivadoCampeonatoRoute: typeof PrivadoCampeonatoRoute
+  PrivadoColapintoRoute: typeof PrivadoColapintoRoute
   PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
   PrivadoFondosRoute: typeof PrivadoFondosRoute
   PrivadoGuiaRoute: typeof PrivadoGuiaRoute
@@ -640,6 +660,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoBingoRoute: PrivadoBingoRoute,
   PrivadoCalendarioRoute: PrivadoCalendarioRoute,
   PrivadoCampeonatoRoute: PrivadoCampeonatoRoute,
+  PrivadoColapintoRoute: PrivadoColapintoRoute,
   PrivadoFavoritosRoute: PrivadoFavoritosRoute,
   PrivadoFondosRoute: PrivadoFondosRoute,
   PrivadoGuiaRoute: PrivadoGuiaRoute,
