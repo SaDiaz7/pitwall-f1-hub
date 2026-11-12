@@ -51,6 +51,155 @@ export type Database = {
         }
         Relationships: []
       }
+      album_cards: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          rarity: string
+          ref_id: string
+          season: number | null
+          stats: Json
+          subtitle: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id: string
+          kind: string
+          name: string
+          rarity: string
+          ref_id: string
+          season?: number | null
+          stats?: Json
+          subtitle?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          rarity?: string
+          ref_id?: string
+          season?: number | null
+          stats?: Json
+          subtitle?: string | null
+        }
+        Relationships: []
+      }
+      album_pack_claims: {
+        Row: {
+          cards: Json
+          claim_date: string
+          created_at: string
+          outcome: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          cards: Json
+          claim_date: string
+          created_at?: string
+          outcome: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          cards?: Json
+          claim_date?: string
+          created_at?: string
+          outcome?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      album_pack_rules: {
+        Row: {
+          cards: number
+          guaranteed_rare: boolean
+          outcome: string
+          w_common: number
+          w_epic: number
+          w_legendary: number
+          w_rare: number
+        }
+        Insert: {
+          cards: number
+          guaranteed_rare?: boolean
+          outcome: string
+          w_common?: number
+          w_epic?: number
+          w_legendary?: number
+          w_rare?: number
+        }
+        Update: {
+          cards?: number
+          guaranteed_rare?: boolean
+          outcome?: string
+          w_common?: number
+          w_epic?: number
+          w_legendary?: number
+          w_rare?: number
+        }
+        Relationships: []
+      }
+      album_settings: {
+        Row: {
+          foil_chance: number
+          id: boolean
+          recycle_cost: number
+          streak_bonus_days: number
+        }
+        Insert: {
+          foil_chance?: number
+          id?: boolean
+          recycle_cost?: number
+          streak_bonus_days?: number
+        }
+        Update: {
+          foil_chance?: number
+          id?: boolean
+          recycle_cost?: number
+          streak_bonus_days?: number
+        }
+        Relationships: []
+      }
+      album_user_cards: {
+        Row: {
+          card_id: string
+          first_obtained_at: string
+          foil: boolean
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          first_obtained_at?: string
+          foil?: boolean
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          first_obtained_at?: string
+          foil?: boolean
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "album_user_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "album_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bingo_cells: {
         Row: {
           marked: boolean
@@ -838,6 +987,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      album_grant_card: {
+        Args: { p_card: string; p_foil: boolean; p_user: string }
+        Returns: boolean
+      }
+      album_open_daily_pack: { Args: never; Returns: Json }
+      album_pick_card: { Args: { p_rarity: string }; Returns: string }
+      album_pick_rarity: {
+        Args: {
+          p_min_rare: boolean
+          w_common: number
+          w_epic: number
+          w_legendary: number
+          w_rare: number
+        }
+        Returns: string
+      }
+      album_sync_cards: { Args: { p_cards: Json }; Returns: number }
+      album_today_pack: { Args: never; Returns: Json }
       all_distinct: { Args: { items: string[] }; Returns: boolean }
       award_trophies: { Args: { p_season: number }; Returns: number }
       bonus_points: { Args: { answers: Json; results: Json }; Returns: number }

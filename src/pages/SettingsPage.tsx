@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { InstallPanel } from "@/components/InstallPanel";
 import { NewsEditor } from "@/components/NewsEditor";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-
+import { AlbumAdmin } from "@/components/AlbumAdmin";
 import { CountryFlag } from "@/components/CountryFlag";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { PredictionsAdmin } from "@/components/PredictionsAdmin";
@@ -405,6 +405,7 @@ export function SettingsPage() {
           <TabsTrigger value="app">App</TabsTrigger>
           {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
           {isAdmin && <TabsTrigger value="predicciones">Predicciones</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="album">Álbum</TabsTrigger>}          
         </TabsList>
 
         <TabsContent value="perfil">
@@ -430,6 +431,11 @@ export function SettingsPage() {
         {isAdmin && (
           <TabsContent value="predicciones">
             <PredictionsAdmin />
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="album">
+            <AlbumAdmin />
           </TabsContent>
         )}
       </Tabs>
