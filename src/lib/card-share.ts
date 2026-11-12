@@ -176,10 +176,16 @@ function drawCard(
     }
 
     if (assets.photo) {
-      const scale = Math.max(aw / assets.photo.width, ah / assets.photo.height);
+      // La imagen recortada se apoya abajo, como en la carta.
+      const scale = Math.min(aw / assets.photo.width, ah / assets.photo.height);
       const dw = assets.photo.width * scale;
       const dh = assets.photo.height * scale;
-      ctx.drawImage(assets.photo, ax + (aw - dw) / 2, ay, dw, dh);
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = 2.5 * u;
+      ctx.shadowOffsetY = 1.5 * u;
+      ctx.drawImage(assets.photo, ax + (aw - dw) / 2, ay + ah - dh, dw, dh);
+      ctx.restore();
     } else {
       ctx.globalAlpha = 0.7;
       ctx.fillStyle = "#ffffff";

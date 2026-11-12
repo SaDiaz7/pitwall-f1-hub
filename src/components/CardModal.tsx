@@ -1,19 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Share2, X } from "lucide-react";
 import { StickerCard } from "@/components/StickerCard";
-import { KIND_LABELS, RARITY_LABELS, type AlbumEntry } from "@/lib/album";
+import { KIND_LABELS, RARITY_LABELS, cardImageUrl, type AlbumEntry } from "@/lib/album";
+import { renderCardImage, shareImageBlob } from "@/lib/card-share";
 import type { DriverPhoto } from "@/lib/f1";
 
 export function CardModal({
   entry,
-  photo,
   onClose,
 }: {
   entry: AlbumEntry;
-  photo: DriverPhoto | null;
+  /** Ya no se usa: la imagen sale de /public/cards. Se deja para no romper el lugar que todavía la pasa. */
+  photo?: DriverPhoto | null | undefined;
   onClose: () => void;
 }) {
+  const [sharing, setSharing] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -26,6 +30,26 @@ export function CardModal({
       document.body.style.overflow = previousOverflow;
     };
   }, [onClose]);
+
+  const onShare = async () => {
+    setSharing(true);
+    setMessage(null);
+    try {
+      const blob = await renderCardImage(entry, entry.foil_quantity > 0, cardImageUrl(entry));
+      const filename = `pitwall-carta-${entry.card_id.replace(/[^a-z0-9]+/gi, "-")}.png`;
+      const text = `Me salió ${entry.name} (${RARITY_LABELS[entry.rarity]}) en PitWall ${window.location.origin}`;
+      const result = await shareImageBlob(blob, filename, text);
+      if (result === "downloaded") setMessage("Imagen descargada.");
+    } catch (error) {
+      // Si la persona cierra el menú de compartir no es un error.
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error("Compartir carta:", error);
+        setMessage("No pudimos generar la imagen.");
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
 
   return createPortal(
     <div
@@ -40,10 +64,10 @@ export function CardModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto w-full max-w-[17rem]">
-          <StickerCard card={entry} foil={entry.foil_quantity > 0} photo={photo} />
+          <StickerCard card={entry} foil={entry.foil_quantity > 0} />
         </div>
 
-        <div className="space-y-1 rounded-2xl border bg-card p-4 text-sm">
+        <div className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
           <p className="font-display text-xl font-bold uppercase">{entry.name}</p>
           <p className="text-muted-foreground">
             {KIND_LABELS[entry.kind]} · {RARITY_LABELS[entry.rarity]} · #{String(entry.number).padStart(2, "0")}
@@ -52,14 +76,19 @@ export function CardModal({
             Tenés <span className="font-semibold">{entry.quantity}</span> normal{entry.quantity === 1 ? "" : "es"} y{" "}
             <span className="font-semibold">{entry.foil_quantity}</span> foil ✨
           </p>
-          {photo && (
-            <p className="text-xs text-muted-foreground">
-              Foto:{" "}
-              <a href={photo.page} target="_blank" rel="noopener noreferrer" className="underline">
-                Wikipedia
-              </a>
-            </p>
-          )}
+
+          {message && <p className="rounded-md bg-secondary p-2 text-xs">{message}</p>}
+
+          <button
+            type="button"
+            onClick={() => void onShare()}
+            disabled={sharing}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
+          >
+            <Share2 className="h-4 w-4" />
+            {sharing ? "Generando imagen…" : "Compartir carta"}
+          </button>
+
           <p className="pt-1 text-xs text-muted-foreground">
             Próximamente: intercambiar con amigos y reciclar repetidas.
           </p>

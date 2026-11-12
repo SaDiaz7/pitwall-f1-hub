@@ -5,6 +5,7 @@ import { getInitials } from "@/hooks/useProfile";
 import {
   KIND_LABELS,
   RARITY_LABELS,
+  cardImageUrl,
   statNum,
   statStr,
   type CardFace,
@@ -75,16 +76,19 @@ export function statStrip(card: CardFace): { label: string; value: string }[] {
 export function StickerCard({
   card,
   foil = false,
-  photo = null,
   quantity,
   className,
 }: {
   card: CardFace;
   foil?: boolean;
-  photo?: DriverPhoto | null;
+  /** Ya no se usa: la imagen sale de /public/cards (ver cardImageUrl). Se deja para no romper los lugares que todavía la pasan. */
+  photo?: DriverPhoto | null | undefined;
   quantity?: number | undefined;
   className?: string | undefined;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = cardImageUrl(card);
+
   const [photoFailed, setPhotoFailed] = useState(false);
 
   const frame = FRAME[card.rarity];
@@ -142,14 +146,14 @@ export function StickerCard({
                     {number}
                   </span>
                 )}
-                {photo && !photoFailed ? (
+                {imageUrl && !imageFailed ? (
                   <img
-                    src={photo.url}
+                    src={imageUrl}
                     alt=""
                     loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={() => setPhotoFailed(true)}
-                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    onError={() => setImageFailed(true)}
+                    className="absolute inset-0 h-full w-full object-contain object-bottom"
+                    style={{ filter: "drop-shadow(0 1.5cqw 2.5cqw rgba(0,0,0,0.55))" }}
                   />
                 ) : (
                   <span

@@ -133,3 +133,14 @@ export function statStr(stats: Record<string, unknown>, key: string): string | n
   const value = stats[key];
   return typeof value === "string" ? value : null;
 }
+
+// Dirección de la imagen de una carta. Las imágenes viven en /public/cards.
+// - Si la carta tiene "image" (en la tabla album_cards), se usa ese archivo.
+// - Si es de piloto y no tiene, se busca "<id del piloto>.png" (por ejemplo piastri.png).
+export function cardImageUrl(card: Pick<CardFace, "kind" | "card_id" | "stats">): string | null {
+  const explicit = statStr(card.stats, "image");
+  if (explicit) return `/cards/${explicit}`;
+  if (card.kind !== "driver") return null;
+  const ref = card.card_id.split(":").pop();
+  return ref ? `/cards/${ref}.png` : null;
+}
