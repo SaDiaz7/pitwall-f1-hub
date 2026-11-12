@@ -313,6 +313,67 @@ export type Database = {
           },
         ]
       }
+      league_post_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "league_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_posts: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_posts_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leagues: {
         Row: {
           created_at: string
@@ -781,6 +842,7 @@ export type Database = {
       award_trophies: { Args: { p_season: number }; Returns: number }
       bonus_points: { Args: { answers: Json; results: Json }; Returns: number }
       create_league: { Args: { p_name: string }; Returns: string }
+      delete_league_post: { Args: { p_post_id: string }; Returns: boolean }
       dotd_get: {
         Args: { p_round: number; p_season: number }
         Returns: {
@@ -939,6 +1001,20 @@ export type Database = {
           username: string
         }[]
       }
+      get_league_wall: {
+        Args: { p_before?: string; p_league_id: string; p_limit?: number }
+        Returns: {
+          avatar_url: string
+          body: string
+          can_delete: boolean
+          created_at: string
+          display_name: string
+          post_id: string
+          reactions: Json
+          user_id: string
+          username: string
+        }[]
+      }
       get_my_leagues: {
         Args: never
         Returns: {
@@ -1036,6 +1112,10 @@ export type Database = {
       }
       league_min_members: { Args: never; Returns: number }
       leave_league: { Args: { p_league_id: string }; Returns: boolean }
+      post_to_league: {
+        Args: { p_body: string; p_league_id: string }
+        Returns: string
+      }
       queue_daily_game_reminders: { Args: never; Returns: number }
       queue_dotd_open_notifications: { Args: never; Returns: number }
       queue_prediction_reminders: { Args: never; Returns: number }
@@ -1081,6 +1161,10 @@ export type Database = {
       sync_race_results: {
         Args: { p_round: number; p_rows: Json; p_season: number }
         Returns: number
+      }
+      toggle_post_reaction: {
+        Args: { p_emoji: string; p_post_id: string }
+        Returns: boolean
       }
       username_available: { Args: { candidate: string }; Returns: boolean }
     }

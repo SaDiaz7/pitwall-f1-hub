@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { Link, getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Copy } from "lucide-react";
-import { TrophyArt, trophyName } from "@/components/trophies/TrophyArt";
 import { AnimatedBar } from "@/components/AnimatedBar";
+import { LeagueWall } from "@/components/LeagueWall";
+import { TrophyArt, trophyName } from "@/components/trophies/TrophyArt";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { computeRanks } from "@/hooks/useLeaderboards";
 import { getInitials } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
@@ -150,7 +152,7 @@ export function LeaguePage() {
 
       {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
 
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <div className="space-y-6">
           <section className="fade-up flex items-center gap-4 rounded-2xl border bg-card p-4">
             <TrophyArt year={season} className="w-24 shrink-0" />
@@ -205,71 +207,82 @@ export function LeaguePage() {
         </div>
 
         <div className="min-w-0">
-          {!info.active ? (
-            <section className="fade-up space-y-4 rounded-2xl border bg-card p-5">
-              <div>
-                <h2 className="text-xl font-bold uppercase">Liga en formación</h2>
-                <p className="text-sm text-muted-foreground">
-                  Faltan {missing} {missing === 1 ? "persona" : "personas"} para que la liga arranque. Hasta entonces
-                  la tabla de posiciones está oculta.
-                </p>
-              </div>
-              <AnimatedBar percent={Math.min(100, (info.member_count / info.min_members) * 100)} className="h-2" />
-              <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3">
-                {members.map((member) => (
-                  <li key={member.user_id} className="flex items-center gap-3">
-                    <MemberAvatar member={member} />
-                    <span className="min-w-0 truncate font-semibold">
-                      {member.display_name || member.username || "Sin nombre"}
-                      {member.user_id === userId && (
-                        <span className="ml-2 text-xs font-normal text-primary">(vos)</span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : (
-            <section className="space-y-3">
-              <h2 className="text-xl font-bold uppercase">Tabla de posiciones</h2>
-              <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-2">
-                {ranked.map((member, index) => {
-                  const mine = member.user_id === userId;
-                  const name = member.display_name || member.username || "Sin nombre";
-                  return (
-                    <li
-                      key={member.user_id}
-                      className={cn(
-                        "fade-up flex items-center gap-3 rounded-2xl border bg-card p-3",
-                        mine && "border-primary/60",
-                      )}
-                      style={{ "--i": Math.min(index, 10) } as CSSProperties}
-                    >
-                      <span
-                        className={cn(
-                          "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md font-display text-base font-bold",
-                          ranks[index] === 1 ? "bg-gradient-primary text-primary-foreground" : "bg-secondary",
-                        )}
-                      >
-                        {ranks[index]}
-                      </span>
-                      <MemberAvatar member={member} />
-                      <p className="min-w-0 flex-1 truncate font-semibold">
-                        {name}
-                        {mine && <span className="ml-2 text-xs font-normal text-primary">(vos)</span>}
-                      </p>
-                      <div className="text-right">
-                        <p className="font-display text-xl font-bold tabular-nums">{member.total_points}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {member.scored_races} {member.scored_races === 1 ? "carrera" : "carreras"}
-                        </p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          )}
+          <Tabs defaultValue="tabla">
+            <TabsList className="mb-4">
+              <TabsTrigger value="tabla">Tabla</TabsTrigger>
+              <TabsTrigger value="muro">Muro</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tabla">
+              {!info.active ? (
+                <section className="fade-up space-y-4 rounded-2xl border bg-card p-5">
+                  <div>
+                    <h2 className="text-xl font-bold uppercase">Liga en formación</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Faltan {missing} {missing === 1 ? "persona" : "personas"} para que la liga arranque. Hasta
+                      entonces la tabla de posiciones está oculta.
+                    </p>
+                  </div>
+                  <AnimatedBar percent={Math.min(100, (info.member_count / info.min_members) * 100)} className="h-2" />
+                  <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3">
+                    {members.map((member) => (
+                      <li key={member.user_id} className="flex items-center gap-3">
+                        <MemberAvatar member={member} />
+                        <span className="min-w-0 truncate font-semibold">
+                          {member.display_name || member.username || "Sin nombre"}
+                          {member.user_id === userId && (
+                            <span className="ml-2 text-xs font-normal text-primary">(vos)</span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : (
+                <section className="space-y-3">
+                  <h2 className="text-xl font-bold uppercase">Tabla de posiciones</h2>
+                  <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-2">
+                    {ranked.map((member, index) => {
+                      const mine = member.user_id === userId;
+                      const name = member.display_name || member.username || "Sin nombre";
+                      return (
+                        <li
+                          key={member.user_id}
+                          className={cn(
+                            "fade-up flex items-center gap-3 rounded-2xl border bg-card p-3",
+                            mine && "border-primary/60",
+                          )}
+                          style={{ "--i": Math.min(index, 10) } as CSSProperties}
+                        >
+                          <span
+                            className={cn(
+                              "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md font-display text-base font-bold",
+                              ranks[index] === 1 ? "bg-gradient-primary text-primary-foreground" : "bg-secondary",
+                            )}
+                          >
+                            {ranks[index]}
+                          </span>
+                          <MemberAvatar member={member} />
+                          <p className="min-w-0 flex-1 truncate font-semibold">
+                            {name}
+                            {mine && <span className="ml-2 text-xs font-normal text-primary">(vos)</span>}
+                          </p>
+                          <div className="text-right">
+                            <p className="font-display text-xl font-bold tabular-nums">{member.total_points}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.scored_races} {member.scored_races === 1 ? "carrera" : "carreras"}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </section>
+              )}
+            </TabsContent>
+
+            <TabsContent value="muro">{userId && <LeagueWall leagueId={id} userId={userId} />}</TabsContent>
+          </Tabs>
         </div>
       </div>
     </>
