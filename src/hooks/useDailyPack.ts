@@ -42,7 +42,8 @@ export function useDailyPack(refreshKey: number) {
     void refresh();
   }, [sessionLoading, userId, refresh, refreshKey]);
 
-  const open = useCallback(async () => {
+  // Devuelve true si el sobre se abrió bien.
+  const open = useCallback(async (): Promise<boolean> => {
     setOpening(true);
     setError(null);
 
@@ -55,12 +56,13 @@ export function useDailyPack(refreshKey: number) {
         KNOWN_ERRORS.find((known) => rpcError.message.includes(known)) ?? "No pudimos abrir el sobre. Probá de nuevo.",
       );
       await refresh();
-      return;
+      return false;
     }
 
     const payload = data as unknown as PackPayload;
     setCards(payload.cards ?? []);
     setStatus("claimed");
+    return true;
   }, [refresh]);
 
   return { isGuest: !userId, status, cards, opening, error, open };

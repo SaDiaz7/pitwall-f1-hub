@@ -101,3 +101,35 @@ export function buildCatalogCards(drivers: Driver[], season: number): CatalogCar
 
   return cards;
 }
+
+export const KIND_ORDER: CardKind[] = ["driver", "team", "circuit"];
+
+// 0 = la más rara. Sirve para ordenar de las mejores a las comunes.
+export const RARITY_RANK: Record<Rarity, number> = { legendary: 0, epic: 1, rare: 2, common: 3 };
+
+// Lo mínimo para dibujar una carta.
+export interface CardFace {
+  card_id: string;
+  kind: CardKind;
+  name: string;
+  subtitle: string | null;
+  rarity: Rarity;
+  stats: Record<string, unknown>;
+}
+
+// Una carta del catálogo con cuántas tiene la persona (normales y foil) y su número dentro de su tipo.
+export interface AlbumEntry extends CardFace {
+  quantity: number;
+  foil_quantity: number;
+  number: number;
+}
+
+export function statNum(stats: Record<string, unknown>, key: string): number | null {
+  const value = stats[key];
+  return typeof value === "number" ? value : null;
+}
+
+export function statStr(stats: Record<string, unknown>, key: string): string | null {
+  const value = stats[key];
+  return typeof value === "string" ? value : null;
+}

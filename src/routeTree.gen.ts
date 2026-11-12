@@ -18,6 +18,7 @@ import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RestablecerRouteImport } from './routes/restablecer'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as PrivadoAjustesRouteImport } from './routes/_privado.ajustes'
+import { Route as PrivadoAlbumRouteImport } from './routes/_privado.album'
 import { Route as PrivadoAmigosRouteImport } from './routes/_privado.amigos'
 import { Route as PrivadoAnalisisRouteImport } from './routes/_privado.analisis'
 import { Route as PrivadoBingoRouteImport } from './routes/_privado.bingo'
@@ -83,6 +84,11 @@ const TerminosRoute = TerminosRouteImport.update({
 const PrivadoAjustesRoute = PrivadoAjustesRouteImport.update({
   id: '/ajustes',
   path: '/ajustes',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoAlbumRoute = PrivadoAlbumRouteImport.update({
+  id: '/album',
+  path: '/album',
   getParentRoute: () => PrivadoRoute,
 } as any)
 const PrivadoAmigosRoute = PrivadoAmigosRouteImport.update({
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
+  '/album': typeof PrivadoAlbumRoute
   '/amigos': typeof PrivadoAmigosRoute
   '/analisis': typeof PrivadoAnalisisRoute
   '/bingo': typeof PrivadoBingoRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/ajustes': typeof PrivadoAjustesRoute
+  '/album': typeof PrivadoAlbumRoute
   '/amigos': typeof PrivadoAmigosRoute
   '/analisis': typeof PrivadoAnalisisRoute
   '/bingo': typeof PrivadoBingoRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/restablecer': typeof RestablecerRoute
   '/terminos': typeof TerminosRoute
   '/_privado/ajustes': typeof PrivadoAjustesRoute
+  '/_privado/album': typeof PrivadoAlbumRoute
   '/_privado/amigos': typeof PrivadoAmigosRoute
   '/_privado/analisis': typeof PrivadoAnalisisRoute
   '/_privado/bingo': typeof PrivadoBingoRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/ajustes'
+    | '/album'
     | '/amigos'
     | '/analisis'
     | '/bingo'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/ajustes'
+    | '/album'
     | '/amigos'
     | '/analisis'
     | '/bingo'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/restablecer'
     | '/terminos'
     | '/_privado/ajustes'
+    | '/_privado/album'
     | '/_privado/amigos'
     | '/_privado/analisis'
     | '/_privado/bingo'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/ajustes'
       fullPath: '/ajustes'
       preLoaderRoute: typeof PrivadoAjustesRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/album': {
+      id: '/_privado/album'
+      path: '/album'
+      fullPath: '/album'
+      preLoaderRoute: typeof PrivadoAlbumRouteImport
       parentRoute: typeof PrivadoRoute
     }
     '/_privado/amigos': {
@@ -630,6 +649,7 @@ declare module '@tanstack/react-router' {
 
 interface PrivadoRouteChildren {
   PrivadoAjustesRoute: typeof PrivadoAjustesRoute
+  PrivadoAlbumRoute: typeof PrivadoAlbumRoute
   PrivadoAmigosRoute: typeof PrivadoAmigosRoute
   PrivadoAnalisisRoute: typeof PrivadoAnalisisRoute
   PrivadoBingoRoute: typeof PrivadoBingoRoute
@@ -655,6 +675,7 @@ interface PrivadoRouteChildren {
 
 const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoAjustesRoute: PrivadoAjustesRoute,
+  PrivadoAlbumRoute: PrivadoAlbumRoute,
   PrivadoAmigosRoute: PrivadoAmigosRoute,
   PrivadoAnalisisRoute: PrivadoAnalisisRoute,
   PrivadoBingoRoute: PrivadoBingoRoute,

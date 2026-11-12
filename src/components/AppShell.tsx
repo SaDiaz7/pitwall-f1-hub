@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Home,
   Image as ImageIcon,
+  Layers,
   LayoutGrid,
   Lock,
   LogIn,
@@ -63,7 +64,7 @@ export const navGroups = [
       { to: "/bingo", label: "Bingo Card", icon: LayoutGrid, public: false },
       { to: "/juego", label: "Juego diario", icon: Puzzle, public: true },
       { to: "/quiz", label: "Quiz de F1", icon: GraduationCap, public: true },
-
+      { to: "/album", label: "Álbum", icon: Layers, public: false },
     ],
   },
   {

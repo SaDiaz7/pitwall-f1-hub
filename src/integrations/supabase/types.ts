@@ -987,6 +987,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      album_get_collection: {
+        Args: never
+        Returns: {
+          card_id: string
+          foil_quantity: number
+          kind: string
+          name: string
+          quantity: number
+          rarity: string
+          ref_id: string
+          season: number
+          stats: Json
+          subtitle: string
+        }[]
+      }
       album_grant_card: {
         Args: { p_card: string; p_foil: boolean; p_user: string }
         Returns: boolean
