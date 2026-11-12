@@ -1208,6 +1208,15 @@ export type Database = {
           name: string
         }[]
       }
+      get_profile_album: {
+        Args: { p_user_id: string }
+        Returns: {
+          foil_count: number
+          owned_count: number
+          top_cards: Json
+          total_count: number
+        }[]
+      }
       get_profile_badge_stats: {
         Args: { p_user_id: string }
         Returns: {

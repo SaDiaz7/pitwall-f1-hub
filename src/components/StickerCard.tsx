@@ -44,7 +44,7 @@ function CarSilhouette({ color }: { color: string }) {
   );
 }
 
-function statStrip(card: CardFace): { label: string; value: string }[] {
+export function statStrip(card: CardFace): { label: string; value: string }[] {
   if (card.kind === "circuit") {
     const length = statNum(card.stats, "length_m");
     const altitude = statNum(card.stats, "altitude_m");

@@ -1,4 +1,17 @@
-import { Award, Compass, Eye, Flag, Flame, Target, ThumbsUp, Users, Zap, type LucideIcon } from "lucide-react";
+import {
+  Award,
+  Compass,
+  Eye,
+  Flag,
+  Flame,
+  Layers,
+  Sparkles,
+  Target,
+  ThumbsUp,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface BadgeStats {
   streak_current: number;
@@ -11,6 +24,8 @@ export interface BadgeStats {
   pred_best_points: number;
   dotd_vote_count: number;
   friend_count: number;
+  album_owned: number;
+  album_foils: number;
 }
 
 // 0 = bloqueada, 1 = bronce, 2 = plata, 3 = oro.
@@ -108,6 +123,24 @@ export const BADGES: readonly BadgeDef[] = [
     unit: "amigos",
     targets: [1, 5, 10],
     value: (s) => s.friend_count,
+  },
+  {
+    id: "coleccionista",
+    name: "Coleccionista",
+    description: "Cartas distintas en tu álbum.",
+    icon: Layers,
+    unit: "cartas",
+    targets: [10, 30, 60],
+    value: (s) => s.album_owned,
+  },
+  {
+    id: "foil",
+    name: "Cazador de foil",
+    description: "Cartas con efecto foil.",
+    icon: Sparkles,
+    unit: "foil",
+    targets: [1, 5, 15],
+    value: (s) => s.album_foils,
   },
 ];
 

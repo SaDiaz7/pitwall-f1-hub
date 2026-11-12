@@ -15,6 +15,7 @@ import { BadgeShowcase } from "@/components/BadgeShowcase";
 import { AvatarLightbox } from "@/components/AvatarLightbox";
 import { CountryFlag } from "@/components/CountryFlag";
 import { countryName } from "@/lib/countries";
+import { AlbumShowcase } from "@/components/AlbumShowcase";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -243,7 +244,9 @@ export function UserProfilePage() {
 
         <TrophyShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
 
-        <BadgeShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
+        <BadgeShowcase userId={profile.user_id} isSelf={profile.relation === "self"}/>
+
+        <AlbumShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
 
         <ProfileFavorites userId={profile.user_id} drivers={drivers} teams={teams} />
 

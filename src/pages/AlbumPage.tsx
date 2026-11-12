@@ -185,8 +185,6 @@ export function AlbumPage() {
               ))}
             </ul>
           )}
-
-          <p className="text-xs text-muted-foreground">Fotos: Wikipedia/Wikimedia Commons. Cartas de fans, no oficiales.</p>
         </div>
       )}
 

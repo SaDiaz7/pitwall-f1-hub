@@ -36,14 +36,26 @@ export function BadgeShowcase({ userId, isSelf }: { userId: string; isSelf: bool
     let cancelled = false;
     setStats(undefined);
 
-    supabase.rpc("get_profile_badge_stats", { p_user_id: userId }).then(({ data, error }) => {
+    Promise.all([
+      supabase.rpc("get_profile_badge_stats", { p_user_id: userId }),
+      supabase.rpc("get_profile_album", { p_user_id: userId }),
+    ]).then(([badges, album]) => {
       if (cancelled) return;
-      if (error) {
-        console.error("Cargar insignias:", error);
+
+      const row = badges.data?.[0];
+      if (badges.error || !row) {
+        if (badges.error) console.error("Cargar insignias:", badges.error);
         setStats(null);
         return;
       }
-      setStats(data?.[0] ?? null);
+
+      // Si el álbum falla, las insignias de cartas quedan en cero y el resto se ve igual.
+      const summary = album.error ? undefined : album.data?.[0];
+      setStats({
+        ...row,
+        album_owned: summary?.owned_count ?? 0,
+        album_foils: summary?.foil_count ?? 0,
+      });
     });
 
     return () => {
