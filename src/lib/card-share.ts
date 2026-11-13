@@ -18,6 +18,7 @@ const FRAME: Record<Rarity, [string, string, string]> = {
   rare: ["#7dd3fc", "#0369a1", "#bae6fd"],
   epic: ["#e9d5ff", "#7e22ce", "#e9d5ff"],
   legendary: ["#fef3c7", "#b45309", "#fde68a"],
+  mythic: ["#67e8f9", "#c026d3", "#f5d0fe"],
 };
 
 interface Assets {
@@ -117,7 +118,12 @@ function drawCard(
   frame.addColorStop(0, from);
   frame.addColorStop(1, to);
   ctx.save();
-  ctx.shadowColor = card.rarity === "legendary" ? "rgba(251,191,36,0.55)" : "rgba(0,0,0,0.5)";
+  ctx.shadowColor =
+    card.rarity === "mythic"
+      ? "rgba(217,70,239,0.6)"
+      : card.rarity === "legendary"
+        ? "rgba(251,191,36,0.55)"
+        : "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 5 * u;
   roundedRect(ctx, x, y, w, h, 7 * u);
   ctx.fillStyle = frame;
@@ -269,7 +275,7 @@ function drawCard(
   });
 
   // Brillo foil
-  if (foil) {
+  if (foil || card.rarity === "mythic") {
     ctx.save();
     roundedRect(ctx, x, y, w, h, 7 * u);
     ctx.clip();

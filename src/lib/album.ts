@@ -1,13 +1,14 @@
 import type { Driver } from "@/lib/types";
 
 export type CardKind = "driver" | "team" | "circuit";
-export type Rarity = "common" | "rare" | "epic" | "legendary";
+export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Común",
   rare: "Rara",
   epic: "Épica",
   legendary: "Legendaria",
+  mythic: "Mítica",
 };
 
 export const KIND_LABELS: Record<CardKind, string> = {
@@ -105,7 +106,7 @@ export function buildCatalogCards(drivers: Driver[], season: number): CatalogCar
 export const KIND_ORDER: CardKind[] = ["driver", "team", "circuit"];
 
 // 0 = la más rara. Sirve para ordenar de las mejores a las comunes.
-export const RARITY_RANK: Record<Rarity, number> = { legendary: 0, epic: 1, rare: 2, common: 3 };
+export const RARITY_RANK: Record<Rarity, number> = { mythic: -1, legendary: 0, epic: 1, rare: 2, common: 3 };
 
 // Lo mínimo para dibujar una carta.
 export interface CardFace {

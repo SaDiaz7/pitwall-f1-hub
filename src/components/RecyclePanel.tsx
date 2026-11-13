@@ -13,6 +13,7 @@ const RARITY_TEXT: Record<Rarity, string> = {
   rare: "text-sky-300",
   epic: "text-purple-300",
   legendary: "text-amber-300",
+  mythic: "text-fuchsia-300",
 };
 
 export function RecyclePanel() {

@@ -440,3 +440,23 @@
     animation: none;
   }
 }
+
+/* ---- Carta mítica ---- */
+@keyframes mythic-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.55)) drop-shadow(0 0 14px rgba(217, 70, 239, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(217, 70, 239, 0.85)) drop-shadow(0 0 26px rgba(34, 211, 238, 0.55));
+  }
+}
+
+.card-mythic {
+  animation: mythic-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-mythic {
+    animation: none;
+  }
+}

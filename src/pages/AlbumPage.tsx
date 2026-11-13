@@ -77,7 +77,9 @@ export function AlbumPage() {
   const ownedCount = entries.filter(owned).length;
   const duplicates = entries.reduce((sum, entry) => sum + Math.max(0, total(entry) - 1), 0);
   const foils = entries.filter((entry) => entry.foil_quantity > 0).length;
-  const legendaries = entries.filter((entry) => entry.rarity === "legendary" && owned(entry)).length;
+  const legendaries = entries.filter(
+    (entry) => (entry.rarity === "legendary" || entry.rarity === "mythic") && owned(entry),
+  ).length;
   const percent = entries.length > 0 ? Math.round((ownedCount / entries.length) * 100) : 0;
 
   // Vista previa de admin: muestra todas las cartas como si las tuvieras (no se guarda nada).
@@ -135,7 +137,7 @@ export function AlbumPage() {
             <div className="grid grid-cols-3 gap-3">
               <Summary index={1} label="Repetidas" value={String(duplicates)} />
               <Summary index={2} label="Con foil" value={String(foils)} />
-              <Summary index={3} label="Legendarias" value={String(legendaries)} />
+              <Summary index={3} label="Legendarias y Míticas" value={String(legendaries)} />
             </div>
 
             {ownedCount === 0 && (

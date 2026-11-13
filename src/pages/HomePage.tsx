@@ -40,6 +40,7 @@ import { LiveBanner } from "@/components/LiveBanner";
 import { NewToF1Card } from "@/components/NewToF1Card";
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
+import { FreePackCard } from "@/components/FreePackCard";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -283,8 +284,9 @@ function FavoriteWallpapers() {
           onDeleted={() => {
             setSelected(null);
             reload();
-          }}
-        />
+          } } onUpdated={function (): void {
+            throw new Error("Function not implemented.");
+          } }        />
       )}
     </section>
   );
@@ -419,6 +421,8 @@ export function HomePage() {
         {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
       </div>
 
+      <FreePackCard />
+      
       {next && <LiveBanner gp={next} className="mt-10" />}
 
       <NewToF1Card className="mt-10" />

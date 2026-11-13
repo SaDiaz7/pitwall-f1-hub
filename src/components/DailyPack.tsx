@@ -13,7 +13,7 @@ const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(re
 
 const GRID = "grid grid-cols-[repeat(auto-fill,minmax(min(100%,9.5rem),1fr))] gap-4";
 
-function PackArt({ shaking = false }: { shaking?: boolean }) {
+export function PackArt({ shaking = false }: { shaking?: boolean }) {
   return (
     <div className={cn("mx-auto w-36 sm:w-44", shaking && "pack-shake")} style={{ filter: "drop-shadow(0 10px 24px rgba(225,6,0,0.35))" }}>
       <CardBack />
@@ -21,12 +21,14 @@ function PackArt({ shaking = false }: { shaking?: boolean }) {
   );
 }
 
-function PackReveal({
+export function PackReveal({
   cards,
   photos,
+  title = "Tu sobre de hoy",
 }: {
   cards: AlbumCard[];
   photos: Record<string, DriverPhoto | null | undefined>;
+  title?: string;
 }) {
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
 
@@ -40,7 +42,7 @@ function PackReveal({
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold uppercase">Tu sobre de hoy</h2>
+        <h2 className="text-xl font-bold uppercase">{title}</h2>
         {!allFlipped && (
           <button
             type="button"

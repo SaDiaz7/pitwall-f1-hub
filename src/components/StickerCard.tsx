@@ -24,6 +24,7 @@ const FRAME: Record<Rarity, { from: string; to: string; label: string; glow: str
   rare: { from: "#7dd3fc", to: "#0369a1", label: "#bae6fd", glow: "rgba(56,189,248,0.35)" },
   epic: { from: "#e9d5ff", to: "#7e22ce", label: "#e9d5ff", glow: "rgba(192,132,252,0.4)" },
   legendary: { from: "#fef3c7", to: "#b45309", label: "#fde68a", glow: "rgba(251,191,36,0.5)" },
+  mythic: { from: "#67e8f9", to: "#c026d3", label: "#f5d0fe", glow: "rgba(217,70,239,0.55)" },
 };
 
 // Los tamaños se miden en "cqw" (porcentaje del ancho de la carta), así escala sola.
@@ -106,6 +107,7 @@ export function StickerCard({
           "absolute inset-0 overflow-hidden",
           foil && "card-foil",
           card.rarity === "legendary" && "card-legendary",
+          card.rarity === "mythic" && "card-mythic",
         )}
         style={{
           borderRadius: "7cqw",

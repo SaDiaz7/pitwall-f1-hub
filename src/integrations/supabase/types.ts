@@ -128,6 +128,7 @@ export type Database = {
           w_common: number
           w_epic: number
           w_legendary: number
+          w_mythic: number
           w_rare: number
         }
         Insert: {
@@ -137,6 +138,7 @@ export type Database = {
           w_common?: number
           w_epic?: number
           w_legendary?: number
+          w_mythic?: number
           w_rare?: number
         }
         Update: {
@@ -146,6 +148,7 @@ export type Database = {
           w_common?: number
           w_epic?: number
           w_legendary?: number
+          w_mythic?: number
           w_rare?: number
         }
         Relationships: []
@@ -1071,6 +1074,11 @@ export type Database = {
         Args: { p_card: string; p_foil: boolean }
         Returns: Json
       }
+      album_draw_cards: {
+        Args: { p_extra: number; p_outcome: string; p_user: string }
+        Returns: Json
+      }
+      album_free_pack_today: { Args: never; Returns: Json }
       album_get_collection: {
         Args: never
         Returns: {
@@ -1104,6 +1112,7 @@ export type Database = {
       }
       album_list_trades: { Args: never; Returns: Json }
       album_open_daily_pack: { Args: never; Returns: Json }
+      album_open_free_pack: { Args: never; Returns: Json }
       album_pick_card: { Args: { p_rarity: string }; Returns: string }
       album_pick_rarity: {
         Args: {
@@ -1111,6 +1120,7 @@ export type Database = {
           w_common: number
           w_epic: number
           w_legendary: number
+          w_mythic: number
           w_rare: number
         }
         Returns: string
