@@ -8,6 +8,7 @@ import { useAlbum } from "@/hooks/useAlbum";
 import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { KIND_LABELS, KIND_ORDER, statStr, type AlbumEntry, type CardKind } from "@/lib/album";
 import { cn } from "@/lib/utils";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 type KindFilter = "all" | CardKind;
 type ModeFilter = "all" | "missing" | "duplicates" | "foil";
@@ -62,6 +63,9 @@ export function AlbumPage() {
   const [kind, setKind] = useState<KindFilter>("all");
   const [mode, setMode] = useState<ModeFilter>("all");
   const [selected, setSelected] = useState<AlbumEntry | null>(null);
+  const isAdmin = useIsAdmin();
+  const [preview, setPreview] = useState(false);
+  const [previewFoil, setPreviewFoil] = useState(false);
 
   const photos = useDriverPhotos(
     entries
@@ -75,7 +79,16 @@ export function AlbumPage() {
   const legendaries = entries.filter((entry) => entry.rarity === "legendary" && owned(entry)).length;
   const percent = entries.length > 0 ? Math.round((ownedCount / entries.length) * 100) : 0;
 
-  const visible = entries.filter((entry) => {
+  // Vista previa de admin: muestra todas las cartas como si las tuvieras (no se guarda nada).
+  const shown = preview
+    ? entries.map((entry) => ({
+        ...entry,
+        quantity: previewFoil ? entry.quantity : Math.max(entry.quantity, 1),
+        foil_quantity: previewFoil ? Math.max(entry.foil_quantity, 1) : entry.foil_quantity,
+      }))
+    : entries;
+
+  const visible = shown.filter((entry) => {
     if (kind !== "all" && entry.kind !== kind) return false;
     if (mode === "missing") return !owned(entry);
     if (mode === "duplicates") return total(entry) > 1;
@@ -132,6 +145,21 @@ export function AlbumPage() {
               </p>
             )}
           </div>
+
+          {isAdmin && (
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-dashed p-3 text-sm">
+              <span className="font-semibold">Admin</span>
+              <Pill active={preview} onClick={() => setPreview((value) => !value)}>
+                Ver todas las cartas
+              </Pill>
+              {preview && (
+                <Pill active={previewFoil} onClick={() => setPreviewFoil((value) => !value)}>
+                  Con foil ✨
+                </Pill>
+              )}
+              {preview && <span className="text-xs text-muted-foreground">Vista previa: no se guarda nada.</span>}
+            </div>
+          )}
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
