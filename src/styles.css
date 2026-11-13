@@ -460,3 +460,49 @@
     animation: none;
   }
 }
+
+/* ---- Carta mítica: marco iridiscente, estrellitas y nombre ---- */
+@keyframes mythic-flow {
+  to { background-position: -200% 0; }
+}
+
+@keyframes mythic-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.25) rotate(0deg); }
+  45%, 55% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
+.card-mythic-frame {
+  background-image: linear-gradient(90deg, #22d3ee, #a855f7, #f472b6, #fde047, #22d3ee);
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  animation: mythic-flow 7s linear infinite;
+}
+
+.mythic-text {
+  background-image: linear-gradient(90deg, #67e8f9, #f0abfc, #fde047, #67e8f9);
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: mythic-flow 7s linear infinite;
+}
+
+.mythic-sparkle {
+  transform-origin: center;
+  animation: mythic-twinkle var(--d, 2.8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-mythic-frame,
+  .mythic-text {
+    animation: none;
+  }
+  .mythic-sparkle {
+    animation: none;
+    opacity: 0.85;
+    transform: none;
+  }
+}

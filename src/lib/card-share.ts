@@ -95,6 +95,35 @@ function drawCar(ctx: CanvasRenderingContext2D, color: string) {
   }
 }
 
+// Estrellitas de las cartas míticas: [x %, y %, tamaño, opacidad] dentro del recuadro de la ilustración.
+const SPARKLES: [number, number, number, number][] = [
+  [12, 14, 5, 1],
+  [80, 10, 4, 0.9],
+  [28, 40, 3, 0.8],
+  [88, 36, 5.5, 1],
+  [8, 66, 4, 0.9],
+  [66, 56, 3, 0.8],
+  [52, 8, 3.5, 0.8],
+  [40, 82, 4.5, 1],
+  [84, 82, 4, 0.9],
+];
+
+function drawSparkles(ctx: CanvasRenderingContext2D, ax: number, ay: number, aw: number, ah: number, u: number) {
+  const star = new Path2D("M50 0C54 36 64 46 100 50C64 54 54 64 50 100C46 64 36 54 0 50C36 46 46 36 50 0Z");
+  for (const [px, py, size, alpha] of SPARKLES) {
+    const side = size * u;
+    ctx.save();
+    ctx.translate(ax + (aw * px) / 100, ay + (ah * py) / 100);
+    ctx.scale(side / 100, side / 100);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = "#f0abfc";
+    ctx.shadowBlur = 2 * u;
+    ctx.fillStyle = "#ffffff";
+    ctx.fill(star);
+    ctx.restore();
+  }
+}
+
 // Dibuja una carta con el mismo diseño que StickerCard. Todas las medidas salen del ancho (u = 1% del ancho).
 function drawCard(
   ctx: CanvasRenderingContext2D,
@@ -115,8 +144,15 @@ function drawCard(
 
   // Marco
   const frame = ctx.createLinearGradient(x, y, x + w, y + h);
-  frame.addColorStop(0, from);
-  frame.addColorStop(1, to);
+  if (card.rarity === "mythic") {
+    frame.addColorStop(0, "#22d3ee");
+    frame.addColorStop(0.35, "#a855f7");
+    frame.addColorStop(0.7, "#f472b6");
+    frame.addColorStop(1, "#fde047");
+  } else {
+    frame.addColorStop(0, from);
+    frame.addColorStop(1, to);
+  }
   ctx.save();
   ctx.shadowColor =
     card.rarity === "mythic"
@@ -128,6 +164,7 @@ function drawCard(
   roundedRect(ctx, x, y, w, h, 7 * u);
   ctx.fillStyle = frame;
   ctx.fill();
+  if (card.rarity === "mythic") drawSparkles(ctx, ax, ay, aw, ah, u);
   ctx.restore();
 
   // Interior

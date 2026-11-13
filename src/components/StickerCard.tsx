@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Car, MapPin, User } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 import { getInitials } from "@/hooks/useProfile";
@@ -74,6 +74,46 @@ export function statStrip(card: CardFace): { label: string; value: string }[] {
   ];
 }
 
+// Estrellitas que titilan sobre la imagen de las cartas míticas (posiciones en % del recuadro).
+const MYTHIC_SPARKLES = [
+  { x: 12, y: 14, size: 5, delay: 0, duration: 2.6 },
+  { x: 80, y: 10, size: 4, delay: 0.7, duration: 3.1 },
+  { x: 28, y: 40, size: 3, delay: 1.4, duration: 2.4 },
+  { x: 88, y: 36, size: 5.5, delay: 0.3, duration: 3.4 },
+  { x: 8, y: 66, size: 4, delay: 1.9, duration: 2.8 },
+  { x: 66, y: 56, size: 3, delay: 1.1, duration: 2.5 },
+  { x: 52, y: 8, size: 3.5, delay: 2.2, duration: 3 },
+  { x: 40, y: 82, size: 4.5, delay: 0.9, duration: 3.3 },
+  { x: 84, y: 82, size: 4, delay: 1.6, duration: 2.7 },
+];
+
+function MythicSparkles() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {MYTHIC_SPARKLES.map((sparkle, index) => (
+        <svg
+          key={index}
+          viewBox="0 0 100 100"
+          className="mythic-sparkle absolute"
+          style={
+            {
+              left: `${sparkle.x}%`,
+              top: `${sparkle.y}%`,
+              width: `${sparkle.size}cqw`,
+              height: `${sparkle.size}cqw`,
+              filter: "drop-shadow(0 0 1.2cqw #f0abfc)",
+              "--d": `${sparkle.duration}s`,
+              "--delay": `${sparkle.delay}s`,
+            } as CSSProperties
+          }
+        >
+          <path d="M50 0C54 36 64 46 100 50C64 54 54 64 50 100C46 64 36 54 0 50C36 46 46 36 50 0Z" fill="#ffffff" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export function StickerCard({
   card,
   foil = false,
@@ -105,14 +145,16 @@ export function StickerCard({
       <div
         className={cn(
           "absolute inset-0 overflow-hidden",
-          foil && "card-foil",
+          (foil || card.rarity === "mythic") && "card-foil",
           card.rarity === "legendary" && "card-legendary",
-          card.rarity === "mythic" && "card-mythic",
+          card.rarity === "mythic" && "card-mythic card-mythic-frame",
         )}
         style={{
           borderRadius: "7cqw",
           padding: "2.6cqw",
-          backgroundImage: `linear-gradient(145deg, ${frame.from}, ${frame.to})`,
+          ...(card.rarity === "mythic"
+            ? {}
+            : { backgroundImage: `linear-gradient(145deg, ${frame.from}, ${frame.to})` }),
           boxShadow: `0 6px 18px -6px ${frame.glow}`,
         }}
       >
@@ -230,6 +272,8 @@ export function StickerCard({
               </>
             )}
 
+            {card.rarity === "mythic" && <MythicSparkles />}            
+
             {quantity !== undefined && quantity > 1 && (
               <span
                 className="absolute rounded-full bg-primary font-bold text-primary-foreground"
@@ -242,7 +286,13 @@ export function StickerCard({
 
           {/* Nombre */}
           <div style={{ padding: "2.5cqw 4cqw 0" }}>
-            <p className="truncate font-display font-bold uppercase leading-none" style={{ fontSize: "9cqw" }}>
+            <p
+              className={cn(
+                "truncate font-display font-bold uppercase leading-none",
+                card.rarity === "mythic" && "mythic-text",
+              )}
+              style={{ fontSize: "9cqw" }}
+            >
               {card.name}
             </p>
             <p className="truncate text-muted-foreground" style={{ fontSize: "4cqw", marginTop: "1cqw" }}>
