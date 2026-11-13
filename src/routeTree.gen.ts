@@ -36,6 +36,7 @@ import { Route as PrivadoNoticiasRouteImport } from './routes/_privado.noticias'
 import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predicciones'
 import { Route as PrivadoQuizRouteImport } from './routes/_privado.quiz'
 import { Route as PrivadoRankingRouteImport } from './routes/_privado.ranking'
+import { Route as PrivadoRepetidasRouteImport } from './routes/_privado.repetidas'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 import { Route as PrivadoGpRoundRouteImport } from './routes/_privado.gp.$round'
 import { Route as PrivadoLigaIdRouteImport } from './routes/_privado.liga.$id'
@@ -176,6 +177,11 @@ const PrivadoRankingRoute = PrivadoRankingRouteImport.update({
   path: '/ranking',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoRepetidasRoute = PrivadoRepetidasRouteImport.update({
+  id: '/repetidas',
+  path: '/repetidas',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
   id: '/invitacion/$code',
   path: '/invitacion/$code',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
   '/ranking': typeof PrivadoRankingRoute
+  '/repetidas': typeof PrivadoRepetidasRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/liga/$id': typeof PrivadoLigaIdRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
   '/ranking': typeof PrivadoRankingRoute
+  '/repetidas': typeof PrivadoRepetidasRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/gp/$round': typeof PrivadoGpRoundRoute
   '/liga/$id': typeof PrivadoLigaIdRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/_privado/predicciones': typeof PrivadoPrediccionesRoute
   '/_privado/quiz': typeof PrivadoQuizRoute
   '/_privado/ranking': typeof PrivadoRankingRoute
+  '/_privado/repetidas': typeof PrivadoRepetidasRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/_privado/gp/$round': typeof PrivadoGpRoundRoute
   '/_privado/liga/$id': typeof PrivadoLigaIdRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/predicciones'
     | '/quiz'
     | '/ranking'
+    | '/repetidas'
     | '/invitacion/$code'
     | '/gp/$round'
     | '/liga/$id'
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/predicciones'
     | '/quiz'
     | '/ranking'
+    | '/repetidas'
     | '/invitacion/$code'
     | '/gp/$round'
     | '/liga/$id'
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | '/_privado/predicciones'
     | '/_privado/quiz'
     | '/_privado/ranking'
+    | '/_privado/repetidas'
     | '/invitacion/$code'
     | '/_privado/gp/$round'
     | '/_privado/liga/$id'
@@ -609,6 +621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoRankingRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/repetidas': {
+      id: '/_privado/repetidas'
+      path: '/repetidas'
+      fullPath: '/repetidas'
+      preLoaderRoute: typeof PrivadoRepetidasRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/invitacion/$code': {
       id: '/invitacion/$code'
       path: '/invitacion/$code'
@@ -667,6 +686,7 @@ interface PrivadoRouteChildren {
   PrivadoPrediccionesRoute: typeof PrivadoPrediccionesRoute
   PrivadoQuizRoute: typeof PrivadoQuizRoute
   PrivadoRankingRoute: typeof PrivadoRankingRoute
+  PrivadoRepetidasRoute: typeof PrivadoRepetidasRoute
   PrivadoGpRoundRoute: typeof PrivadoGpRoundRoute
   PrivadoLigaIdRoute: typeof PrivadoLigaIdRoute
   PrivadoPilotoIdRoute: typeof PrivadoPilotoIdRoute
@@ -693,6 +713,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoPrediccionesRoute: PrivadoPrediccionesRoute,
   PrivadoQuizRoute: PrivadoQuizRoute,
   PrivadoRankingRoute: PrivadoRankingRoute,
+  PrivadoRepetidasRoute: PrivadoRepetidasRoute,
   PrivadoGpRoundRoute: PrivadoGpRoundRoute,
   PrivadoLigaIdRoute: PrivadoLigaIdRoute,
   PrivadoPilotoIdRoute: PrivadoPilotoIdRoute,

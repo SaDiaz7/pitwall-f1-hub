@@ -9,6 +9,7 @@ import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { KIND_LABELS, KIND_ORDER, statStr, type AlbumEntry, type CardKind } from "@/lib/album";
 import { cn } from "@/lib/utils";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { AlbumNav } from "@/components/AlbumNav";
 
 type KindFilter = "all" | CardKind;
 type ModeFilter = "all" | "missing" | "duplicates" | "foil";
@@ -99,6 +100,8 @@ export function AlbumPage() {
   return (
     <>
       <PageHeader title="Álbum" subtitle="Tu colección de cartas. Ganá sobres jugando todos los días al juego diario." />
+
+      <AlbumNav />
 
       {error && <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}
 

@@ -106,6 +106,7 @@ const EXTRA_PREFIXES: Record<string, string[]> = {
   "/campeonato": ["/piloto"],
   "/ligas": ["/liga"],
   "/amigos": ["/usuario"],
+  "/album": ["/repetidas"],
 };
 
 // Ítems que a un visitante no le sirve ver ni bloqueados.

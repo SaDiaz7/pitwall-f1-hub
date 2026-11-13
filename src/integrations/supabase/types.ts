@@ -56,6 +56,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          image: string | null
           kind: string
           name: string
           rarity: string
@@ -68,6 +69,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id: string
+          image?: string | null
           kind: string
           name: string
           rarity: string
@@ -80,6 +82,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          image?: string | null
           kind?: string
           name?: string
           rarity?: string
@@ -147,6 +150,24 @@ export type Database = {
         }
         Relationships: []
       }
+      album_recycle_rules: {
+        Row: {
+          from_rarity: string
+          to_rarity: string
+          weight: number
+        }
+        Insert: {
+          from_rarity: string
+          to_rarity: string
+          weight: number
+        }
+        Update: {
+          from_rarity?: string
+          to_rarity?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       album_settings: {
         Row: {
           foil_chance: number
@@ -167,6 +188,63 @@ export type Database = {
           streak_bonus_days?: number
         }
         Relationships: []
+      }
+      album_trades: {
+        Row: {
+          created_at: string
+          expires_at: string
+          from_user: string
+          get_card: string
+          get_foil: boolean
+          give_card: string
+          give_foil: boolean
+          id: string
+          resolved_at: string | null
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          from_user: string
+          get_card: string
+          get_foil: boolean
+          give_card: string
+          give_foil: boolean
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          from_user?: string
+          get_card?: string
+          get_foil?: boolean
+          give_card?: string
+          give_foil?: boolean
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "album_trades_get_card_fkey"
+            columns: ["get_card"]
+            isOneToOne: false
+            referencedRelation: "album_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "album_trades_give_card_fkey"
+            columns: ["give_card"]
+            isOneToOne: false
+            referencedRelation: "album_cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       album_user_cards: {
         Row: {
@@ -987,6 +1065,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      album_are_friends: { Args: { a: string; b: string }; Returns: boolean }
+      album_cancel_trade: { Args: { p_trade_id: string }; Returns: boolean }
+      album_card_json: {
+        Args: { p_card: string; p_foil: boolean }
+        Returns: Json
+      }
       album_get_collection: {
         Args: never
         Returns: {
@@ -1002,10 +1086,23 @@ export type Database = {
           subtitle: string
         }[]
       }
+      album_get_friend_duplicates: { Args: { p_friend: string }; Returns: Json }
+      album_get_recycle_info: { Args: never; Returns: Json }
+      album_get_trade_friends: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          duplicates: number
+          user_id: string
+          username: string
+        }[]
+      }
       album_grant_card: {
         Args: { p_card: string; p_foil: boolean; p_user: string }
         Returns: boolean
       }
+      album_list_trades: { Args: never; Returns: Json }
       album_open_daily_pack: { Args: never; Returns: Json }
       album_pick_card: { Args: { p_rarity: string }; Returns: string }
       album_pick_rarity: {
@@ -1017,6 +1114,21 @@ export type Database = {
           w_rare: number
         }
         Returns: string
+      }
+      album_propose_trade: {
+        Args: {
+          p_get_card: string
+          p_get_foil: boolean
+          p_give_card: string
+          p_give_foil: boolean
+          p_to: string
+        }
+        Returns: string
+      }
+      album_recycle: { Args: { p_rarity: string }; Returns: Json }
+      album_respond_trade: {
+        Args: { p_accept: boolean; p_trade_id: string }
+        Returns: boolean
       }
       album_sync_cards: { Args: { p_cards: Json }; Returns: number }
       album_today_pack: { Args: never; Returns: Json }

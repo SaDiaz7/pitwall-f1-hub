@@ -5,6 +5,7 @@ import { StickerCard } from "@/components/StickerCard";
 import { KIND_LABELS, RARITY_LABELS, cardImageUrl, type AlbumEntry } from "@/lib/album";
 import { renderCardImage, shareImageBlob } from "@/lib/card-share";
 import type { DriverPhoto } from "@/lib/f1";
+import { Link } from "@tanstack/react-router";
 
 export function CardModal({
   entry,
@@ -89,9 +90,13 @@ export function CardModal({
             {sharing ? "Generando imagen…" : "Compartir carta"}
           </button>
 
-          <p className="pt-1 text-xs text-muted-foreground">
-            Próximamente: intercambiar con amigos y reciclar repetidas.
-          </p>
+          <Link
+            to="/repetidas"
+            onClick={onClose}
+            className="block pt-1 text-xs font-semibold text-primary hover:underline"
+          >
+            Reciclar o intercambiar repetidas →
+          </Link>
         </div>
       </div>
 
