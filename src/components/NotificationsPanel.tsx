@@ -36,6 +36,16 @@ const OPTIONS: Option[] = [
     title: "Piloto del día",
     text: "Un aviso cuando se abre la votación, en las últimas vueltas de cada carrera.",
   },
+  {
+    key: "free_pack",
+    title: "Sobre gratis",
+    text: "Un aviso a media mañana si todavía no reclamaste tu sobre gratis del día.",
+  },
+  {
+    key: "trade_offer",
+    title: "Intercambios de cartas",
+    text: "Cuando un amigo te propone un intercambio y cuando responde a tu oferta.",
+  },
 ];
 
 type Message = { type: "ok" | "error"; text: string } | null;

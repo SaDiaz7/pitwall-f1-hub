@@ -164,7 +164,6 @@ function drawCard(
   roundedRect(ctx, x, y, w, h, 7 * u);
   ctx.fillStyle = frame;
   ctx.fill();
-  if (card.rarity === "mythic") drawSparkles(ctx, ax, ay, aw, ah, u);
   ctx.restore();
 
   // Interior
@@ -285,6 +284,7 @@ function drawCard(
       ctx.drawImage(assets.flag, ax + aw - 3 * u - fw, ay + 3 * u, fw, fh);
     }
   }
+  if (card.rarity === "mythic") drawSparkles(ctx, ax, ay, aw, ah, u);
   ctx.restore(); // fin del recorte de la ilustración
 
   // Nombre y subtítulo

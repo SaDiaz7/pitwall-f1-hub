@@ -45,6 +45,7 @@ export interface TaskSummary {
   remindersQueued: number;
   dotdOpenQueued: number;
   dailyGameQueued: number;
+  freePackQueued: number;
   errors: string[];
 }
 
@@ -232,6 +233,13 @@ async function queueDotdOpen(supabase: AdminClient): Promise<number> {
   return typeof data === "number" ? data : 0;
 }
 
+// 7. Aviso del sobre gratis diario (la lógica de horario y de quién lo recibe vive en la base de datos).
+async function queueFreePack(supabase: AdminClient): Promise<number> {
+  const { data, error } = await supabase.rpc("queue_free_pack_reminders");
+  if (error) throw new Error(`No se pudo preparar el aviso del sobre gratis: ${error.message}`);
+  return typeof data === "number" ? data : 0;
+}
+
 export async function runRaceTasks(options: { forceSync: boolean }): Promise<TaskSummary> {
   const supabase = adminClient();
   const summary: TaskSummary = {
@@ -241,6 +249,7 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
     remindersQueued: 0,
     dailyGameQueued: 0,
     dotdOpenQueued: 0,
+    freePackQueued: 0,
     errors: [],
   };
 
@@ -280,6 +289,10 @@ export async function runRaceTasks(options: { forceSync: boolean }): Promise<Tas
 
   await attempt("aviso del piloto del día", async () => {
     summary.dotdOpenQueued = await queueDotdOpen(supabase);
+  });
+
+  await attempt("aviso del sobre gratis", async () => {
+    summary.freePackQueued = await queueFreePack(supabase);
   });
 
   return summary;

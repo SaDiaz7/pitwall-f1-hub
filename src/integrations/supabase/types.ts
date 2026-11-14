@@ -687,10 +687,12 @@ export type Database = {
           daily_game: boolean
           dotd_open: boolean
           driver_result: boolean
+          free_pack: boolean
           friend_request: boolean
           new_wallpaper: boolean
           points_scored: boolean
           prediction_reminder: boolean
+          trade_offer: boolean
           updated_at: string
           user_id: string
         }
@@ -698,10 +700,12 @@ export type Database = {
           daily_game?: boolean
           dotd_open?: boolean
           driver_result?: boolean
+          free_pack?: boolean
           friend_request?: boolean
           new_wallpaper?: boolean
           points_scored?: boolean
           prediction_reminder?: boolean
+          trade_offer?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -709,10 +713,12 @@ export type Database = {
           daily_game?: boolean
           dotd_open?: boolean
           driver_result?: boolean
+          free_pack?: boolean
           friend_request?: boolean
           new_wallpaper?: boolean
           points_scored?: boolean
           prediction_reminder?: boolean
+          trade_offer?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -1431,6 +1437,7 @@ export type Database = {
       }
       queue_daily_game_reminders: { Args: never; Returns: number }
       queue_dotd_open_notifications: { Args: never; Returns: number }
+      queue_free_pack_reminders: { Args: never; Returns: number }
       queue_prediction_reminders: { Args: never; Returns: number }
       remove_friend: { Args: { p_user_id: string }; Returns: boolean }
       respond_friend_request: {

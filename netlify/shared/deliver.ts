@@ -141,6 +141,44 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
       };
     }
 
+    case "free_pack":
+      return {
+        title: "Tu sobre gratis ya está listo",
+        body: "5 cartas te esperan en PitWall. ¡Reclamalo antes de que termine el día!",
+        url: "/inicio",
+        tag: `free-pack-${text(payload["date"], "hoy")}`,
+      };
+
+    case "trade_offer": {
+      const from = text(payload["from_name"], "Alguien");
+      const give = text(payload["give_name"], "una carta");
+      const get = text(payload["get_name"], "una carta");
+      const kind = text(payload["kind"], "new");
+
+      if (kind === "accepted") {
+        return {
+          title: "Intercambio aceptado",
+          body: `${from} aceptó tu oferta: ya tenés ${get} en tu álbum.`,
+          url: "/album",
+          tag: `trade-${first.id}`,
+        };
+      }
+      if (kind === "declined") {
+        return {
+          title: "Oferta rechazada",
+          body: `${from} rechazó tu oferta de ${give} por ${get}.`,
+          url: "/repetidas#intercambios",
+          tag: `trade-${first.id}`,
+        };
+      }
+      return {
+        title: "Te llegó una oferta de intercambio",
+        body: `${from} te ofrece ${give} por tu ${get}.`,
+        url: "/repetidas#intercambios",
+        tag: `trade-${first.id}`,
+      };
+    }
+
     case "test":
       return {
         title: "Notificación de prueba",

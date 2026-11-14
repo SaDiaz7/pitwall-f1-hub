@@ -9,7 +9,9 @@ export type PrefKey =
   | "driver_result"
   | "prediction_reminder"
   | "daily_game"
-  | "dotd_open";
+  | "dotd_open"
+  | "free_pack"
+  | "trade_offer";
 
 export type Prefs = Record<PrefKey, boolean>;
 
@@ -21,6 +23,8 @@ const DEFAULT_PREFS: Prefs = {
   prediction_reminder: true,
   daily_game: true,
   dotd_open: true,
+  free_pack: true,
+  trade_offer: true,
 };
 
 export function useNotificationPrefs() {
@@ -59,6 +63,8 @@ export function useNotificationPrefs() {
           prediction_reminder: data.prediction_reminder,
           daily_game: data.daily_game,
           dotd_open: data.dotd_open,
+          free_pack: data.free_pack,
+          trade_offer: data.trade_offer,
         });
       }
       setLoading(false);
