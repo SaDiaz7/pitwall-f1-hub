@@ -5,8 +5,7 @@ import { CardModal } from "@/components/CardModal";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptySlot, StickerCard } from "@/components/StickerCard";
 import { useAlbum } from "@/hooks/useAlbum";
-import { useDriverPhotos } from "@/hooks/useDriverPhotos";
-import { KIND_LABELS, KIND_ORDER, statStr, type AlbumEntry, type CardKind } from "@/lib/album";
+import { KIND_LABELS, KIND_ORDER, type AlbumEntry, type CardKind } from "@/lib/album";
 import { cn } from "@/lib/utils";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlbumNav } from "@/components/AlbumNav";
@@ -67,12 +66,6 @@ export function AlbumPage() {
   const isAdmin = useIsAdmin();
   const [preview, setPreview] = useState(false);
   const [previewFoil, setPreviewFoil] = useState(false);
-
-  const photos = useDriverPhotos(
-    entries
-      .filter((entry) => entry.kind === "driver" && owned(entry))
-      .map((entry) => ({ id: entry.card_id, wikiUrl: statStr(entry.stats, "wiki_url") })),
-  );
 
   const ownedCount = entries.filter(owned).length;
   const duplicates = entries.reduce((sum, entry) => sum + Math.max(0, total(entry) - 1), 0);
@@ -207,7 +200,6 @@ export function AlbumPage() {
                       <StickerCard
                         card={entry}
                         foil={entry.foil_quantity > 0}
-                        photo={photos[entry.card_id] ?? null}
                         quantity={total(entry)}
                       />
                     </button>
@@ -224,7 +216,6 @@ export function AlbumPage() {
       {selected && (
         <CardModal
           entry={selected}
-          photo={photos[selected.card_id] ?? null}
           onClose={() => setSelected(null)}
         />
       )}

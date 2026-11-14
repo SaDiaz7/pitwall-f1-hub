@@ -69,7 +69,7 @@ export function FreePackCard() {
   if (phase === "reveal") {
     return (
       <div className="mt-10">
-        <PackReveal cards={cards} photos={{}} title="Tu sobre gratis" />
+        <PackReveal cards={cards} title="Tu sobre gratis" />
       </div>
     );
   }

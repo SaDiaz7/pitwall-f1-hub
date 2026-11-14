@@ -4,7 +4,6 @@ import { Share2, X } from "lucide-react";
 import { StickerCard } from "@/components/StickerCard";
 import { KIND_LABELS, RARITY_LABELS, cardImageUrl, type AlbumEntry } from "@/lib/album";
 import { renderCardImage, shareImageBlob } from "@/lib/card-share";
-import type { DriverPhoto } from "@/lib/f1";
 import { Link } from "@tanstack/react-router";
 
 export function CardModal({
@@ -12,8 +11,6 @@ export function CardModal({
   onClose,
 }: {
   entry: AlbumEntry;
-  /** Ya no se usa: la imagen sale de /public/cards. Se deja para no romper el lugar que todavía la pasa. */
-  photo?: DriverPhoto | null | undefined;
   onClose: () => void;
 }) {
   const [sharing, setSharing] = useState(false);

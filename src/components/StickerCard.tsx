@@ -13,7 +13,6 @@ import {
   type Rarity,
 } from "@/lib/album";
 import { MAP_HEIGHT, MAP_WIDTH } from "@/lib/circuits";
-import type { DriverPhoto } from "@/lib/f1";
 import { getTeamColor } from "@/lib/team-colors";
 import { cn } from "@/lib/utils";
 
@@ -122,8 +121,6 @@ export function StickerCard({
 }: {
   card: CardFace;
   foil?: boolean;
-  /** Ya no se usa: la imagen sale de /public/cards (ver cardImageUrl). Se deja para no romper los lugares que todavía la pasan. */
-  photo?: DriverPhoto | null | undefined;
   quantity?: number | undefined;
   className?: string | undefined;
 }) {

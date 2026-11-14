@@ -2,9 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { CardBack, StickerCard } from "@/components/StickerCard";
 import { useDailyPack } from "@/hooks/useDailyPack";
-import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { statStr, type AlbumCard } from "@/lib/album";
-import type { DriverPhoto } from "@/lib/f1";
 import { cn } from "@/lib/utils";
 
 type Phase = "idle" | "shaking" | "reveal";
@@ -23,11 +21,9 @@ export function PackArt({ shaking = false }: { shaking?: boolean }) {
 
 export function PackReveal({
   cards,
-  photos,
   title = "Tu sobre de hoy",
 }: {
   cards: AlbumCard[];
-  photos: Record<string, DriverPhoto | null | undefined>;
   title?: string;
 }) {
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
@@ -80,7 +76,7 @@ export function PackReveal({
                     <CardBack />
                   </div>
                   <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-                    <StickerCard card={card} foil={card.foil} photo={photos[card.card_id] ?? null} />
+                    <StickerCard card={card} foil={card.foil}/>
                     {card.is_new && (
                       <span className="absolute left-2 top-2 z-10 rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary-foreground shadow">
                         ¡Nueva!
@@ -122,11 +118,7 @@ export function DailyPack({ refreshKey }: { refreshKey: number }) {
   const { isGuest, status, cards, error, open } = useDailyPack(refreshKey);
   const [phase, setPhase] = useState<Phase>("idle");
 
-  const photos = useDriverPhotos(
-    cards
-      .filter((card) => card.kind === "driver")
-      .map((card) => ({ id: card.card_id, wikiUrl: statStr(card.stats, "wiki_url") })),
-  );
+
 
   const onOpen = async () => {
     setPhase("shaking");
@@ -163,7 +155,7 @@ export function DailyPack({ refreshKey }: { refreshKey: number }) {
     );
   }
 
-  if (phase === "reveal") return <PackReveal cards={cards} photos={photos} />;
+  if (phase === "reveal") return <PackReveal cards={cards}/>;
 
   if (status === "not_ready") {
     return (
@@ -205,7 +197,7 @@ export function DailyPack({ refreshKey }: { refreshKey: number }) {
       <ul className={GRID}>
         {cards.map((card, index) => (
           <li key={`${card.card_id}-${index}`} className="fade-up" style={{ "--i": Math.min(index, 8) } as CSSProperties}>
-            <StickerCard card={card} foil={card.foil} photo={photos[card.card_id] ?? null} />
+            <StickerCard card={card} foil={card.foil}/>
           </li>
         ))}
       </ul>

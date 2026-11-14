@@ -2,9 +2,8 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import { StickerCard } from "@/components/StickerCard";
-import { useDriverPhotos } from "@/hooks/useDriverPhotos";
 import { supabase } from "@/integrations/supabase/client";
-import { statStr, type CardFace } from "@/lib/album";
+import type { CardFace } from "@/lib/album";
 
 interface TopCard extends CardFace {
   foil: boolean;
@@ -42,11 +41,6 @@ export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: bool
   }, [userId]);
 
   const cards = summary?.top_cards ?? [];
-  const photos = useDriverPhotos(
-    cards
-      .filter((card) => card.kind === "driver")
-      .map((card) => ({ id: card.card_id, wikiUrl: statStr(card.stats, "wiki_url") })),
-  );
 
   if (summary === undefined) {
     return (
@@ -91,7 +85,7 @@ export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: bool
               className="fade-up w-28 shrink-0 sm:w-32"
               style={{ "--i": Math.min(index, 8) } as CSSProperties}
             >
-              <StickerCard card={card} foil={card.foil} photo={photos[card.card_id] ?? null} />
+              <StickerCard card={card} foil={card.foil}/>
             </li>
           ))}
         </ul>
