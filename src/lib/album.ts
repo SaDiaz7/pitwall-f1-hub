@@ -137,11 +137,23 @@ export function statStr(stats: Record<string, unknown>, key: string): string | n
 
 // Dirección de la imagen de una carta. Las imágenes viven en /public/cards.
 // - Si la carta tiene "image" (en la tabla album_cards), se usa ese archivo.
-// - Si es de piloto y no tiene, se busca "<id del piloto>.png" (por ejemplo piastri.png).
+// - Piloto sin "image": "<id del piloto>.png" (por ejemplo piastri.png).
+// - Escudería sin "image": "teams/<escudería><año>.png", todo junto, en minúsculas y sin guiones bajos
+//   (por ejemplo teams/mclaren2026.png o teams/astonmartin2026.png).
 export function cardImageUrl(card: Pick<CardFace, "kind" | "card_id" | "stats">): string | null {
   const explicit = statStr(card.stats, "image");
   if (explicit) return `/cards/${explicit}`;
-  if (card.kind !== "driver") return null;
-  const ref = card.card_id.split(":").pop();
-  return ref ? `/cards/${ref}.png` : null;
+
+  if (card.kind === "driver") {
+    const ref = card.card_id.split(":").pop();
+    return ref ? `/cards/${ref}.png` : null;
+  }
+
+  if (card.kind === "team") {
+    const [, season, ref] = card.card_id.split(":");
+    if (!season || !ref) return null;
+    return `/cards/teams/${ref.replace(/_/g, "").toLowerCase()}${season}.png`;
+  }
+
+  return null;
 }

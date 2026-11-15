@@ -18,6 +18,10 @@ import { InstallPanel } from "@/components/InstallPanel";
 import { NewsEditor } from "@/components/NewsEditor";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlbumAdmin } from "@/components/AlbumAdmin";
+import { AdminUsers } from "@/components/AdminUsers";
+import { AdminActivity } from "@/components/AdminActivity";
+import { AdminAlbumEconomy } from "@/components/AdminAlbumEconomy";
+import { AdminWalls } from "@/components/AdminWalls";
 import { CountryFlag } from "@/components/CountryFlag";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { PredictionsAdmin } from "@/components/PredictionsAdmin";
@@ -403,6 +407,9 @@ export function SettingsPage() {
           <TabsTrigger value="privacidad">Privacidad</TabsTrigger>
           <TabsTrigger value="notificaciones">Notificaciones</TabsTrigger>
           <TabsTrigger value="app">App</TabsTrigger>
+          {isAdmin && <TabsTrigger value="usuarios">Usuarios</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="actividad">Actividad</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="muros">Muros</TabsTrigger>}
           {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
           {isAdmin && <TabsTrigger value="predicciones">Predicciones</TabsTrigger>}
           {isAdmin && <TabsTrigger value="album">Álbum</TabsTrigger>}          
@@ -435,7 +442,25 @@ export function SettingsPage() {
         )}
         {isAdmin && (
           <TabsContent value="album">
-            <AlbumAdmin />
+            <div className="space-y-6">
+              <AlbumAdmin />
+              <AdminAlbumEconomy />
+            </div>
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="usuarios">
+            <AdminUsers />
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="actividad">
+            <AdminActivity />
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="muros">
+            <AdminWalls />
           </TabsContent>
         )}
       </Tabs>

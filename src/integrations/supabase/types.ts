@@ -1074,6 +1074,82 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_active_today: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          claimed_pack: boolean
+          country: string
+          display_name: string
+          id: string
+          played: boolean
+          predicted: boolean
+          solved: boolean
+          username: string
+          voted: boolean
+        }[]
+      }
+      admin_activity: { Args: never; Returns: Json }
+      admin_album_economy: { Args: never; Returns: Json }
+      admin_album_set_pack_rule: {
+        Args: {
+          p_cards: number
+          p_guaranteed_rare: boolean
+          p_outcome: string
+          p_w_common: number
+          p_w_epic: number
+          p_w_legendary: number
+          p_w_mythic: number
+          p_w_rare: number
+        }
+        Returns: undefined
+      }
+      admin_album_set_recycle_weight: {
+        Args: { p_from: string; p_to: string; p_weight: number }
+        Returns: undefined
+      }
+      admin_album_set_settings: {
+        Args: {
+          p_foil_chance: number
+          p_recycle_cost: number
+          p_streak_bonus_days: number
+        }
+        Returns: undefined
+      }
+      admin_delete_league_post: {
+        Args: { p_post_id: string }
+        Returns: undefined
+      }
+      admin_league_posts: {
+        Args: { p_limit?: number; p_search?: string }
+        Returns: {
+          avatar_url: string
+          body: string
+          created_at: string
+          display_name: string
+          league_id: string
+          league_name: string
+          post_id: string
+          reactions: number
+          user_id: string
+          username: string
+        }[]
+      }
+      admin_recent_users: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          complete: boolean
+          country: string
+          created_at: string
+          display_name: string
+          id: string
+          last_sign_in_at: string
+          provider: string
+          username: string
+        }[]
+      }
+      admin_user_stats: { Args: never; Returns: Json }
       album_are_friends: { Args: { a: string; b: string }; Returns: boolean }
       album_cancel_trade: { Args: { p_trade_id: string }; Returns: boolean }
       album_card_json: {

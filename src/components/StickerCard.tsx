@@ -223,7 +223,7 @@ export function StickerCard({
             )}
 
             {card.kind === "team" && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "6cqw" }}>
+              <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "4cqw" }}>
                 <span
                   aria-hidden="true"
                   className="absolute font-display font-bold leading-none opacity-15"
@@ -231,9 +231,20 @@ export function StickerCard({
                 >
                   {getInitials(card.name)}
                 </span>
-                <div className="relative w-full" style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.5))" }}>
-                  <CarSilhouette color={accent} />
-                </div>
+                {imageUrl && !imageFailed ? (
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    loading="lazy"
+                    onError={() => setImageFailed(true)}
+                    className="relative h-full w-full object-contain"
+                    style={{ filter: "drop-shadow(0 1.5cqw 2.5cqw rgba(0,0,0,0.55))" }}
+                  />
+                ) : (
+                  <div className="relative w-full" style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.5))" }}>
+                    <CarSilhouette color={accent} />
+                  </div>
+                )}
               </div>
             )}
 
