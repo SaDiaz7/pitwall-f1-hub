@@ -119,17 +119,32 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
 
     case "daily_game": {
       const streak = typeof payload["streak"] === "number" ? payload["streak"] : 0;
+      const days = `${streak} ${streak === 1 ? "día" : "días"}`;
+      const game = text(payload["game"], "circuit");
+
+      if (game === "hl") {
+        return {
+          title: "Ya están los duelos de hoy",
+          body:
+            streak > 0
+              ? `Tu racha de ${days} está en juego. ¿Tiene más o menos el otro piloto?`
+              : "10 duelos con estadísticas de pilotos te esperan. ¿Más o menos?",
+          url: "/juego",
+          tag: `daily-game-${text(payload["date"], "hoy")}`,
+        };
+      }
+
       return {
         title: "Ya está el circuito de hoy",
         body:
           streak > 0
-            ? `Tu racha de ${streak} ${streak === 1 ? "día" : "días"} está en juego. ¿Lo reconocés por su trazado?`
+            ? `Tu racha de ${days} está en juego. ¿Lo reconocés por su trazado?`
             : "Un circuito nuevo te espera. ¿Lo reconocés por su trazado?",
         url: "/juego",
         tag: `daily-game-${text(payload["date"], "hoy")}`,
       };
     }
-
+    
     case "dotd_open": {
       const race = text(payload["race"], "la carrera");
       const round = Number(payload["round"]);
