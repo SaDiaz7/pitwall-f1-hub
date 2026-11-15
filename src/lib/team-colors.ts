@@ -7,7 +7,7 @@ const COLORS_BY_ID: Record<string, string> = {
   red_bull: "#3671C6",
   aston_martin: "#037A68",
   alpine: "#d961d3",
-  williams: "#64C4FF",
+  williams: "#1e1493",
   rb: "#6692FF",
   haas: "#ff4040",
   sauber: "#52E252",
