@@ -517,6 +517,108 @@ export type Database = {
         }
         Relationships: []
       }
+      game_schedule: {
+        Row: {
+          game: string
+          weekday: number
+        }
+        Insert: {
+          game: string
+          weekday: number
+        }
+        Update: {
+          game?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
+      hl_daily: {
+        Row: {
+          item_ids: string[]
+          play_date: string
+          stats: string[]
+        }
+        Insert: {
+          item_ids: string[]
+          play_date: string
+          stats: string[]
+        }
+        Update: {
+          item_ids?: string[]
+          play_date?: string
+          stats?: string[]
+        }
+        Relationships: []
+      }
+      hl_items: {
+        Row: {
+          active: boolean
+          id: string
+          is_current: boolean
+          name: string
+          nationality: string | null
+          podiums: number
+          poles: number
+          titles: number
+          updated_at: string
+          wins: number
+        }
+        Insert: {
+          active?: boolean
+          id: string
+          is_current?: boolean
+          name: string
+          nationality?: string | null
+          podiums?: number
+          poles?: number
+          titles?: number
+          updated_at?: string
+          wins?: number
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          is_current?: boolean
+          name?: string
+          nationality?: string | null
+          podiums?: number
+          poles?: number
+          titles?: number
+          updated_at?: string
+          wins?: number
+        }
+        Relationships: []
+      }
+      hl_plays: {
+        Row: {
+          finished: boolean
+          finished_at: string | null
+          picks: string[]
+          play_date: string
+          results: boolean[]
+          score: number
+          user_id: string
+        }
+        Insert: {
+          finished?: boolean
+          finished_at?: string | null
+          picks?: string[]
+          play_date: string
+          results?: boolean[]
+          score?: number
+          user_id: string
+        }
+        Update: {
+          finished?: boolean
+          finished_at?: string | null
+          picks?: string[]
+          play_date?: string
+          results?: boolean[]
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       league_members: {
         Row: {
           joined_at: string
@@ -1280,6 +1382,7 @@ export type Database = {
           streak: number
         }[]
       }
+      game_of_day: { Args: { p_date?: string }; Returns: string }
       game_streak: { Args: { p_user: string }; Returns: number }
       game_submit_guess: {
         Args: { p_guess: string; p_prior_misses?: number }
@@ -1292,6 +1395,7 @@ export type Database = {
           streak: number
         }[]
       }
+      game_today_info: { Args: never; Returns: Json }
       game_weekly_friends_leaderboard: {
         Args: { p_week_offset?: number }
         Returns: {
@@ -1497,6 +1601,28 @@ export type Database = {
           username: string
         }[]
       }
+      hl_ensure_today: {
+        Args: never
+        Returns: {
+          item_ids: string[]
+          play_date: string
+          stats: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "hl_daily"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      hl_get_game: { Args: never; Returns: Json }
+      hl_open_pack: { Args: never; Returns: Json }
+      hl_stat_value: {
+        Args: { i: Database["public"]["Tables"]["hl_items"]["Row"]; s: string }
+        Returns: number
+      }
+      hl_submit: { Args: { p_pick: string; p_round: number }; Returns: Json }
+      hl_today_pack: { Args: never; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       join_league: {
         Args: { p_code: string }

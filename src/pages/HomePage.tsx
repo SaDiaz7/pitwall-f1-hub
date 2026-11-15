@@ -21,7 +21,7 @@ import { TeamStripe } from "@/components/TeamStripe";
 import { ChampionBanner } from "@/components/ChampionBanner";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { HomeNews } from "@/components/HomeNews";
-import { DailyGameCard } from "@/components/DailyGameCard";
+import { TodayGameCard } from "@/components/TodayGameCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { PredictionStats } from "@/components/PredictionStats";
 import { usePredictions } from "@/hooks/usePredictions";
@@ -385,7 +385,7 @@ export function HomePage() {
           {
             key: "daily-game",
             glow: "shadow-glow",
-            content: <DailyGameCard />,
+            content: <TodayGameCard />,
           },
           ...(dotdGp && dotd.status === "open" && !dotd.loading
             ? [
