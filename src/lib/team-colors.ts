@@ -5,14 +5,19 @@ const COLORS_BY_ID: Record<string, string> = {
   ferrari: "#E8002D",
   mclaren: "#FF8000",
   red_bull: "#3671C6",
-  aston_martin: "#229971",
-  alpine: "#0093CC",
+  aston_martin: "#037A68",
+  alpine: "#d961d3",
   williams: "#64C4FF",
   rb: "#6692FF",
   haas: "#B6BABD",
   sauber: "#52E252",
-  audi: "#F50537",
-  cadillac: "#9CA3AF",
+  audi: "#731a1a",
+  cadillac: "#d3d3d3",
+  lotus: "#B6995B",
+  toro_rosso: "#00144A",
+  renault: "#303030",
+  maserati: "#E8002D",
+  alphatauri: "#192136",
 };
 
 // Si el identificador no está, se busca por palabras del nombre del equipo.
