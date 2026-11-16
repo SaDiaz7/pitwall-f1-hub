@@ -6,22 +6,28 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { GAME_LABELS } from "@/lib/games";
 import { cn } from "@/lib/utils";
 
 type RoundCount = { season: number; round: number; count: number };
 
 type Activity = {
+  today_game: string | null;
   total_users: number;
   active_today: number;
   game_players_today: number;
   game_solved_today: number;
+  hl_players_today: number;
+  hl_finished_today: number;
+  hl_avg_score_today: number | null;
   free_packs_today: number;
   circuit_packs_today: number;
+  hl_packs_today: number;
   dotd_votes_today: number;
   predictions_today: number;
   last_prediction: RoundCount | null;
   last_dotd: RoundCount | null;
-  daily: { day: string; game: number; packs: number; votes: number }[];
+  daily: { day: string; game: number; hl: number; packs: number; votes: number }[];
 };
 
 type ActiveUser = {
@@ -32,6 +38,9 @@ type ActiveUser = {
   country: string | null;
   played: boolean;
   solved: boolean;
+  hl_played: boolean;
+  hl_finished: boolean;
+  hl_score: number | null;
   claimed_pack: boolean;
   voted: boolean;
   predicted: boolean;
@@ -82,14 +91,17 @@ export function AdminActivity() {
 
   const total = activity?.total_users ?? 0;
   const percentOfUsers = (value: number) => (total > 0 ? Math.min(100, (value / total) * 100) : 0);
-  const maxGame = activity ? Math.max(1, ...activity.daily.map((item) => item.game)) : 1;
+  const maxGame = activity ? Math.max(1, ...activity.daily.map((item) => item.game + item.hl)) : 1;
 
   const rows = activity
     ? [
-        { label: "Jugaron el juego diario", value: activity.game_players_today },
-        { label: "Lo resolvieron", value: activity.game_solved_today },
+        { label: "Jugaron el circuito", value: activity.game_players_today },
+        { label: "Resolvieron el circuito", value: activity.game_solved_today },
+        { label: "Empezaron los duelos", value: activity.hl_players_today },
+        { label: "Terminaron los duelos", value: activity.hl_finished_today },
         { label: "Sobres gratis abiertos", value: activity.free_packs_today },
-        { label: "Sobres del juego abiertos", value: activity.circuit_packs_today },
+        { label: "Sobres del circuito abiertos", value: activity.circuit_packs_today },
+        { label: "Sobres de duelos abiertos", value: activity.hl_packs_today },
         { label: "Votos del Piloto del día", value: activity.dotd_votes_today },
         { label: "Predicciones guardadas", value: activity.predictions_today },
       ]
@@ -136,8 +148,23 @@ export function AdminActivity() {
               <p className="font-display text-3xl font-bold leading-none tabular-nums">{activity.total_users}</p>
               <p className="mt-1.5 text-xs uppercase tracking-wider text-muted-foreground">Usuarios totales</p>
             </div>
+            <div className="fade-up rounded-xl border bg-card p-4" style={stagger(2)}>
+              <p className="font-display text-xl font-bold leading-tight">
+                {activity.today_game ? (GAME_LABELS[activity.today_game] ?? activity.today_game) : "Ninguno"}
+              </p>
+              <p className="mt-1.5 text-xs uppercase tracking-wider text-muted-foreground">Juego de hoy</p>
+            </div>
+            {activity.hl_avg_score_today !== null && (
+              <div className="fade-up rounded-xl border bg-card p-4" style={stagger(3)}>
+                <p className="font-display text-3xl font-bold leading-none tabular-nums">
+                  {activity.hl_avg_score_today}
+                  <span className="text-base text-muted-foreground">/10</span>
+                </p>
+                <p className="mt-1.5 text-xs uppercase tracking-wider text-muted-foreground">Promedio en duelos</p>
+              </div>
+            )}
             {activity.last_prediction && (
-              <div className="fade-up rounded-xl border bg-card p-4" style={stagger(2)}>
+              <div className="fade-up rounded-xl border bg-card p-4" style={stagger(4)}>
                 <p className="font-display text-3xl font-bold leading-none tabular-nums">
                   {activity.last_prediction.count}
                 </p>
@@ -147,7 +174,7 @@ export function AdminActivity() {
               </div>
             )}
             {activity.last_dotd && (
-              <div className="fade-up rounded-xl border bg-card p-4" style={stagger(3)}>
+              <div className="fade-up rounded-xl border bg-card p-4" style={stagger(5)}>
                 <p className="font-display text-3xl font-bold leading-none tabular-nums">
                   {activity.last_dotd.count}
                 </p>
@@ -159,7 +186,7 @@ export function AdminActivity() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <section className="fade-up rounded-2xl border bg-card p-4" style={stagger(4)}>
+            <section className="fade-up rounded-2xl border bg-card p-4" style={stagger(6)}>
               <h3 className="text-sm font-bold uppercase tracking-wider">Hoy</h3>
               <ul className="mt-3 space-y-3">
                 {rows.map((row, index) => (
@@ -174,7 +201,7 @@ export function AdminActivity() {
               </ul>
             </section>
 
-            <section className="fade-up rounded-2xl border bg-card p-4" style={stagger(5)}>
+            <section className="fade-up rounded-2xl border bg-card p-4" style={stagger(7)}>
               <h3 className="text-sm font-bold uppercase tracking-wider">Últimos 7 días</h3>
               <ul className="mt-3 space-y-3">
                 {activity.daily.map((item, index) => (
@@ -184,10 +211,10 @@ export function AdminActivity() {
                         {item.day.slice(8)}/{item.day.slice(5, 7)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {item.game} jugaron · {item.packs} sobres · {item.votes} votos
+                        {item.game} circuito · {item.hl} duelos · {item.packs} sobres · {item.votes} votos
                       </span>
                     </div>
-                    <AnimatedBar percent={(item.game / maxGame) * 100} className="mt-1 h-2" />
+                    <AnimatedBar percent={((item.game + item.hl) / maxGame) * 100} className="mt-1 h-2" />
                   </li>
                 ))}
               </ul>
@@ -218,7 +245,10 @@ export function AdminActivity() {
                         <span className="truncate">{user.display_name || user.username || "Sin nombre"}</span>
                       </p>
                       <div className="mt-1 flex flex-wrap gap-1">
-                        {user.played && <Chip>{user.solved ? "Juego ✓" : "Juego"}</Chip>}
+                        {user.played && <Chip>{user.solved ? "Circuito ✓" : "Circuito"}</Chip>}
+                        {user.hl_played && (
+                          <Chip>{user.hl_finished ? `Duelos ${user.hl_score ?? 0}/10` : "Duelos…"}</Chip>
+                        )}
                         {user.claimed_pack && <Chip>Sobre</Chip>}
                         {user.voted && <Chip>Votó</Chip>}
                         {user.predicted && <Chip>Predijo</Chip>}

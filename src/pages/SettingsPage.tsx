@@ -20,6 +20,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlbumAdmin } from "@/components/AlbumAdmin";
 import { AdminUsers } from "@/components/AdminUsers";
 import { AdminActivity } from "@/components/AdminActivity";
+import { AdminSchedule } from "@/components/AdminSchedule";
 import { AdminAlbumEconomy } from "@/components/AdminAlbumEconomy";
 import { AdminWalls } from "@/components/AdminWalls";
 import { CountryFlag } from "@/components/CountryFlag";
@@ -455,7 +456,10 @@ export function SettingsPage() {
         )}
         {isAdmin && (
           <TabsContent value="actividad">
-            <AdminActivity />
+            <div className="space-y-8">
+              <AdminSchedule />
+              <AdminActivity />
+            </div>
           </TabsContent>
         )}
         {isAdmin && (

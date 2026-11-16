@@ -1183,6 +1183,9 @@ export type Database = {
           claimed_pack: boolean
           country: string
           display_name: string
+          hl_finished: boolean
+          hl_played: boolean
+          hl_score: number
           id: string
           played: boolean
           predicted: boolean
@@ -1222,6 +1225,7 @@ export type Database = {
         Args: { p_post_id: string }
         Returns: undefined
       }
+      admin_get_schedule: { Args: never; Returns: Json }
       admin_league_posts: {
         Args: { p_limit?: number; p_search?: string }
         Returns: {
@@ -1250,6 +1254,10 @@ export type Database = {
           provider: string
           username: string
         }[]
+      }
+      admin_set_schedule: {
+        Args: { p_game: string; p_weekday: number }
+        Returns: undefined
       }
       admin_user_stats: { Args: never; Returns: Json }
       album_are_friends: { Args: { a: string; b: string }; Returns: boolean }
@@ -1516,6 +1524,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_my_wrapped: { Args: { p_season?: number }; Returns: Json }
       get_profile_album: {
         Args: { p_user_id: string }
         Returns: {
