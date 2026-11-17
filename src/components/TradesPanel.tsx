@@ -15,6 +15,15 @@ import { cn } from "@/lib/utils";
 
 type Message = { type: "ok" | "error"; text: string } | null;
 
+// Cartelito debajo de una carta: te avisa si ya la tenés en tu colección.
+type TileNote = { text: string; tone: "new" | "foil" | "owned" };
+
+const NOTE_STYLES: Record<TileNote["tone"], string> = {
+  new: "bg-primary text-primary-foreground",
+  foil: "border border-primary/60 text-primary",
+  owned: "text-muted-foreground",
+};
+
 const keyOf = (card: { card_id: string; foil: boolean }) => `${card.card_id}|${card.foil ? 1 : 0}`;
 const nameOf = (user: { username: string | null; display_name: string | null }) =>
   user.display_name || user.username || "Sin nombre";
@@ -33,28 +42,44 @@ function Tile({
   quantity,
   selected,
   onClick,
+  note,
 }: {
   card: TradeCard;
   quantity?: number | undefined;
   selected?: boolean | undefined;
   onClick?: (() => void) | undefined;
+  note?: TileNote | undefined;
 }) {
   const face = <StickerCard card={card} foil={card.foil} quantity={quantity} />;
 
-  if (!onClick) return <div className="w-24 shrink-0 sm:w-28">{face}</div>;
-
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={cn(
-        "w-24 shrink-0 rounded-[7%] transition active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-28",
-        selected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+    <div className="w-24 shrink-0 sm:w-28">
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          aria-pressed={selected}
+          className={cn(
+            "block w-full rounded-[7%] transition active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100",
+            selected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+          )}
+        >
+          {face}
+        </button>
+      ) : (
+        face
       )}
-    >
-      {face}
-    </button>
+      {note && (
+        <span
+          className={cn(
+            "mx-auto mt-1.5 block w-fit max-w-full rounded px-1.5 py-0.5 text-center text-[10px] font-bold uppercase leading-tight tracking-wide",
+            NOTE_STYLES[note.tone],
+          )}
+        >
+          {note.text}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -74,12 +99,14 @@ function OfferRow({
   busy,
   onRespond,
   onCancel,
+  getNote,
 }: {
   item: TradeItem;
   index: number;
   busy: boolean;
   onRespond: (id: string, accept: boolean) => void;
   onCancel: (id: string) => void;
+  getNote?: ((card: TradeCard) => TileNote | undefined) | undefined;
 }) {
   const incoming = item.direction === "in";
   const pending = item.status === "pending";
@@ -104,7 +131,7 @@ function OfferRow({
       <div className="flex flex-wrap items-end gap-4">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">{incoming ? "Recibís" : "Recibirías"}</p>
-          <Tile card={item.you_get} />
+          <Tile card={item.you_get} note={incoming && pending ? getNote?.(item.you_get) : undefined} />
         </div>
         <span aria-hidden="true" className="pb-12 text-2xl text-muted-foreground">
           ⇄
@@ -153,7 +180,7 @@ function OfferRow({
 }
 
 export function TradesPanel() {
-  const { entries, reload: reloadAlbum } = useAlbum();
+  const { entries, loading: albumLoading, reload: reloadAlbum } = useAlbum();
 
   const [trades, setTrades] = useState<TradeItem[] | null>(null);
   const [friends, setFriends] = useState<TradeFriend[] | null>(null);
@@ -198,6 +225,17 @@ export function TradesPanel() {
       }),
     [entries],
   );
+
+  // Lo que tengo de cada carta, para avisar cuáles me faltan.
+  const owned = useMemo(() => new Map(entries.map((entry) => [entry.card_id, entry])), [entries]);
+
+  const noteFor = (card: TradeCard): TileNote | undefined => {
+    if (albumLoading) return undefined;
+    const mine = owned.get(card.card_id);
+    if (!mine || (mine.quantity <= 0 && mine.foil_quantity <= 0)) return { text: "¡No la tenés!", tone: "new" };
+    if (card.foil && mine.foil_quantity <= 0) return { text: "Te falta la foil ✨", tone: "foil" };
+    return { text: "Ya la tenés", tone: "owned" };
+  };
 
   const selectFriend = async (id: string) => {
     currentFriend.current = id;
@@ -299,7 +337,15 @@ export function TradesPanel() {
           <h2 className="text-xl font-bold uppercase">Ofertas que recibiste</h2>
           <ul className="space-y-3">
             {incoming.map((item, index) => (
-              <OfferRow key={item.trade_id} item={item} index={index} busy={busy} onRespond={respond} onCancel={cancel} />
+              <OfferRow
+                key={item.trade_id}
+                item={item}
+                index={index}
+                busy={busy}
+                onRespond={respond}
+                onCancel={cancel}
+                getNote={noteFor}
+              />
             ))}
           </ul>
         </section>
@@ -379,6 +425,7 @@ export function TradesPanel() {
                             quantity={card.quantity}
                             selected={get === keyOf(card)}
                             onClick={() => setGet(keyOf(card))}
+                            note={noteFor(card)}
                           />
                         </li>
                       ))}

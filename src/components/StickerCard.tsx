@@ -311,11 +311,11 @@ export function StickerCard({
           {/* Datos */}
           <div className="mt-[2cqw] grid grid-cols-3 border-t border-white/10" style={{ padding: "2cqw 0 2.5cqw" }}>
             {statStrip(card).map((item) => (
-              <div key={item.label} className="text-center">
+              <div key={item.label} className="min-w-0 text-center">
                 <p className="font-display font-bold leading-none tabular-nums" style={{ fontSize: "6cqw" }}>
                   {item.value}
                 </p>
-                <p className="uppercase tracking-wider text-muted-foreground" style={{ fontSize: "3cqw", marginTop: "0.8cqw" }}>
+                <p className="truncate uppercase tracking-normal text-muted-foreground" style={{ fontSize: "3cqw", marginTop: "0.8cqw" }}>
                   {item.label}
                 </p>
               </div>
