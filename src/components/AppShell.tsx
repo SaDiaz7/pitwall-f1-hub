@@ -8,6 +8,7 @@ import {
   Ellipsis,
   Flag,
   Gauge,
+  Gift,
   GraduationCap,
   Home,
   Image as ImageIcon,
@@ -80,6 +81,7 @@ export const navGroups = [
     label: "Mi espacio",
     items: [
       { to: "/mi-piloto", label: "Mi piloto", icon: Gauge, public: false },
+      { to: "/mi-temporada", label: "Mi temporada", icon: Gift, public: false },
       { to: "/favoritos", label: "Favoritos", icon: Star, public: false },
       { to: "/ajustes", label: "Ajustes", icon: Settings, public: false },
     ],

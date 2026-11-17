@@ -32,6 +32,7 @@ import { Route as PrivadoInicioRouteImport } from './routes/_privado.inicio'
 import { Route as PrivadoJuegoRouteImport } from './routes/_privado.juego'
 import { Route as PrivadoLigasRouteImport } from './routes/_privado.ligas'
 import { Route as PrivadoMiPilotoRouteImport } from './routes/_privado.mi-piloto'
+import { Route as PrivadoMiTemporadaRouteImport } from './routes/_privado.mi-temporada'
 import { Route as PrivadoNoticiasRouteImport } from './routes/_privado.noticias'
 import { Route as PrivadoPrediccionesRouteImport } from './routes/_privado.predicciones'
 import { Route as PrivadoQuizRouteImport } from './routes/_privado.quiz'
@@ -157,6 +158,11 @@ const PrivadoMiPilotoRoute = PrivadoMiPilotoRouteImport.update({
   path: '/mi-piloto',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoMiTemporadaRoute = PrivadoMiTemporadaRouteImport.update({
+  id: '/mi-temporada',
+  path: '/mi-temporada',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoNoticiasRoute = PrivadoNoticiasRouteImport.update({
   id: '/noticias',
   path: '/noticias',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/mi-temporada': typeof PrivadoMiTemporadaRoute
   '/noticias': typeof PrivadoNoticiasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/juego': typeof PrivadoJuegoRoute
   '/ligas': typeof PrivadoLigasRoute
   '/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/mi-temporada': typeof PrivadoMiTemporadaRoute
   '/noticias': typeof PrivadoNoticiasRoute
   '/predicciones': typeof PrivadoPrediccionesRoute
   '/quiz': typeof PrivadoQuizRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/_privado/juego': typeof PrivadoJuegoRoute
   '/_privado/ligas': typeof PrivadoLigasRoute
   '/_privado/mi-piloto': typeof PrivadoMiPilotoRoute
+  '/_privado/mi-temporada': typeof PrivadoMiTemporadaRoute
   '/_privado/noticias': typeof PrivadoNoticiasRoute
   '/_privado/predicciones': typeof PrivadoPrediccionesRoute
   '/_privado/quiz': typeof PrivadoQuizRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
     | '/juego'
     | '/ligas'
     | '/mi-piloto'
+    | '/mi-temporada'
     | '/noticias'
     | '/predicciones'
     | '/quiz'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/juego'
     | '/ligas'
     | '/mi-piloto'
+    | '/mi-temporada'
     | '/noticias'
     | '/predicciones'
     | '/quiz'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/_privado/juego'
     | '/_privado/ligas'
     | '/_privado/mi-piloto'
+    | '/_privado/mi-temporada'
     | '/_privado/noticias'
     | '/_privado/predicciones'
     | '/_privado/quiz'
@@ -593,6 +605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoMiPilotoRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/mi-temporada': {
+      id: '/_privado/mi-temporada'
+      path: '/mi-temporada'
+      fullPath: '/mi-temporada'
+      preLoaderRoute: typeof PrivadoMiTemporadaRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/noticias': {
       id: '/_privado/noticias'
       path: '/noticias'
@@ -682,6 +701,7 @@ interface PrivadoRouteChildren {
   PrivadoJuegoRoute: typeof PrivadoJuegoRoute
   PrivadoLigasRoute: typeof PrivadoLigasRoute
   PrivadoMiPilotoRoute: typeof PrivadoMiPilotoRoute
+  PrivadoMiTemporadaRoute: typeof PrivadoMiTemporadaRoute
   PrivadoNoticiasRoute: typeof PrivadoNoticiasRoute
   PrivadoPrediccionesRoute: typeof PrivadoPrediccionesRoute
   PrivadoQuizRoute: typeof PrivadoQuizRoute
@@ -709,6 +729,7 @@ const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoJuegoRoute: PrivadoJuegoRoute,
   PrivadoLigasRoute: PrivadoLigasRoute,
   PrivadoMiPilotoRoute: PrivadoMiPilotoRoute,
+  PrivadoMiTemporadaRoute: PrivadoMiTemporadaRoute,
   PrivadoNoticiasRoute: PrivadoNoticiasRoute,
   PrivadoPrediccionesRoute: PrivadoPrediccionesRoute,
   PrivadoQuizRoute: PrivadoQuizRoute,

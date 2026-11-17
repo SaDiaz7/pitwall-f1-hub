@@ -22,17 +22,16 @@ import { ChampionBanner } from "@/components/ChampionBanner";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { HomeNews } from "@/components/HomeNews";
 import { TodayGameCard } from "@/components/TodayGameCard";
+import { WrappedCard } from "@/components/WrappedCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { PredictionStats } from "@/components/PredictionStats";
 import { usePredictions } from "@/hooks/usePredictions";
 import { seasonOf } from "@/lib/predictions";
 import { RankingPreview } from "@/components/RankingPreview";
-
 import { DailyGameRankingCard } from "@/components/DailyGameRankingCard";
 import { DriverOfTheDayCard } from "@/components/DriverOfTheDayCard";
 import { useNow } from "@/hooks/useNow";
 import { useDriverOfTheDay } from "@/hooks/useDriverOfTheDay";
-
 import { DriverOfTheDaySection } from "@/components/DriverOfTheDaySection";
 import { TopFiveCard } from "@/components/TopFiveCard";
 import { WeekendCard } from "@/components/WeekendCard";
@@ -328,6 +327,15 @@ export function HomePage() {
             glow: "shadow-[0_0_50px_-10px_rgba(251,191,36,0.55)]",
             content: <ChampionBanner />,
           },
+          ...(session
+            ? [
+                {
+                  key: "wrapped",
+                  glow: "shadow-glow",
+                  content: <WrappedCard />,
+                },
+              ]
+            : []),
           ...(next
             ? [
                 {
