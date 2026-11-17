@@ -9,7 +9,22 @@ export const QUALITY_LABELS: Record<Quality, string> = { "4k": "4K", hd: "HD", s
 
 export const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB (igual que el bucket)
-const THUMB_WIDTH = 640;
+
+// Cada fondo se guarda en tres tamaños: la miniatura para las grillas, una vista previa para el visor
+// y el original (que solo se baja al descargar). Así se gasta mucho menos tráfico.
+interface ResizeOptions {
+  width: number;
+  height: number;
+  quality: number;
+}
+const THUMB_MAX: ResizeOptions = { width: 640, height: 1280, quality: 0.8 };
+const PREVIEW_MAX: ResizeOptions = { width: 1600, height: 1600, quality: 0.82 };
+
+// Por encima de estos pesos, el optimizador considera que hay que regenerar la imagen.
+const THUMB_OK_BYTES = 200 * 1024;
+const PREVIEW_OK_BYTES = 600 * 1024;
+
+const CACHE_ONE_YEAR = "31536000";
 
 const EXTENSIONS: Record<string, "jpg" | "png" | "webp"> = {
   "image/jpeg": "jpg",
@@ -43,36 +58,36 @@ export async function readImageSize(file: File): Promise<{ width: number; height
   return size;
 }
 
-// Genera una miniatura liviana para la grilla.
-async function createThumbnail(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, THUMB_WIDTH / bitmap.width);
+// Achica una imagen (sin agrandarla nunca) y la pasa a WebP.
+async function resizeToWebp(source: Blob, options: ResizeOptions): Promise<Blob> {
+  const bitmap = await createImageBitmap(source);
+  const scale = Math.min(1, options.width / bitmap.width, options.height / bitmap.height);
 
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
 
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     bitmap.close();
-    throw new Error("No se pudo crear la miniatura.");
+    throw new Error("No se pudo preparar la imagen.");
   }
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
 
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("No se pudo crear la miniatura."))),
-      "image/webp",
-      0.8,
-    );
-  });
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", options.quality));
+  // Algunos navegadores no saben guardar WebP y devuelven PNG, que pesa mucho más: en ese caso se descarta.
+  if (!blob || blob.type !== "image/webp") {
+    throw new Error("Este navegador no puede generar imágenes WebP.");
+  }
+  return blob;
 }
 
 export function getWallpaperUrls(id: string) {
   const bucket = supabase.storage.from("wallpapers");
   return {
     full: bucket.getPublicUrl(`${id}/full`).data.publicUrl,
+    preview: bucket.getPublicUrl(`${id}/preview`).data.publicUrl,
     thumb: bucket.getPublicUrl(`${id}/thumb`).data.publicUrl,
   };
 }
@@ -114,39 +129,37 @@ export async function uploadWallpaper(file: File, meta: WallpaperMeta): Promise<
   }
 
   const bucket = supabase.storage.from("wallpapers");
-  const paths = [`${id}/full`, `${id}/thumb`];
 
   let thumb: Blob;
+  let preview: Blob;
   try {
-    thumb = await createThumbnail(file);
+    thumb = await resizeToWebp(file, THUMB_MAX);
+    preview = await resizeToWebp(file, PREVIEW_MAX);
   } catch (error) {
     console.error("Miniatura:", error);
     return { ok: false, message: "No pudimos procesar la imagen." };
   }
 
-  const { error: fullError } = await bucket.upload(paths[0]!, file, {
-    contentType: file.type,
-    cacheControl: "31536000",
-  });
-  if (fullError) {
-    console.error("Subida del original:", fullError);
-    return {
-      ok: false,
-      message: "No pudimos subir la imagen. Revisá la consola para ver el detalle.",
-    };
-  }
+  const uploads: { path: string; blob: Blob; contentType: string }[] = [
+    { path: `${id}/full`, blob: file, contentType: file.type },
+    { path: `${id}/preview`, blob: preview, contentType: "image/webp" },
+    { path: `${id}/thumb`, blob: thumb, contentType: "image/webp" },
+  ];
+  const paths = uploads.map((item) => item.path);
 
-  const { error: thumbError } = await bucket.upload(paths[1]!, thumb, {
-    contentType: thumb.type || "image/webp",
-    cacheControl: "31536000",
-  });
-  if (thumbError) {
-    console.error("Subida de la miniatura:", thumbError);
-    await bucket.remove([paths[0]!]);
-    return {
-      ok: false,
-      message: "No pudimos subir la miniatura. Revisá la consola para ver el detalle.",
-    };
+  for (const item of uploads) {
+    const { error } = await bucket.upload(item.path, item.blob, {
+      contentType: item.contentType,
+      cacheControl: CACHE_ONE_YEAR,
+    });
+    if (error) {
+      console.error("Subida de archivos del fondo:", item.path, error);
+      await bucket.remove(paths);
+      return {
+        ok: false,
+        message: "No pudimos subir la imagen. Revisá la consola para ver el detalle.",
+      };
+    }
   }
 
   const { error: insertError } = await supabase.from("wallpapers").insert({
@@ -181,7 +194,7 @@ export async function deleteWallpaper(id: string): Promise<ActionResult> {
     console.error("Borrado:", error);
     return { ok: false, message: "No pudimos borrar el fondo." };
   }
-  await supabase.storage.from("wallpapers").remove([`${id}/full`, `${id}/thumb`]);
+  await supabase.storage.from("wallpapers").remove([`${id}/full`, `${id}/preview`, `${id}/thumb`]);
   return { ok: true };
 }
 
@@ -231,4 +244,52 @@ export async function updateWallpaper(id: string, edit: WallpaperEdit): Promise<
     return { ok: false, message: "No pudimos guardar: el fondo no existe o no tenés permiso." };
   }
   return { ok: true };
+}
+
+export type OptimizeResult = { ok: true; changed: boolean } | { ok: false; message: string };
+
+// Peso de un archivo mirando solo los encabezados (no descarga la imagen).
+async function remoteSize(url: string): Promise<number | null> {
+  const response = await fetch(url, { method: "HEAD", cache: "no-store" });
+  if (!response.ok) return null;
+  const length = Number(response.headers.get("content-length"));
+  return Number.isFinite(length) && length > 0 ? length : null;
+}
+
+// Vuelve a generar la miniatura y la vista previa de un fondo ya subido, si pesan de más o no existen.
+export async function optimizeWallpaperImages(id: string): Promise<OptimizeResult> {
+  const urls = getWallpaperUrls(id);
+  const bucket = supabase.storage.from("wallpapers");
+
+  try {
+    const [thumbSize, previewSize] = await Promise.all([remoteSize(urls.thumb), remoteSize(urls.preview)]);
+    const thumbOk = thumbSize !== null && thumbSize <= THUMB_OK_BYTES;
+    const previewOk = previewSize !== null && previewSize <= PREVIEW_OK_BYTES;
+    if (thumbOk && previewOk) return { ok: true, changed: false };
+
+    const response = await fetch(urls.full, { cache: "no-store" });
+    if (!response.ok) return { ok: false, message: "No se pudo bajar el original." };
+    const original = await response.blob();
+
+    const replacements: { path: string; options: ResizeOptions; needed: boolean }[] = [
+      { path: `${id}/thumb`, options: THUMB_MAX, needed: !thumbOk },
+      { path: `${id}/preview`, options: PREVIEW_MAX, needed: !previewOk },
+    ];
+
+    for (const item of replacements) {
+      if (!item.needed) continue;
+      const blob = await resizeToWebp(original, item.options);
+      await bucket.remove([item.path]);
+      const { error } = await bucket.upload(item.path, blob, {
+        contentType: "image/webp",
+        cacheControl: CACHE_ONE_YEAR,
+      });
+      if (error) throw error;
+    }
+
+    return { ok: true, changed: true };
+  } catch (error) {
+    console.error("Optimizar fondo:", id, error);
+    return { ok: false, message: error instanceof Error ? error.message : "No se pudo optimizar." };
+  }
 }

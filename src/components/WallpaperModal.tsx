@@ -66,6 +66,7 @@ export function WallpaperModal({
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
   const urls = getWallpaperUrls(wallpaper.id);
   const title = wallpaper.driver_name ?? wallpaper.team_name ?? "Fondo";
 
@@ -122,7 +123,8 @@ export function WallpaperModal({
         </div>
 
         <img
-          src={canDownload ? urls.full : urls.thumb}
+          src={!canDownload ? urls.thumb : previewFailed ? urls.full : urls.preview}
+          onError={() => setPreviewFailed(true)}
           alt={title}
           className="max-h-[60vh] w-full rounded-xl object-contain"
         />

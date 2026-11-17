@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { WallpaperModal } from "@/components/WallpaperModal";
 import { WallpaperUploadForm } from "@/components/WallpaperUploadForm";
+import { WallpaperOptimizer } from "@/components/WallpaperOptimizer";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useNavigate } from "@tanstack/react-router";
 import { getInitials } from "@/hooks/useProfile";
@@ -77,6 +78,7 @@ export function WallpapersPage() {
   const { uploaders, reload: reloadUploaders } = useWallpaperUploaders();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [showUpload, setShowUpload] = useState(false);
+  const [showOptimize, setShowOptimize] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOrder>("recent");
   const [page, setPage] = useState(1);
@@ -152,7 +154,15 @@ export function WallpapersPage() {
       )}
 
       {isAdmin && (
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowOptimize((v) => !v)}
+            className="transition-transform active:scale-95"
+          >
+            {showOptimize ? "Cerrar optimizador" : "Optimizar imágenes"}
+          </Button>
           <Button
             type="button"
             onClick={() => setShowUpload((v) => !v)}
@@ -160,6 +170,12 @@ export function WallpapersPage() {
           >
             <Plus className="mr-2 h-4 w-4" /> {showUpload ? "Cerrar" : "Subir fondo"}
           </Button>
+        </div>
+      )}
+
+      {isAdmin && showOptimize && (
+        <div className="mb-4 max-w-3xl">
+          <WallpaperOptimizer wallpapers={wallpapers} />
         </div>
       )}
 
