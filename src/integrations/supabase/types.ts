@@ -1271,6 +1271,14 @@ export type Database = {
         Returns: Json
       }
       album_free_pack_today: { Args: never; Returns: Json }
+      album_friend_card_status: {
+        Args: { p_cards: string[]; p_friend: string }
+        Returns: {
+          card_id: string
+          has_card: boolean
+          has_foil: boolean
+        }[]
+      }
       album_get_collection: {
         Args: never
         Returns: {

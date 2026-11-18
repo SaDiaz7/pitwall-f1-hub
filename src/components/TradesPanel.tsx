@@ -15,14 +15,17 @@ import { cn } from "@/lib/utils";
 
 type Message = { type: "ok" | "error"; text: string } | null;
 
-// Cartelito debajo de una carta: te avisa si ya la tenés en tu colección.
-type TileNote = { text: string; tone: "new" | "foil" | "owned" };
+// Cartelitos debajo de una carta: te avisan quién la tiene y qué versión es.
+type TileNote = { text: string; tone: "new" | "foil" | "owned" | "info" };
 
 const NOTE_STYLES: Record<TileNote["tone"], string> = {
   new: "bg-primary text-primary-foreground",
   foil: "border border-primary/60 text-primary",
   owned: "text-muted-foreground",
+  info: "bg-secondary text-secondary-foreground",
 };
+
+type FriendCardStatus = { has_card: boolean; has_foil: boolean };
 
 const keyOf = (card: { card_id: string; foil: boolean }) => `${card.card_id}|${card.foil ? 1 : 0}`;
 const nameOf = (user: { username: string | null; display_name: string | null }) =>
@@ -37,20 +40,28 @@ const STATUS_LABEL: Record<TradeItem["status"], string> = {
   cancelled: "Cancelada",
 };
 
+// "Foil · te sobra 1" / "Normal · le sobran 2"
+function spareNote(card: { foil: boolean; spare: number }, who: "you" | "friend"): TileNote {
+  const verb =
+    who === "you" ? (card.spare === 1 ? "te sobra" : "te sobran") : card.spare === 1 ? "le sobra" : "le sobran";
+  return { text: `${card.foil ? "Foil" : "Normal"} · ${verb} ${card.spare}`, tone: "info" };
+}
+
 function Tile({
   card,
   quantity,
   selected,
   onClick,
-  note,
+  notes,
 }: {
   card: TradeCard;
   quantity?: number | undefined;
   selected?: boolean | undefined;
   onClick?: (() => void) | undefined;
-  note?: TileNote | undefined;
+  notes?: (TileNote | undefined)[] | undefined;
 }) {
   const face = <StickerCard card={card} foil={card.foil} quantity={quantity} />;
+  const visible = (notes ?? []).filter((note): note is TileNote => note !== undefined);
 
   return (
     <div className="w-24 shrink-0 sm:w-28">
@@ -69,15 +80,20 @@ function Tile({
       ) : (
         face
       )}
-      {note && (
-        <span
-          className={cn(
-            "mx-auto mt-1.5 block w-fit max-w-full rounded px-1.5 py-0.5 text-center text-[10px] font-bold uppercase leading-tight tracking-wide",
-            NOTE_STYLES[note.tone],
-          )}
-        >
-          {note.text}
-        </span>
+      {visible.length > 0 && (
+        <div className="mt-1.5 flex flex-col items-center gap-1">
+          {visible.map((note) => (
+            <span
+              key={note.text}
+              className={cn(
+                "block w-fit max-w-full rounded px-1.5 py-0.5 text-center text-[10px] font-bold uppercase leading-tight tracking-wide",
+                NOTE_STYLES[note.tone],
+              )}
+            >
+              {note.text}
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -131,7 +147,7 @@ function OfferRow({
       <div className="flex flex-wrap items-end gap-4">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">{incoming ? "Recibís" : "Recibirías"}</p>
-          <Tile card={item.you_get} note={incoming && pending ? getNote?.(item.you_get) : undefined} />
+          <Tile card={item.you_get} notes={incoming && pending ? [getNote?.(item.you_get)] : undefined} />
         </div>
         <span aria-hidden="true" className="pb-12 text-2xl text-muted-foreground">
           ⇄
@@ -186,6 +202,7 @@ export function TradesPanel() {
   const [friends, setFriends] = useState<TradeFriend[] | null>(null);
   const [friendId, setFriendId] = useState<string | null>(null);
   const [friendDups, setFriendDups] = useState<FriendDuplicate[] | null>(null);
+  const [friendStatus, setFriendStatus] = useState<Map<string, FriendCardStatus> | null>(null);
   const [give, setGive] = useState<string | null>(null);
   const [get, setGet] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -214,13 +231,18 @@ export function TradesPanel() {
     });
   }, [loadTrades]);
 
-  // Mis repetidas: una copia de más, normal o foil.
+  // Mis repetidas. En cada carta te guardás una copia (si tenés foil, esa es la foil):
+  // sobran las normales de más y las foil de más.
   const myDups = useMemo(
     () =>
       entries.flatMap((entry) => {
-        const list: (TradeCard & { quantity: number })[] = [];
-        if (entry.quantity >= 2) list.push({ ...entry, foil: false, quantity: entry.quantity });
-        if (entry.foil_quantity >= 2) list.push({ ...entry, foil: true, quantity: entry.foil_quantity });
+        const list: (TradeCard & { quantity: number; spare: number })[] = [];
+        const normals = entry.quantity;
+        const foils = entry.foil_quantity;
+        const spareNormal = foils >= 1 ? normals : Math.max(0, normals - 1);
+        const spareFoil = Math.max(0, foils - 1);
+        if (spareNormal >= 1) list.push({ ...entry, foil: false, quantity: normals, spare: spareNormal });
+        if (spareFoil >= 1) list.push({ ...entry, foil: true, quantity: foils, spare: spareFoil });
         return list;
       }),
     [entries],
@@ -235,6 +257,42 @@ export function TradesPanel() {
     if (!mine || (mine.quantity <= 0 && mine.foil_quantity <= 0)) return { text: "¡No la tenés!", tone: "new" };
     if (card.foil && mine.foil_quantity <= 0) return { text: "Te falta la foil ✨", tone: "foil" };
     return { text: "Ya la tenés", tone: "owned" };
+  };
+
+  // Cuando elegís un amigo, se le pregunta si ya tiene mis cartas repetidas.
+  const myDupIds = useMemo(() => [...new Set(myDups.map((card) => card.card_id))].sort(), [myDups]);
+
+  useEffect(() => {
+    if (!friendId || myDupIds.length === 0) {
+      setFriendStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+    setFriendStatus(null);
+
+    supabase.rpc("album_friend_card_status", { p_friend: friendId, p_cards: myDupIds }).then(({ data, error }) => {
+      if (cancelled) return;
+      if (error) {
+        console.error("Cartas del amigo:", error);
+        return;
+      }
+      setFriendStatus(
+        new Map((data ?? []).map((row) => [row.card_id, { has_card: row.has_card, has_foil: row.has_foil }])),
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [friendId, myDupIds]);
+
+  const friendNoteFor = (card: TradeCard): TileNote | undefined => {
+    if (!friendStatus) return undefined;
+    const theirs = friendStatus.get(card.card_id);
+    if (!theirs || !theirs.has_card) return { text: "¡No la tiene!", tone: "new" };
+    if (card.foil && !theirs.has_foil) return { text: "Le falta la foil ✨", tone: "foil" };
+    return { text: "Ya la tiene", tone: "owned" };
   };
 
   const selectFriend = async (id: string) => {
@@ -401,6 +459,7 @@ export function TradesPanel() {
                             quantity={card.quantity}
                             selected={give === keyOf(card)}
                             onClick={() => setGive(keyOf(card))}
+                            notes={[spareNote(card, "you"), friendNoteFor(card)]}
                           />
                         </li>
                       ))}
@@ -425,7 +484,7 @@ export function TradesPanel() {
                             quantity={card.quantity}
                             selected={get === keyOf(card)}
                             onClick={() => setGet(keyOf(card))}
-                            note={noteFor(card)}
+                            notes={[spareNote(card, "friend"), noteFor(card)]}
                           />
                         </li>
                       ))}

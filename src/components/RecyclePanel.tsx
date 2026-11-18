@@ -76,7 +76,7 @@ export function RecyclePanel() {
     <div className="space-y-5">
       <p className="max-w-2xl text-sm text-muted-foreground">
         Juntá {info.cost} repetidas de una misma rareza y cambialas por 1 carta nueva de esa rareza o mejor. Siempre te
-        queda 1 copia de cada carta, y las foil no se reciclan.
+        queda 1 copia de cada carta (si tenés una foil, esa es la que te guardás), y las foil no se reciclan.
       </p>
 
       {error && <p className="rounded-md bg-destructive/15 p-2 text-sm text-destructive">{error}</p>}

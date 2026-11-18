@@ -6,6 +6,8 @@ export interface TradeCard extends CardFace {
 
 export interface FriendDuplicate extends TradeCard {
   quantity: number;
+  // Cuántas copias de esa versión le sobran de verdad (siempre se guarda una).
+  spare: number;
 }
 
 export interface TradeFriend {
