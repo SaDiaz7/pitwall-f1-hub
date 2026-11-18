@@ -1,12 +1,15 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatedBar } from "@/components/AnimatedBar";
+import { ShowcasePicker } from "@/components/ShowcasePicker";
 import { StickerCard } from "@/components/StickerCard";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { CardFace } from "@/lib/album";
 
 interface TopCard extends CardFace {
   foil: boolean;
+  pinned?: boolean | undefined;
 }
 
 interface Summary {
@@ -19,10 +22,17 @@ interface Summary {
 export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: boolean }) {
   // undefined = cargando, null = no disponible (perfil privado o error).
   const [summary, setSummary] = useState<Summary | null | undefined>(undefined);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [picking, setPicking] = useState(false);
+
+  // Al cambiar de persona se muestra el esqueleto.
+  useEffect(() => {
+    setSummary(undefined);
+    setPicking(false);
+  }, [userId]);
 
   useEffect(() => {
     let cancelled = false;
-    setSummary(undefined);
 
     supabase.rpc("get_profile_album", { p_user_id: userId }).then(({ data, error }) => {
       if (cancelled) return;
@@ -38,7 +48,7 @@ export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: bool
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, reloadKey]);
 
   const cards = summary?.top_cards ?? [];
 
@@ -53,15 +63,29 @@ export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: bool
   if (!isSelf && summary.owned_count === 0) return null;
 
   const percent = summary.total_count > 0 ? Math.round((summary.owned_count / summary.total_count) * 100) : 0;
+  const pinnedIds = cards.filter((card) => card.pinned).map((card) => card.card_id);
 
   return (
     <section className="fade-up rounded-2xl border bg-card p-5">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-xl font-bold uppercase">Álbum de cartas</h2>
         {isSelf && (
-          <Link to="/album" className="text-sm font-semibold text-primary hover:underline">
-            Ver mi álbum
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {summary.owned_count > 0 && !picking && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setPicking(true)}
+                className="transition-transform active:scale-95"
+              >
+                Elegir mis destacadas
+              </Button>
+            )}
+            <Link to="/album" className="text-sm font-semibold text-primary hover:underline">
+              Ver mi álbum
+            </Link>
+          </div>
         )}
       </div>
 
@@ -77,18 +101,34 @@ export function AlbumShowcase({ userId, isSelf }: { userId: string; isSelf: bool
       </div>
       <AnimatedBar percent={percent} className="mt-2 h-2" />
 
-      {cards.length > 0 ? (
-        <ul className="mt-4 flex gap-3 overflow-x-auto pb-2">
-          {cards.map((card, index) => (
-            <li
-              key={card.card_id}
-              className="fade-up w-28 shrink-0 sm:w-32"
-              style={{ "--i": Math.min(index, 8) } as CSSProperties}
-            >
-              <StickerCard card={card} foil={card.foil}/>
-            </li>
-          ))}
-        </ul>
+      {isSelf && picking ? (
+        <ShowcasePicker
+          initial={pinnedIds}
+          onClose={() => setPicking(false)}
+          onSaved={() => {
+            setPicking(false);
+            setReloadKey((key) => key + 1);
+          }}
+        />
+      ) : cards.length > 0 ? (
+        <>
+          <ul className="mt-4 flex gap-3 overflow-x-auto pb-2">
+            {cards.map((card, index) => (
+              <li
+                key={card.card_id}
+                className="fade-up w-28 shrink-0 sm:w-32"
+                style={{ "--i": Math.min(index, 8) } as CSSProperties}
+              >
+                <StickerCard card={card} foil={card.foil} />
+              </li>
+            ))}
+          </ul>
+          {isSelf && pinnedIds.length === 0 && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Se muestran tus cartas más raras. Con “Elegir mis destacadas” elegís cuáles mostrar primero.
+            </p>
+          )}
+        </>
       ) : (
         <p className="mt-3 text-sm text-muted-foreground">
           Todavía no tenés cartas. Jugá el{" "}

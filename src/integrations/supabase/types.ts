@@ -867,6 +867,32 @@ export type Database = {
           },
         ]
       }
+      profile_showcase: {
+        Row: {
+          card_id: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          position: number
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_showcase_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "album_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1340,6 +1366,10 @@ export type Database = {
         Args: { p_accept: boolean; p_trade_id: string }
         Returns: boolean
       }
+      album_spare: {
+        Args: { p_card: string; p_foil: boolean; p_user: string }
+        Returns: number
+      }
       album_sync_cards: { Args: { p_cards: Json }; Returns: number }
       album_today_pack: { Args: never; Returns: Json }
       all_distinct: { Args: { items: string[] }; Returns: boolean }
@@ -1697,6 +1727,7 @@ export type Database = {
       }
       send_friend_request: { Args: { p_user_id: string }; Returns: string }
       send_test_notification: { Args: never; Returns: undefined }
+      set_profile_showcase: { Args: { p_cards: string[] }; Returns: undefined }
       sync_race_results: {
         Args: { p_round: number; p_rows: Json; p_season: number }
         Returns: number

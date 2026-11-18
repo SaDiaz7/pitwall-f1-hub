@@ -27,6 +27,8 @@ import { CountryFlag } from "@/components/CountryFlag";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { PredictionsAdmin } from "@/components/PredictionsAdmin";
 import { PrivacyPanel } from "@/components/PrivacyPanel";
+import { AlbumShowcase } from "@/components/AlbumShowcase";
+import { ProfileHeader } from "@/components/ProfileHeader";
 
 import { NotificationsPanel } from "@/components/NotificationsPanel";
 
@@ -54,233 +56,37 @@ function StatusMessage({ status }: { status: Status }) {
 
 function ProfilePanel() {
   const { session } = useSession();
-  const { profile, loading, save, uploadAvatar, uploadHeader, removeHeader } = useProfile();
+  const { profile, loading } = useProfile();
+  const userId = session?.user.id;
 
-  const [username, setUsername] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [country, setCountry] = useState("");
-  const [usernameError, setUsernameError] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status>(null);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [headerBusy, setHeaderBusy] = useState(false);
-  const fileInput = useRef<HTMLInputElement>(null);
-  const headerInput = useRef<HTMLInputElement>(null);
-
-  // Cuando llegan los datos guardados, los carga en el formulario.
-  useEffect(() => {
-    setUsername(profile.username ?? "");
-    setDisplayName(profile.display_name ?? "");
-    setBio(profile.bio ?? "");
-    setCountry(profile.country ?? "");
-  }, [profile.username, profile.display_name, profile.bio, profile.country]);
-
-  const onSubmit = async (ev: FormEvent) => {
-    ev.preventDefault();
-    setStatus(null);
-
-    const cleanUsername = username.trim();
-    if (cleanUsername && !USERNAME_RE.test(cleanUsername)) {
-      setUsernameError("Usá de 3 a 20 caracteres: minúsculas, números o guion bajo.");
-      return;
-    }
-    setUsernameError(null);
-
-    setSaving(true);
-    const result = await save({
-      username: cleanUsername || null,
-      display_name: displayName.trim() || null,
-      bio: bio.trim() || null,
-      country: country || null,
-    });
-    setSaving(false);
-
-    setStatus(result.ok ? { type: "ok", text: "Cambios guardados." } : { type: "error", text: result.message });
-  };
-
-  const onAvatarChange = async (ev: ChangeEvent<HTMLInputElement>) => {
-    const file = ev.target.files?.[0];
-    if (!file) return;
-
-    setStatus(null);
-    setUploading(true);
-    const result = await uploadAvatar(file);
-    setUploading(false);
-
-    // Limpia el input para poder elegir el mismo archivo otra vez si hace falta.
-    if (fileInput.current) fileInput.current.value = "";
-
-    setStatus(result.ok ? { type: "ok", text: "Avatar actualizado." } : { type: "error", text: result.message });
-  };
-
-  const onHeaderChange = async (ev: ChangeEvent<HTMLInputElement>) => {
-    const file = ev.target.files?.[0];
-    if (!file) return;
-
-    setStatus(null);
-    setHeaderBusy(true);
-    const result = await uploadHeader(file);
-    setHeaderBusy(false);
-
-    if (headerInput.current) headerInput.current.value = "";
-
-    setStatus(result.ok ? { type: "ok", text: "Header actualizado." } : { type: "error", text: result.message });
-  };
-
-  const onHeaderRemove = async () => {
-    setStatus(null);
-    setHeaderBusy(true);
-    const result = await removeHeader();
-    setHeaderBusy(false);
-
-    setStatus(result.ok ? { type: "ok", text: "Header quitado." } : { type: "error", text: result.message });
-  };
-
-  if (loading) {
+  if (loading || !userId) {
     return (
-      <Panel>
+      <div className="max-w-4xl space-y-4">
         <div className="skeleton h-32 w-full sm:h-44" />
         <div className="skeleton h-16 w-full" />
-      </Panel>
+      </div>
     );
   }
 
   return (
-    <Panel>
-      <div className="space-y-3">
-        <div className="fade-up relative h-32 overflow-hidden rounded-2xl border bg-hero sm:h-44">
-          {profile.header_url && (
-            <img src={profile.header_url} alt="Tu header" className="h-full w-full object-cover" />
-          )}
-          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 racing-stripe opacity-60" />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            ref={headerInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={onHeaderChange}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={headerBusy}
-            onClick={() => headerInput.current?.click()}
-            className="transition-transform active:scale-95"
-          >
-            <ImagePlus className="mr-2 h-4 w-4" />
-            {headerBusy ? "Procesando…" : profile.header_url ? "Cambiar header" : "Subir header"}
-          </Button>
-          {profile.header_url && (
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={headerBusy}
-              onClick={onHeaderRemove}
-              className="transition-transform active:scale-95"
-            >
-              Quitar
-            </Button>
-          )}
-          <p className="text-xs text-muted-foreground">JPG, PNG o WebP. Ideal: 1500 × 500 px.</p>
-        </div>
-      </div>
+    <div className="max-w-4xl space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Así se ve tu perfil para los demás. Cambiá tu header, tu avatar y tus datos desde acá, y elegí las cartas que
+        querés mostrar primero.
+      </p>
 
-      <div className="flex items-center gap-4">
-        <Avatar className="h-16 w-16">
-          {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="Tu avatar" />}
-          <AvatarFallback className="bg-gradient-primary font-display text-2xl text-primary-foreground">
-            {getInitials(profile.display_name || profile.username || session?.user.email)}
-          </AvatarFallback>
-        </Avatar>
+      <ProfileHeader profile={profile} isSelf alwaysEditing />
 
-        <div className="space-y-1.5">
-          <Label htmlFor="country">Nacionalidad</Label>
-          <div className="flex items-center gap-3">
-            <select
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-            >
-              {COUNTRY_OPTIONS.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-            {country && <CountryFlag code={country} className="h-6 shrink-0" />}
-          </div>
-        </div>
+      <AlbumShowcase userId={userId} isSelf />
 
-        <div className="space-y-1.5">
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={onAvatarChange}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={uploading}
-            onClick={() => fileInput.current?.click()}
-            className="transition-transform active:scale-95"
-          >
-            {uploading ? "Subiendo…" : "Cambiar avatar"}
-          </Button>
-          <p className="text-xs text-muted-foreground">JPG, PNG o WebP, hasta 2 MB.</p>
-        </div>
-      </div>
-
-      <form onSubmit={onSubmit} noValidate className="space-y-5">
-        <div className="space-y-1.5">
-          <Label htmlFor="username">Nombre de usuario</Label>
-          <Input
-            id="username"
-            placeholder="ej. tifosi_44"
-            value={username}
-            maxLength={20}
-            aria-invalid={!!usernameError}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-          />
-          {usernameError && <p className="text-sm text-destructive">{usernameError}</p>}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="displayName">Nombre visible</Label>
-          <Input
-            id="displayName"
-            placeholder="Tu nombre"
-            value={displayName}
-            maxLength={40}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bio">Biografía</Label>
-          <Textarea
-            id="bio"
-            rows={3}
-            value={bio}
-            maxLength={BIO_MAX}
-            placeholder="Contá algo sobre vos: tu equipo, tu piloto, cómo arrancaste con la F1…"
-            onChange={(e) => setBio(e.target.value)}
-          />
-          <p className="text-right text-xs tabular-nums text-muted-foreground">
-            {bio.length}/{BIO_MAX}
-          </p>
-        </div>
-
-        <StatusMessage status={status} />
-
-        <Button type="submit" disabled={saving} className="bg-gradient-primary font-semibold transition-transform active:scale-95">
-          {saving ? "Guardando…" : "Guardar cambios"}
-        </Button>
-      </form>
-    </Panel>
+      <Link
+        to="/usuario/$id"
+        params={{ id: userId }}
+        className="inline-block text-sm font-semibold text-primary hover:underline"
+      >
+        Ver mi perfil público completo →
+      </Link>
+    </div>
   );
 }
 

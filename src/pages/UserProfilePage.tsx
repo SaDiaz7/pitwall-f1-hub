@@ -16,6 +16,7 @@ import { AvatarLightbox } from "@/components/AvatarLightbox";
 import { CountryFlag } from "@/components/CountryFlag";
 import { countryName } from "@/lib/countries";
 import { AlbumShowcase } from "@/components/AlbumShowcase";
+import { ProfileHeader } from "@/components/ProfileHeader";
 
 const route = getRouteApi("/_privado/usuario/$id");
 
@@ -124,47 +125,18 @@ export function UserProfilePage() {
     );
   }
 
-  const name = profile.display_name || profile.username || "Sin nombre";
   const buttonClass = "transition-transform active:scale-95";
 
   return (
     <>
       {back}
 
-      <header className="mb-6">
-        <div className="relative h-32 overflow-hidden rounded-2xl border bg-hero sm:h-44 lg:h-52">
-          {profile.header_url && (
-            <img src={profile.header_url} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
-          )}
-          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 racing-stripe opacity-60" />
-        </div>
-
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-2 px-2 sm:px-5">
-          <div className="-mt-10 rounded-full ring-4 ring-background sm:-mt-12">
-            <AvatarLightbox src={profile.avatar_url} name={name}>
-              <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
-                {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="" />}
-                <AvatarFallback className="bg-gradient-primary font-display text-2xl text-primary-foreground">
-                  {getInitials(name)}
-                </AvatarFallback>
-              </Avatar>
-            </AvatarLightbox>
-          </div>
-
-          <div className="min-w-0 flex-1 pt-2">
-            <h1 className="font-display text-3xl font-bold uppercase leading-tight">{name}</h1>
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-              {profile.username && <span>@{profile.username}</span>}
-              {profile.country && (
-                <span className="inline-flex items-center gap-1.5">
-                  <CountryFlag code={profile.country} className="h-3.5" />
-                  {countryName(profile.country)}
-                </span>
-              )}
-            </p>
-          </div>
-
-          <div className="flex gap-2 pt-2">
+      <ProfileHeader
+        profile={profile}
+        isSelf={profile.relation === "self"}
+        onSaved={() => setRefresh((n) => n + 1)}
+        actions={
+          <>
             {profile.relation === "none" && (
               <Button type="button" className={buttonClass} onClick={() => run(() => friends.sendRequest(profile.user_id))}>
                 Agregar amigo
@@ -209,18 +181,9 @@ export function UserProfilePage() {
                 Quitar de amigos
               </Button>
             )}
-            {profile.relation === "self" && (
-              <Link to="/ajustes" className="text-sm font-semibold text-primary hover:underline">
-                Editar mi perfil
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {profile.bio && (
-          <p className="mt-3 max-w-2xl whitespace-pre-line px-2 text-sm sm:px-5">{profile.bio}</p>
-        )}
-      </header>
+          </>
+        }
+      />
 
       {message && (
         <p
