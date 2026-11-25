@@ -1,6 +1,6 @@
 import type { Driver } from "@/lib/types";
 
-export type CardKind = "driver" | "team" | "circuit";
+export type CardKind = "driver" | "team" | "circuit" | "livery" | "manager" | "engineer";
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
@@ -15,6 +15,9 @@ export const KIND_LABELS: Record<CardKind, string> = {
   driver: "Piloto",
   team: "Escudería",
   circuit: "Circuito",
+  livery: "Livery",
+  manager: "Jefe de equipo",
+  engineer: "Ingeniero",
 };
 
 export interface AlbumCard {
@@ -103,8 +106,7 @@ export function buildCatalogCards(drivers: Driver[], season: number): CatalogCar
   return cards;
 }
 
-export const KIND_ORDER: CardKind[] = ["driver", "team", "circuit"];
-
+export const KIND_ORDER: CardKind[] = ["driver", "team", "livery", "circuit", "manager", "engineer"];
 // 0 = la más rara. Sirve para ordenar de las mejores a las comunes.
 export const RARITY_RANK: Record<Rarity, number> = { mythic: -1, legendary: 0, epic: 1, rare: 2, common: 3 };
 
@@ -136,10 +138,11 @@ export function statStr(stats: Record<string, unknown>, key: string): string | n
 }
 
 // Dirección de la imagen de una carta. Las imágenes viven en /public/cards.
-// - Si la carta tiene "image" (en la tabla album_cards), se usa ese archivo.
+// - Si la carta tiene "image" (en stats), se usa ese archivo.
 // - Piloto sin "image": "<id del piloto>.png" (por ejemplo piastri.png).
-// - Escudería sin "image": "teams/<escudería><año>.png", todo junto, en minúsculas y sin guiones bajos
-//   (por ejemplo teams/mclaren2026.png o teams/astonmartin2026.png).
+// - Escudería o livery sin "image": "teams/<escudería><año>.png", todo junto, en minúsculas y sin guiones bajos
+//   (por ejemplo teams/mclaren2026.png o teams/mclarenmonaco2024.png).
+// - Jefe de equipo sin "image": "managers/<ref>.png". Ingeniero sin "image": "engineers/<ref>.png".
 export function cardImageUrl(card: Pick<CardFace, "kind" | "card_id" | "stats">): string | null {
   const explicit = statStr(card.stats, "image");
   if (explicit) return `/cards/${explicit}`;
@@ -149,10 +152,15 @@ export function cardImageUrl(card: Pick<CardFace, "kind" | "card_id" | "stats">)
     return ref ? `/cards/${ref}.png` : null;
   }
 
-  if (card.kind === "team") {
+  if (card.kind === "team" || card.kind === "livery") {
     const [, season, ref] = card.card_id.split(":");
     if (!season || !ref) return null;
     return `/cards/teams/${ref.replace(/_/g, "").toLowerCase()}${season}.png`;
+  }
+
+  if (card.kind === "manager" || card.kind === "engineer") {
+    const ref = card.card_id.split(":").pop();
+    return ref ? `/cards/${card.kind === "manager" ? "managers" : "engineers"}/${ref}.png` : null;
   }
 
   return null;

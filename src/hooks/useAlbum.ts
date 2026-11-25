@@ -39,7 +39,7 @@ export function useAlbum() {
         a.name.localeCompare(b.name, "es"),
     );
 
-    const counters: Record<CardKind, number> = { driver: 0, team: 0, circuit: 0 };
+    const counters: Record<CardKind, number> = { driver: 0, team: 0, livery: 0, circuit: 0, manager: 0, engineer: 0 };
     setEntries(rows.map((row) => ({ ...row, number: ++counters[row.kind] })));
     setError(null);
     setLoading(false);

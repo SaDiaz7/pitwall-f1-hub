@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { Car, MapPin, User } from "lucide-react";
+import { Car, ClipboardList, MapPin, User, Wrench, type LucideIcon } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 import { getInitials } from "@/hooks/useProfile";
 import {
@@ -46,6 +46,27 @@ function CarSilhouette({ color }: { color: string }) {
 }
 
 export function statStrip(card: CardFace): { label: string; value: string }[] {
+    if (card.kind === "livery") {
+    const season = card.card_id.split(":")[1];
+    const team = statStr(card.stats, "team_code") ?? statStr(card.stats, "team_name");
+    return [
+      { label: "Año", value: season ?? "—" },
+      { label: "Equipo", value: team ?? "—" },
+      { label: "Edición", value: "Especial" },
+    ];
+  }
+
+  if (card.kind === "manager" || card.kind === "engineer") {
+    const since = statNum(card.stats, "since");
+    const titles = statNum(card.stats, "titles");
+    const team = statStr(card.stats, "team_code") ?? statStr(card.stats, "team_name");
+    return [
+      { label: "Equipo", value: team ?? "—" },
+      { label: "Desde", value: since === null ? "—" : String(since) },
+      { label: "Títulos", value: titles === null ? "—" : String(titles) },
+    ];
+  }
+
   if (card.kind === "circuit") {
     const length = statNum(card.stats, "length_m");
     const altitude = statNum(card.stats, "altitude_m");
@@ -72,6 +93,8 @@ export function statStrip(card: CardFace): { label: string; value: string }[] {
     { label: "Pos.", value: position === null ? "—" : `P${position}` },
   ];
 }
+
+
 
 // Estrellitas que titilan sobre la imagen de las cartas míticas (posiciones en % del recuadro).
 const MYTHIC_SPARKLES = [
@@ -176,7 +199,7 @@ export function StickerCard({
               backgroundImage: `linear-gradient(165deg, color-mix(in oklab, ${accent} 70%, #000) 0%, #0b0b0d 92%)`,
             }}
           >
-            {card.kind === "driver" && (
+            {(card.kind === "driver" || card.kind === "manager" || card.kind === "engineer") && (
               <>
                 {number !== null && (
                   <span
@@ -222,7 +245,7 @@ export function StickerCard({
               </>
             )}
 
-            {card.kind === "team" && (
+            {(card.kind === "team" || card.kind === "livery") && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "4cqw" }}>
                 <span
                   aria-hidden="true"
@@ -280,6 +303,12 @@ export function StickerCard({
               </>
             )}
 
+            {(card.kind === "manager" || card.kind === "engineer") && countryCode && (
+              <span className="absolute" style={{ right: "3cqw", top: "3cqw" }}>
+                <CountryFlag code={countryCode} className="h-[5.5cqw]" />
+              </span>
+            )}
+
             {card.rarity === "mythic" && <MythicSparkles />}            
 
             {quantity !== undefined && quantity > 1 && (
@@ -312,7 +341,7 @@ export function StickerCard({
           <div className="mt-[2cqw] grid grid-cols-3 border-t border-white/10" style={{ padding: "2cqw 0 2.5cqw" }}>
             {statStrip(card).map((item) => (
               <div key={item.label} className="min-w-0 text-center">
-                <p className="font-display font-bold leading-none tabular-nums" style={{ fontSize: "6cqw" }}>
+                <p className="truncate font-display font-bold leading-none tabular-nums" style={{ fontSize: "6cqw" }}>
                   {item.value}
                 </p>
                 <p className="truncate uppercase tracking-normal text-muted-foreground" style={{ fontSize: "3cqw", marginTop: "0.8cqw" }}>
@@ -328,21 +357,83 @@ export function StickerCard({
 }
 
 // Dorso de la carta (también sirve como el sobre cerrado).
-export function CardBack({ className }: { className?: string | undefined }) {
+// Si la carta es legendaria o mítica, el dorso cambia para avisar que viene una especial.
+export function CardBack({
+  className,
+  rarity,
+}: {
+  className?: string | undefined;
+  rarity?: Rarity | undefined;
+}) {
+  const legendary = rarity === "legendary";
+  const mythic = rarity === "mythic";
+  const special = legendary || mythic;
+
   return (
     <div className={cn("relative w-full select-none", className)} style={box}>
       <div
-        className="absolute inset-0 overflow-hidden bg-gradient-primary"
-        style={{ borderRadius: "7cqw", padding: "2.6cqw" }}
+        className={cn(
+          "absolute inset-0 overflow-hidden",
+          !special && "bg-gradient-primary",
+          legendary && "card-legendary",
+          mythic && "card-mythic card-mythic-frame card-foil",
+        )}
+        style={{
+          borderRadius: "7cqw",
+          padding: "2.6cqw",
+          ...(legendary ? { backgroundImage: "linear-gradient(145deg, #fef3c7, #b45309)" } : {}),
+        }}
       >
         <div
-          className="relative flex h-full items-center justify-center overflow-hidden bg-[#140607]"
-          style={{ borderRadius: "5cqw" }}
+          className="relative flex h-full flex-col items-center justify-center overflow-hidden"
+          style={{
+            borderRadius: "5cqw",
+            backgroundColor: legendary ? "#1c1305" : mythic ? "#12071c" : "#140607",
+          }}
         >
-          <div aria-hidden="true" className="racing-stripe absolute inset-0 opacity-20" />
-          <span className="relative font-display font-bold italic text-primary" style={{ fontSize: "15cqw" }}>
-            PIT<span className="text-white">WALL</span>
+          {special ? (
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: `repeating-linear-gradient(-45deg, ${legendary ? "#fbbf24" : "#d946ef"} 0 6px, transparent 6px 12px)`,
+              }}
+            />
+          ) : (
+            <div aria-hidden="true" className="racing-stripe absolute inset-0 opacity-20" />
+          )}
+
+          {mythic && <MythicSparkles />}
+
+          <span
+            className={cn(
+              "relative font-display font-bold italic",
+              !special && "text-primary",
+              legendary && "gold-text",
+              mythic && "mythic-text",
+            )}
+            style={{ fontSize: "15cqw" }}
+          >
+            {special ? (
+              "PITWALL"
+            ) : (
+              <>
+                PIT<span className="text-white">WALL</span>
+              </>
+            )}
           </span>
+
+          {special && rarity && (
+            <span
+              className={cn(
+                "relative font-bold uppercase tracking-widest",
+                legendary ? "text-amber-300" : "text-fuchsia-300",
+              )}
+              style={{ fontSize: "3.6cqw", marginTop: "3cqw" }}
+            >
+              ✦ {RARITY_LABELS[rarity]} ✦
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -351,7 +442,15 @@ export function CardBack({ className }: { className?: string | undefined }) {
 
 // Lugar vacío del álbum para una carta que todavía no tenés.
 export function EmptySlot({ number, kind, rarity }: { number: number; kind: CardKind; rarity: Rarity }) {
-  const Icon = kind === "driver" ? User : kind === "team" ? Car : MapPin;
+  const ICONS: Record<CardKind, LucideIcon> = {
+    driver: User,
+    team: Car,
+    livery: Car,
+    circuit: MapPin,
+    manager: ClipboardList,
+    engineer: Wrench,
+  };
+  const Icon = ICONS[kind];
 
   return (
     <div className="relative w-full select-none" style={box}>

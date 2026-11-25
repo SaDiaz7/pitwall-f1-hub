@@ -1,0 +1,44 @@
+﻿C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\CardModal.tsx:5: import { KIND_LABELS, RARITY_LABELS, cardImageUrl, type AlbumEntry } from "@/lib/album";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\CardModal.tsx:71: {KIND_LABELS[entry.kind]} · {RARITY_LABELS[entry.rarity]} · #{String(entry.number).padStart(2, "0")}
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\ProfileFavorites.tsx:55: const favoriteTeams = items.filter((item) => item.kind === "team");
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\ShowcasePicker.tsx:7: import { KIND_LABELS, KIND_ORDER, RARITY_RANK, type CardKind } from "@/lib/album";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\ShowcasePicker.tsx:30: const [kind, setKind] = useState<CardKind | "all">("all");
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\ShowcasePicker.tsx:141: {(["all", ...KIND_ORDER] as const).map((option) => (
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\ShowcasePicker.tsx:154: {option === "all" ? "Todas" : KIND_LABELS[option]}
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:6: KIND_LABELS,
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:12: type CardKind,
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:49: if (card.kind === "circuit") {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:135: const accent = card.kind === "circuit" ? "#e10600" : getTeamColor(teamId, teamName);
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:162: {KIND_LABELS[card.kind]}
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:225: {card.kind === "team" && (
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:251: {card.kind === "circuit" && (
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:415: export function EmptySlot({ number, kind, rarity }: { number: number; kind: CardKind; rarity: Rarity }) {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:416: const Icon = kind === "driver" ? User : kind === "team" ? Car : MapPin;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\StickerCard.tsx:429: {KIND_LABELS[kind]}
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\components\TodayGameCard.tsx:115: if (info.today === "circuit") return <DailyGameCard />;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\hooks\useAlbum.ts:4: import { KIND_ORDER, RARITY_RANK, type AlbumEntry, type CardKind, type Rarity } from "@/lib/album";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\hooks\useAlbum.ts:25: kind: row.kind as CardKind,
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\hooks\useAlbum.ts:37: KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\hooks\useAlbum.ts:42: const counters: Record<CardKind, number> = { driver: 0, team: 0, circuit: 0 };
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:3: export type CardKind = "driver" | "team" | "circuit";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:14: export const KIND_LABELS: Record<CardKind, string> = {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:22: kind: CardKind;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:33: kind: CardKind;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:93: kind: "team",
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:106: export const KIND_ORDER: CardKind[] = ["driver", "team", "circuit"];
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:114: kind: CardKind;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\album.ts:152: if (card.kind === "team") {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:2: import { KIND_LABELS, RARITY_LABELS, statNum, statStr, type CardFace, type Rarity } from "@/lib/album";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:143: const accent = card.kind === "circuit" ? RED : getTeamColor(teamId, teamName);
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:183: ctx.fillText(KIND_LABELS[card.kind].toUpperCase(), ix + 4 * u, iy + 6.4 * u);
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:255: if (card.kind === "team") {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:264: if (card.kind === "circuit") {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:376: ctx.fillText(`${RARITY_LABELS[card.rarity]} · ${KIND_LABELS[card.kind]}${foil ? " · Foil ✨" : ""}`, W / 2, 1225);
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\lib\card-share.ts:392: card.kind === "circuit" && countryCode ? loadImage(flagUrl(countryCode, 80)) : Promise.resolve(null),
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\AlbumPage.tsx:8: import { KIND_LABELS, KIND_ORDER, type AlbumEntry, type CardKind } from "@/lib/album";
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\AlbumPage.tsx:13: type KindFilter = "all" | CardKind;
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\AlbumPage.tsx:23: const KIND_PLURAL: Record<CardKind, string> = { driver: "Pilotos", team: "Escuderías", circuit: "Circuitos" };
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\AlbumPage.tsx:167: {KIND_ORDER.map((value) => {
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\AlbumPage.tsx:197: aria-label={`${entry.name}, ${KIND_LABELS[entry.kind]}`}
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\GamePage.tsx:75: ) : today === "circuit" ? (
+C:\Desarrollo Web\PitWall\pitwall-f1-hub\src\pages\WallpapersPage.tsx:197: <FilterSelect label="Equipo" value={filters.team} onChange={setFilter("team")}>

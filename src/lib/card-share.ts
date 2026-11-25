@@ -206,7 +206,7 @@ function drawCard(
   ctx.fillStyle = shade;
   ctx.fillRect(ax, ay, aw, ah);
 
-  if (card.kind === "driver") {
+  if (card.kind === "driver" || card.kind === "manager" || card.kind === "engineer") {
     const number = statNum(card.stats, "number");
     if (number !== null) {
       ctx.globalAlpha = 0.2;
@@ -252,7 +252,7 @@ function drawCard(
     }
   }
 
-  if (card.kind === "team") {
+  if (card.kind === "team" || card.kind === "livery") {
     const scale = (aw - 12 * u) / 200;
     ctx.save();
     ctx.translate(ax + 6 * u, ay + ah / 2 - 30 * scale);
@@ -388,7 +388,9 @@ async function draw(card: CardFace, foil: boolean, assets: Assets): Promise<Blob
 export async function renderCardImage(card: CardFace, foil: boolean, photoUrl: string | null): Promise<Blob> {
   const countryCode = statStr(card.stats, "country_code");
   const [photo, flag] = await Promise.all([
-    card.kind === "driver" && photoUrl ? loadImage(photoUrl) : Promise.resolve(null),
+    (card.kind === "driver" || card.kind === "manager" || card.kind === "engineer") && photoUrl
+      ? loadImage(photoUrl)
+      : Promise.resolve(null),
     card.kind === "circuit" && countryCode ? loadImage(flagUrl(countryCode, 80)) : Promise.resolve(null),
   ]);
 

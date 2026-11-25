@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import { CardModal } from "@/components/CardModal";
 import { PageHeader } from "@/components/PageHeader";
-import { EmptySlot, StickerCard } from "@/components/StickerCard";
+import { CardBack, EmptySlot, StickerCard } from "@/components/StickerCard";
 import { useAlbum } from "@/hooks/useAlbum";
 import { KIND_LABELS, KIND_ORDER, type AlbumEntry, type CardKind } from "@/lib/album";
 import { cn } from "@/lib/utils";
@@ -11,16 +11,24 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlbumNav } from "@/components/AlbumNav";
 
 type KindFilter = "all" | CardKind;
-type ModeFilter = "all" | "missing" | "duplicates" | "foil";
+type ModeFilter = "all" | "owned" | "missing" | "duplicates" | "foil";
 
 const MODES: { value: ModeFilter; label: string }[] = [
   { value: "all", label: "Todas" },
+  { value: "owned", label: "Obtenidas" },
   { value: "missing", label: "Me faltan" },
   { value: "duplicates", label: "Repetidas" },
   { value: "foil", label: "Foil ✨" },
 ];
 
-const KIND_PLURAL: Record<CardKind, string> = { driver: "Pilotos", team: "Escuderías", circuit: "Circuitos" };
+const KIND_PLURAL: Record<CardKind, string> = {
+  driver: "Pilotos",
+  team: "Escuderías",
+  livery: "Liveries",
+  circuit: "Circuitos",
+  manager: "Jefes de equipo",
+  engineer: "Ingenieros",
+};
 
 const owned = (entry: AlbumEntry) => entry.quantity + entry.foil_quantity > 0;
 const total = (entry: AlbumEntry) => entry.quantity + entry.foil_quantity;
@@ -86,6 +94,7 @@ export function AlbumPage() {
 
   const visible = shown.filter((entry) => {
     if (kind !== "all" && entry.kind !== kind) return false;
+    if (mode === "owned") return owned(entry);
     if (mode === "missing") return !owned(entry);
     if (mode === "duplicates") return total(entry) > 1;
     if (mode === "foil") return entry.foil_quantity > 0;

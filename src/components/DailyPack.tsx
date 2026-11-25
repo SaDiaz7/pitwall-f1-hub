@@ -73,7 +73,7 @@ export function PackReveal({
                   }}
                 >
                   <div className="absolute inset-0" style={{ backfaceVisibility: "hidden" }}>
-                    <CardBack />
+                    <CardBack rarity={card.rarity} />
                   </div>
                   <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
                     <StickerCard card={card} foil={card.foil}/>
