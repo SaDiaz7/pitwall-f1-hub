@@ -110,6 +110,64 @@ const translateCountry = (country: string) => COUNTRIES_ES[country] ?? country;
 const cache = new Map<string, { expires: number; data: unknown }>();
 const inFlight = new Map<string, Promise<unknown>>();
 
+const JOLPICA_USER_AGENT = "PitWall/1.0 (https://pitwallff1.netlify.app)";
+const JOLPICA_MAX_PARALLEL = 3;
+const JOLPICA_RETRY_WAITS_MS = [0, 700, 1800];
+
+let jolpicaActive = 0;
+const jolpicaQueue: Array<() => void> = [];
+
+const jolpicaSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+// Máximo de pedidos a Jolpica al mismo tiempo: los demás esperan su turno.
+async function acquireJolpicaSlot(): Promise<void> {
+  if (jolpicaActive < JOLPICA_MAX_PARALLEL) {
+    jolpicaActive++;
+    return;
+  }
+  await new Promise<void>((resolve) => jolpicaQueue.push(resolve));
+}
+
+function releaseJolpicaSlot(): void {
+  const next = jolpicaQueue.shift();
+  if (next) next(); // el lugar pasa directo al siguiente en la cola
+  else jolpicaActive--;
+}
+
+// Un pedido a Jolpica con reintentos (solo ante 403, 429, 5xx o fallas de red).
+async function requestJolpica<T>(path: string): Promise<T> {
+  let lastError: Error = new Error("Jolpica no respondió");
+
+  for (let attempt = 0; attempt < JOLPICA_RETRY_WAITS_MS.length; attempt++) {
+    const wait = JOLPICA_RETRY_WAITS_MS[attempt] ?? 0;
+    if (wait > 0) await jolpicaSleep(wait);
+
+    await acquireJolpicaSlot();
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        headers: { Accept: "application/json", "User-Agent": JOLPICA_USER_AGENT },
+        signal: AbortSignal.timeout(6000), // si tarda más de 6 segundos, se corta
+      });
+      if (res.ok) return (await res.json()) as T;
+
+      const body = (await res.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 200);
+      console.error(
+        `[jolpica] ${res.status} en ${path} (intento ${attempt + 1}) cf-ray=${res.headers.get("cf-ray") ?? "-"} body="${body}"`,
+      );
+      lastError = new Error(`Jolpica respondió con estado ${res.status}`);
+      // Un 404 u otro error "de verdad" no se arregla reintentando.
+      if (res.status !== 403 && res.status !== 429 && res.status < 500) break;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`[jolpica] falló ${path} (intento ${attempt + 1}): ${lastError.message}`);
+    } finally {
+      releaseJolpicaSlot();
+    }
+  }
+
+  throw lastError;
+}
+
 async function fetchJolpica<T>(path: string): Promise<T> {
   const cached = cache.get(path);
   if (cached && cached.expires > Date.now()) {
@@ -122,14 +180,7 @@ async function fetchJolpica<T>(path: string): Promise<T> {
 
   const request = (async () => {
     try {
-      const res = await fetch(`${BASE_URL}${path}`, {
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(8000), // si tarda más de 8 segundos, se corta
-      });
-      if (!res.ok) {
-        throw new Error(`Jolpica respondió con estado ${res.status}`);
-      }
-      const json = (await res.json()) as T;
+      const json = await requestJolpica<T>(path);
       cache.set(path, { expires: Date.now() + CACHE_TTL_MS, data: json });
       return json;
     } catch (error) {

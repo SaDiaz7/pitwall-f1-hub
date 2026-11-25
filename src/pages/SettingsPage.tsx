@@ -219,7 +219,7 @@ export function SettingsPage() {
           {isAdmin && <TabsTrigger value="muros">Muros</TabsTrigger>}
           {isAdmin && <TabsTrigger value="novedades">Novedades</TabsTrigger>}
           {isAdmin && <TabsTrigger value="predicciones">Predicciones</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="album">Álbum</TabsTrigger>}          
+          {isAdmin && <TabsTrigger value="album">Álbum</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="perfil">
