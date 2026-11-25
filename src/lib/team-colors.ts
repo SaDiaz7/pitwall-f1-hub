@@ -4,6 +4,7 @@ const COLORS_BY_ID: Record<string, string> = {
   mercedes: "#27F4D2",
   ferrari: "#E8002D",
   mclaren: "#FF8000",
+  mcl: "#FF4230",
   red_bull: "#3671C6",
   aston_martin: "#037A68",
   alpine: "#d961d3",
@@ -18,6 +19,8 @@ const COLORS_BY_ID: Record<string, string> = {
   renault: "#303030",
   maserati: "#E8002D",
   alphatauri: "#192136",
+  brawn: "#cccccc",
+  renault2005: "#ffd500",
 };
 
 // Si el identificador no está, se busca por palabras del nombre del equipo.
@@ -25,6 +28,7 @@ const COLORS_BY_NAME: [string, string][] = [
   ["mercedes", "#27F4D2"],
   ["ferrari", "#E8002D"],
   ["mclaren", "#FF8000"],
+  ["mcl", "#FF4230"],
   ["red bull", "#3671C6"],
   ["aston martin", "#229971"],
   ["alpine", "#0093CC"],
@@ -35,6 +39,8 @@ const COLORS_BY_NAME: [string, string][] = [
   ["sauber", "#52E252"],
   ["audi", "#F50537"],
   ["cadillac", "#9CA3AF"],
+  ["brawn", "#cccccc"],
+  ["renault2005", "#ffd500"]
 ];
 
 export const FALLBACK_TEAM_COLOR = "#6B7280";

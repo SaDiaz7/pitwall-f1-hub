@@ -101,6 +101,13 @@ export function AlbumPage() {
     return true;
   });
 
+  // Cartas agrupadas por categoría (en el orden de KIND_ORDER) para separar el álbum en secciones.
+  const groups = KIND_ORDER.map((value) => ({
+    kind: value,
+    items: visible.filter((entry) => entry.kind === value),
+    all: entries.filter((entry) => entry.kind === value),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <>
       <PageHeader title="Álbum" subtitle="Tu colección de cartas. Ganá sobres jugando todos los días al juego diario." />
@@ -196,28 +203,48 @@ export function AlbumPage() {
               No hay cartas con ese filtro todavía.
             </p>
           ) : (
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-3">
-              {visible.map((entry, index) => (
-                <li key={entry.card_id} className="fade-up" style={{ "--i": Math.min(index, 10) } as CSSProperties}>
-                  {owned(entry) ? (
-                    <button
-                      type="button"
-                      onClick={() => setSelected(entry)}
-                      aria-label={`${entry.name}, ${KIND_LABELS[entry.kind]}`}
-                      className="block w-full rounded-[7%] transition-transform hover:-translate-y-1 active:scale-95 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
-                    >
-                      <StickerCard
-                        card={entry}
-                        foil={entry.foil_quantity > 0}
-                        quantity={total(entry)}
-                      />
-                    </button>
-                  ) : (
-                    <EmptySlot number={entry.number} kind={entry.kind} rarity={entry.rarity} />
-                  )}
-                </li>
+            <div className="space-y-10">
+              {groups.map((group, groupIndex) => (
+                <section key={group.kind} aria-label={KIND_PLURAL[group.kind]} className="space-y-4">
+                  <div
+                    className="fade-up flex items-baseline gap-3 border-b pb-2"
+                    style={{ "--i": Math.min(groupIndex, 3) } as CSSProperties}
+                  >
+                    <h2 className="font-display text-2xl font-bold uppercase">{KIND_PLURAL[group.kind]}</h2>
+                    <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                      {group.all.filter(owned).length}/{group.all.length}
+                    </span>
+                  </div>
+
+                  <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-3">
+                    {group.items.map((entry, index) => (
+                      <li
+                        key={entry.card_id}
+                        className="fade-up"
+                        style={{ "--i": Math.min(index, 10) } as CSSProperties}
+                      >
+                        {owned(entry) ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelected(entry)}
+                            aria-label={`${entry.name}, ${KIND_LABELS[entry.kind]}`}
+                            className="block w-full rounded-[7%] transition-transform hover:-translate-y-1 active:scale-95 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
+                          >
+                            <StickerCard
+                              card={entry}
+                              foil={entry.foil_quantity > 0}
+                              quantity={total(entry)}
+                            />
+                          </button>
+                        ) : (
+                          <EmptySlot number={entry.number} kind={entry.kind} rarity={entry.rarity} />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       )}

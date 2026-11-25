@@ -1222,6 +1222,28 @@ export type Database = {
       }
       admin_activity: { Args: never; Returns: Json }
       admin_album_economy: { Args: never; Returns: Json }
+      admin_album_list_cards: {
+        Args: never
+        Returns: {
+          active: boolean
+          id: string
+          kind: string
+          name: string
+          rarity: string
+          ref_id: string
+          season: number
+          stats: Json
+          subtitle: string
+        }[]
+      }
+      admin_album_save_card: {
+        Args: { p_card: Json; p_create?: boolean }
+        Returns: string
+      }
+      admin_album_set_card_active: {
+        Args: { p_active: boolean; p_id: string }
+        Returns: boolean
+      }
       admin_album_set_pack_rule: {
         Args: {
           p_cards: number

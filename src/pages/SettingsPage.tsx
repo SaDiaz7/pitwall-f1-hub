@@ -22,6 +22,7 @@ import { AdminUsers } from "@/components/AdminUsers";
 import { AdminActivity } from "@/components/AdminActivity";
 import { AdminSchedule } from "@/components/AdminSchedule";
 import { AdminAlbumEconomy } from "@/components/AdminAlbumEconomy";
+import { AdminCards } from "@/components/AdminCards";
 import { AdminWalls } from "@/components/AdminWalls";
 import { CountryFlag } from "@/components/CountryFlag";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
@@ -251,6 +252,7 @@ export function SettingsPage() {
           <TabsContent value="album">
             <div className="space-y-6">
               <AlbumAdmin />
+              <AdminCards />
               <AdminAlbumEconomy />
             </div>
           </TabsContent>
