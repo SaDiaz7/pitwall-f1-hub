@@ -21,6 +21,7 @@ const COLORS_BY_ID: Record<string, string> = {
   alphatauri: "#192136",
   brawn: "#cccccc",
   renault2005: "#ffd500",
+  alfa_romeo: "#9B1B30",
 };
 
 // Si el identificador no está, se busca por palabras del nombre del equipo.
@@ -40,7 +41,8 @@ const COLORS_BY_NAME: [string, string][] = [
   ["audi", "#F50537"],
   ["cadillac", "#9CA3AF"],
   ["brawn", "#cccccc"],
-  ["renault2005", "#ffd500"]
+  ["renault2005", "#ffd500"],
+  ["alfa_romeo", "#9B1B30"],
 ];
 
 export const FALLBACK_TEAM_COLOR = "#6B7280";
