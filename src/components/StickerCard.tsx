@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { Car, ClipboardList, MapPin, User, Wrench, type LucideIcon } from "lucide-react";
+import { Car, ClipboardList, HardHat, MapPin, User, Wrench, type LucideIcon } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 import { getInitials } from "@/hooks/useProfile";
 import {
@@ -53,6 +53,16 @@ export function statStrip(card: CardFace): { label: string; value: string }[] {
       { label: "Año", value: season ?? "—" },
       { label: "Equipo", value: team ?? "—" },
       { label: "Edición", value: "Especial" },
+    ];
+  }
+
+  if (card.kind === "helmet") {
+    const season = card.card_id.split(":")[1];
+    const team = statStr(card.stats, "team_code") ?? statStr(card.stats, "team_name");
+    return [
+      { label: "Piloto", value: statStr(card.stats, "driver_code") ?? "—" },
+      { label: "Año", value: season ?? "—" },
+      { label: "Equipo", value: team ?? "—" },
     ];
   }
 
@@ -309,6 +319,28 @@ export function StickerCard({
               </span>
             )}
 
+            {card.kind === "helmet" && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "5cqw" }}>
+                <span
+                  aria-hidden="true"
+                  className="absolute font-display font-bold leading-none opacity-15"
+                  style={{ fontSize: "46cqw" }}
+                >
+                  {statStr(card.stats, "driver_code") ?? getInitials(card.name)}
+                </span>
+                {imageUrl && !imageFailed && (
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    loading="lazy"
+                    onError={() => setImageFailed(true)}
+                    className="relative h-full w-full object-contain"
+                    style={{ filter: "drop-shadow(0 1.5cqw 2.5cqw rgba(0,0,0,0.55))" }}
+                  />
+                )}
+              </div>
+            )}
+
             {card.rarity === "mythic" && <MythicSparkles />}            
 
             {quantity !== undefined && quantity > 1 && (
@@ -446,6 +478,7 @@ export function EmptySlot({ number, kind, rarity }: { number: number; kind: Card
     driver: User,
     team: Car,
     livery: Car,
+    helmet: HardHat,
     circuit: MapPin,
     manager: ClipboardList,
     engineer: Wrench,

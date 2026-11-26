@@ -1,6 +1,6 @@
 import type { Driver } from "@/lib/types";
 
-export type CardKind = "driver" | "team" | "circuit" | "livery" | "manager" | "engineer";
+export type CardKind = "driver" | "team" | "circuit" | "livery" | "manager" | "engineer" | "helmet";
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
@@ -18,6 +18,7 @@ export const KIND_LABELS: Record<CardKind, string> = {
   livery: "Livery",
   manager: "Jefe de equipo",
   engineer: "Ingeniero",
+  helmet: "Casco",
 };
 
 export interface AlbumCard {
@@ -106,7 +107,7 @@ export function buildCatalogCards(drivers: Driver[], season: number): CatalogCar
   return cards;
 }
 
-export const KIND_ORDER: CardKind[] = ["driver", "team", "livery", "circuit", "manager", "engineer"];
+export const KIND_ORDER: CardKind[] = ["driver", "helmet", "team", "livery", "circuit", "manager", "engineer"];
 // 0 = la más rara. Sirve para ordenar de las mejores a las comunes.
 export const RARITY_RANK: Record<Rarity, number> = { mythic: -1, legendary: 0, epic: 1, rare: 2, common: 3 };
 
@@ -161,6 +162,11 @@ export function cardImageUrl(card: Pick<CardFace, "kind" | "card_id" | "stats">)
   if (card.kind === "manager" || card.kind === "engineer") {
     const ref = card.card_id.split(":").pop();
     return ref ? `/cards/${card.kind === "manager" ? "managers" : "engineers"}/${ref}.png` : null;
+  }
+
+  if (card.kind === "helmet") {
+    const ref = card.card_id.split(":").pop();
+    return ref ? `/cards/helmets/${ref}.png` : null;
   }
 
   return null;

@@ -15,6 +15,8 @@ type FieldKey =
   | "team_id"
   | "team_name"
   | "team_code"
+  | "driver_name"
+  | "driver_code"
   | "number"
   | "points"
   | "wins"
@@ -54,7 +56,7 @@ type FormState = {
   baseStats: Record<string, unknown>;
 };
 
-const EDITABLE_KINDS: EditableKind[] = ["driver", "team", "livery", "manager", "engineer"];
+const EDITABLE_KINDS: EditableKind[] = ["driver", "team", "livery", "helmet", "manager", "engineer"];
 const RARITIES: Rarity[] = ["common", "rare", "epic", "legendary", "mythic"];
 
 // Qué datos tiene cada tipo de carta.
@@ -62,17 +64,20 @@ const KIND_FIELDS: Record<EditableKind, FieldKey[]> = {
   driver: ["team_id", "team_name", "number", "points", "wins", "position", "image", "wiki_url"],
   team: ["team_id", "team_name", "points", "wins", "position"],
   livery: ["team_id", "team_name", "team_code", "image"],
+  helmet: ["driver_name", "driver_code", "team_id", "team_name", "team_code", "image"],
   manager: ["team_id", "team_name", "team_code", "country_code", "since", "titles", "image"],
   engineer: ["team_id", "team_name", "team_code", "country_code", "since", "titles", "image"],
 };
 
 const NUMERIC_FIELDS: FieldKey[] = ["number", "points", "wins", "position", "since", "titles"];
-const WIDE_FIELDS: FieldKey[] = ["team_name", "wiki_url", "image"];
+const WIDE_FIELDS: FieldKey[] = ["team_name", "driver_name", "wiki_url", "image"];
 
 const ALL_FIELDS: FieldKey[] = [
   "team_id",
   "team_name",
   "team_code",
+  "driver_name",
+  "driver_code",
   "number",
   "points",
   "wins",
@@ -88,6 +93,8 @@ const FIELD_LABELS: Record<FieldKey, string> = {
   team_id: "ID de la escudería",
   team_name: "Nombre de la escudería",
   team_code: "Sigla (3 letras)",
+  driver_name: "Nombre del piloto",
+  driver_code: "Sigla del piloto (3 letras)",
   number: "Número",
   points: "Puntos",
   wins: "Victorias",
@@ -102,7 +109,7 @@ const FIELD_LABELS: Record<FieldKey, string> = {
 const FIELD_HINTS: Partial<Record<FieldKey, string>> = {
   team_id: "Define el color de la carta. Elegí uno de la lista o escribí otro (ej. maserati).",
   image:
-    "Opcional. Si lo dejás vacío usa la regla automática. Para un piloto de otra temporada ponele un nombre propio, ej. stroll2017.png",
+    "Opcional. Si lo dejás vacío usa la regla automática (cascos: helmets/<identificador>.png). Para un piloto de otra temporada ponele un nombre propio, ej. stroll2017.png",
   country_code: "Mismo formato que las cartas de circuito.",
 };
 
@@ -151,6 +158,8 @@ function emptyFields(): Record<FieldKey, string> {
     team_id: "",
     team_name: "",
     team_code: "",
+    driver_name: "",
+    driver_code: "",
     number: "",
     points: "",
     wins: "",
@@ -207,8 +216,9 @@ function formFromRow(row: CardRow): FormState | null {
   };
 }
 
-function autoSubtitle(kind: EditableKind, season: string, teamName: string): string {
-  const team = teamName.trim();
+function autoSubtitle(kind: EditableKind, season: string, fields: Record<FieldKey, string>): string {
+  const team = fields.team_name.trim();
+  const driver = fields.driver_name.trim();
   switch (kind) {
     case "driver":
       return team ? `${team} · ${season}` : season;
@@ -216,6 +226,8 @@ function autoSubtitle(kind: EditableKind, season: string, teamName: string): str
       return `Escudería ${season}`;
     case "livery":
       return `Livery especial ${season}`;
+    case "helmet":
+      return driver ? `${driver} · ${season}` : `Casco ${season}`;
     case "manager":
       return team ? `${team} · Jefe de equipo` : "Jefe de equipo";
     case "engineer":
@@ -328,7 +340,7 @@ export function AdminCards() {
 
   const subtitleValue = form.subtitleTouched
     ? form.subtitle
-    : autoSubtitle(form.kind, form.season.trim(), form.fields.team_name);
+    : autoSubtitle(form.kind, form.season.trim(), form.fields);
   const cardId =
     form.mode === "edit" ? form.id : `${form.kind}:${form.season.trim()}:${form.ref_id.trim().toLowerCase()}`;
 

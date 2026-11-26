@@ -23,6 +23,7 @@ const MODES: { value: ModeFilter; label: string }[] = [
 
 const KIND_PLURAL: Record<CardKind, string> = {
   driver: "Pilotos",
+  helmet: "Cascos",
   team: "Escuderías",
   livery: "Liveries",
   circuit: "Circuitos",

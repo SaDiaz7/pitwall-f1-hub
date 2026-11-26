@@ -261,6 +261,19 @@ function drawCard(
     ctx.restore();
   }
 
+  if (card.kind === "helmet" && assets.photo) {
+    const pad = 5 * u;
+    const scale = Math.min((aw - pad * 2) / assets.photo.width, (ah - pad * 2) / assets.photo.height);
+    const dw = assets.photo.width * scale;
+    const dh = assets.photo.height * scale;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 2.5 * u;
+    ctx.shadowOffsetY = 1.5 * u;
+    ctx.drawImage(assets.photo, ax + (aw - dw) / 2, ay + (ah - dh) / 2, dw, dh);
+    ctx.restore();
+  }
+
   if (card.kind === "circuit") {
     const path = statStr(card.stats, "path");
     if (path) {
@@ -388,7 +401,8 @@ async function draw(card: CardFace, foil: boolean, assets: Assets): Promise<Blob
 export async function renderCardImage(card: CardFace, foil: boolean, photoUrl: string | null): Promise<Blob> {
   const countryCode = statStr(card.stats, "country_code");
   const [photo, flag] = await Promise.all([
-    (card.kind === "driver" || card.kind === "manager" || card.kind === "engineer") && photoUrl
+    (card.kind === "driver" || card.kind === "manager" || card.kind === "engineer" || card.kind === "helmet") &&
+    photoUrl
       ? loadImage(photoUrl)
       : Promise.resolve(null),
     card.kind === "circuit" && countryCode ? loadImage(flagUrl(countryCode, 80)) : Promise.resolve(null),
