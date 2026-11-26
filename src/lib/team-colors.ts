@@ -22,6 +22,7 @@ const COLORS_BY_ID: Record<string, string> = {
   brawn: "#cccccc",
   renault2005: "#ffd500",
   alfa_romeo: "#9B1B30",
+  racing_point: "#EC0374",
 };
 
 // Si el identificador no está, se busca por palabras del nombre del equipo.
@@ -43,6 +44,7 @@ const COLORS_BY_NAME: [string, string][] = [
   ["brawn", "#cccccc"],
   ["renault2005", "#ffd500"],
   ["alfa_romeo", "#9B1B30"],
+  ["racing point", "#EC0374"],
 ];
 
 export const FALLBACK_TEAM_COLOR = "#6B7280";
