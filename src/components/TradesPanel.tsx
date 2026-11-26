@@ -31,6 +31,9 @@ const keyOf = (card: { card_id: string; foil: boolean }) => `${card.card_id}|${c
 const nameOf = (user: { username: string | null; display_name: string | null }) =>
   user.display_name || user.username || "Sin nombre";
 
+// Las legendarias y las míticas se pueden intercambiar aunque no estén repetidas.
+const isTopRarity = (card: { rarity: string }) => card.rarity === "legendary" || card.rarity === "mythic";
+
 const dateFormatter = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short" });
 
 const STATUS_LABEL: Record<TradeItem["status"], string> = {
@@ -40,11 +43,17 @@ const STATUS_LABEL: Record<TradeItem["status"], string> = {
   cancelled: "Cancelada",
 };
 
-// "Foil · te sobra 1" / "Normal · le sobran 2"
-function spareNote(card: { foil: boolean; spare: number }, who: "you" | "friend"): TileNote {
+// "Foil · te sobra 1" / "Normal · le sobran 2" / "Normal · única copia"
+function spareNote(
+  card: { foil: boolean; spare: number; quantity: number; rarity: string },
+  who: "you" | "friend",
+): TileNote {
+  const version = card.foil ? "Foil" : "Normal";
+  if (isTopRarity(card) && card.quantity <= 1) return { text: `${version} · única copia`, tone: "foil" };
+
   const verb =
     who === "you" ? (card.spare === 1 ? "te sobra" : "te sobran") : card.spare === 1 ? "le sobra" : "le sobran";
-  return { text: `${card.foil ? "Foil" : "Normal"} · ${verb} ${card.spare}`, tone: "info" };
+  return { text: `${version} · ${verb} ${card.spare}`, tone: "info" };
 }
 
 function Tile({
@@ -116,6 +125,7 @@ function OfferRow({
   onRespond,
   onCancel,
   getNote,
+  getGiveNote,
 }: {
   item: TradeItem;
   index: number;
@@ -123,6 +133,7 @@ function OfferRow({
   onRespond: (id: string, accept: boolean) => void;
   onCancel: (id: string) => void;
   getNote?: ((card: TradeCard) => TileNote | undefined) | undefined;
+  getGiveNote?: ((card: TradeCard) => TileNote | undefined) | undefined;
 }) {
   const incoming = item.direction === "in";
   const pending = item.status === "pending";
@@ -154,7 +165,7 @@ function OfferRow({
         </span>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">{incoming ? "Das" : "Darías"}</p>
-          <Tile card={item.you_give} />
+          <Tile card={item.you_give} notes={incoming && pending ? [getGiveNote?.(item.you_give)] : undefined} />
         </div>
 
         {pending && (
@@ -231,16 +242,17 @@ export function TradesPanel() {
     });
   }, [loadTrades]);
 
-  // Mis repetidas. En cada carta te guardás una copia (si tenés foil, esa es la foil):
-  // sobran las normales de más y las foil de más.
+  // Mis cartas para ofrecer. En cada carta te guardás una copia (si tenés foil, esa es la foil):
+  // sobran las normales de más y las foil de más. Las legendarias y míticas se pueden dar todas.
   const myDups = useMemo(
     () =>
       entries.flatMap((entry) => {
         const list: (TradeCard & { quantity: number; spare: number })[] = [];
         const normals = entry.quantity;
         const foils = entry.foil_quantity;
-        const spareNormal = foils >= 1 ? normals : Math.max(0, normals - 1);
-        const spareFoil = Math.max(0, foils - 1);
+        const topRarity = isTopRarity(entry);
+        const spareNormal = topRarity ? normals : foils >= 1 ? normals : Math.max(0, normals - 1);
+        const spareFoil = topRarity ? foils : Math.max(0, foils - 1);
         if (spareNormal >= 1) list.push({ ...entry, foil: false, quantity: normals, spare: spareNormal });
         if (spareFoil >= 1) list.push({ ...entry, foil: true, quantity: foils, spare: spareFoil });
         return list;
@@ -257,6 +269,15 @@ export function TradesPanel() {
     if (!mine || (mine.quantity <= 0 && mine.foil_quantity <= 0)) return { text: "¡No la tenés!", tone: "new" };
     if (card.foil && mine.foil_quantity <= 0) return { text: "Te falta la foil ✨", tone: "foil" };
     return { text: "Ya la tenés", tone: "owned" };
+  };
+
+  
+  // Aviso en las ofertas que recibís: si das una legendaria o mítica que es tu única copia.
+  const giveNoteFor = (card: TradeCard): TileNote | undefined => {
+    if (albumLoading || !isTopRarity(card)) return undefined;
+    const mine = owned.get(card.card_id);
+    const copies = mine ? (card.foil ? mine.foil_quantity : mine.quantity) : 0;
+    return copies === 1 ? { text: "Es tu única copia", tone: "foil" } : undefined;
   };
 
   // Cuando elegís un amigo, se le pregunta si ya tiene mis cartas repetidas.
@@ -403,6 +424,7 @@ export function TradesPanel() {
                 onRespond={respond}
                 onCancel={cancel}
                 getNote={noteFor}
+                getGiveNote={giveNoteFor}
               />
             ))}
           </ul>
@@ -411,6 +433,11 @@ export function TradesPanel() {
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold uppercase">Nueva oferta</h2>
+
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Podés ofrecer tus repetidas y también tus legendarias y míticas, aunque tengas una sola copia. De las demás
+          cartas siempre te quedás con una.
+        </p>
 
         {friends === null ? (
           <div className="skeleton h-12 max-w-xl" />

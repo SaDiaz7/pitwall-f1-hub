@@ -108,6 +108,30 @@ console.log();
 
 const grid = await cached(`${BASE}/${currentYear}/driverStandings.json?limit=100`, reduceStandings, 0);
 
+// Año de debut (primera temporada en que aparece) y de nacimiento, desde la lista de pilotos de cada temporada.
+const reduceSeasonDrivers = (json) => ({
+  total: Number(json.MRData.total),
+  drivers: json.MRData.DriverTable.Drivers.map((driver) => ({
+    id: driver.driverId,
+    birthYear: driver.dateOfBirth ? Number(driver.dateOfBirth.slice(0, 4)) : null,
+  })),
+});
+
+const debuts = new Map();
+for (let year = FIRST_SEASON; year <= currentYear; year++) {
+  const ttl = year === currentYear ? 0 : Infinity;
+  let total = Infinity;
+  for (let offset = 0; offset < total; offset += PAGE) {
+    const page = await cached(`${BASE}/${year}/drivers.json?limit=${PAGE}&offset=${offset}`, reduceSeasonDrivers, ttl);
+    total = page.total;
+    for (const driver of page.drivers) {
+      if (!debuts.has(driver.id)) debuts.set(driver.id, { debut: year, birthYear: driver.birthYear });
+    }
+  }
+  process.stdout.write(`\rDebuts: temporada ${year}   `);
+}
+console.log();
+
 const drivers = new Map();
 const touch = (driver) => {
   if (!drivers.has(driver.id)) {
@@ -132,15 +156,16 @@ const pool = [...drivers.values()]
   .sort((a, b) => b.wins - a.wins || b.podiums - a.podiums || a.name.localeCompare(b.name));
 
 const esc = (text) => text.replace(/'/g, "''");
+const num = (value) => (value === null || value === undefined ? "null" : String(value));
 const values = pool
-  .map(
-    (d) =>
-      `  ('${esc(d.id)}', '${esc(d.name)}', '${esc(d.nat)}', ${d.wins}, ${d.podiums}, ${d.poles}, ${d.titles}, ${d.current})`,
-  )
+  .map((d) => {
+    const extra = debuts.get(d.id) ?? { debut: null, birthYear: null };
+    return `  ('${esc(d.id)}', '${esc(d.name)}', '${esc(d.nat)}', ${d.wins}, ${d.podiums}, ${d.poles}, ${d.titles}, ${d.current}, ${num(extra.birthYear)}, ${num(extra.debut)})`;
+  })
   .join(",\n");
 
 const sql = `-- Generado el ${new Date().toISOString()} (títulos hasta ${through})
-insert into public.hl_items (id, name, nationality, wins, podiums, poles, titles, is_current)
+insert into public.hl_items (id, name, nationality, wins, podiums, poles, titles, is_current, birth_year, debut)
 values
 ${values}
 on conflict (id) do update set
@@ -151,6 +176,8 @@ on conflict (id) do update set
   poles = excluded.poles,
   titles = excluded.titles,
   is_current = excluded.is_current,
+  birth_year = excluded.birth_year,
+  debut = excluded.debut,
   updated_at = now();
 `;
 
