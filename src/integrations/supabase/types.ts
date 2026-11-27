@@ -1633,6 +1633,7 @@ export type Database = {
         }[]
       }
       game_today_info: { Args: never; Returns: Json }
+      game_today_progress: { Args: never; Returns: Json }
       game_weekly_friends_leaderboard: {
         Args: { p_week_offset?: number }
         Returns: {

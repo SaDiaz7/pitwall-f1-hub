@@ -41,6 +41,7 @@ import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 import { FreePackCard } from "@/components/FreePackCard";
 import { CollectionsTeaser } from "@/components/CollectionsTeaser";
+import { TodayStrip } from "@/components/TodayStrip";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -430,7 +431,17 @@ export function HomePage() {
         {dotdGp && <DriverOfTheDaySection gp={dotdGp} results={dotdResults} drivers={drivers} dotd={dotd} />}
       </div>
 
-      <FreePackCard />
+      {session && (
+        <TodayStrip
+          next={next}
+          predictionDone={Boolean(next && predictions[next.round])}
+          predictionLoading={predictionsLoading}
+        />
+      )}
+
+      <div id="sobre-gratis">
+        <FreePackCard />
+      </div>
       
       {next && <LiveBanner gp={next} className="mt-10" />}
 
