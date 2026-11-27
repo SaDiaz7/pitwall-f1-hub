@@ -3,6 +3,8 @@ import { CalendarDays, Heart, Sparkles, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 
+const CELESTE = "#74acdf";
+
 const features = [
   {
     icon: CalendarDays,
@@ -100,6 +102,41 @@ export function LandingPage() {
               <p className="mt-2 text-sm text-muted-foreground">{text}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-20">
+        <div
+          className="fade-up relative overflow-hidden rounded-3xl border p-6 md:p-10"
+          style={{
+            borderColor: CELESTE,
+            backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${CELESTE} 28%, transparent), transparent 65%)`,
+          }}
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-1.5"
+            style={{
+              backgroundImage: `linear-gradient(to bottom, ${CELESTE} 0 33.3%, #ffffff 33.3% 66.6%, ${CELESTE} 66.6%)`,
+            }}
+          />
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: CELESTE }}>
+            Zona Colapinto
+          </p>
+          <h2 className="mt-2 max-w-2xl text-4xl font-bold uppercase italic leading-[0.95] md:text-6xl">
+            Todo sobre Franco, en un solo lugar
+          </h2>
+          <p className="mt-4 max-w-xl text-muted-foreground">
+            Resultados, puntos, próxima carrera, noticias y fondos de pantalla de Franco Colapinto. Sin necesidad de
+            crear una cuenta.
+          </p>
+          <Button
+            asChild
+            size="lg"
+            className="mt-6 h-12 bg-gradient-primary px-8 font-semibold uppercase tracking-wide transition-transform active:scale-95"
+          >
+            <Link to="/colapinto">Entrar a la Zona Colapinto</Link>
+          </Button>
         </div>
       </section>
 

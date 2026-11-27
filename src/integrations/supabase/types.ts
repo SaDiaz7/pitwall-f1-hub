@@ -93,6 +93,71 @@ export type Database = {
         }
         Relationships: []
       }
+      album_collection_claims: {
+        Row: {
+          cards: Json
+          claimed_at: string
+          collection_id: string
+          outcome: string
+          user_id: string
+        }
+        Insert: {
+          cards: Json
+          claimed_at?: string
+          collection_id: string
+          outcome: string
+          user_id: string
+        }
+        Update: {
+          cards?: Json
+          claimed_at?: string
+          collection_id?: string
+          outcome?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "album_collection_claims_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "album_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      album_collections: {
+        Row: {
+          active: boolean
+          card_ids: string[]
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          position: number
+          reward_outcome: string
+        }
+        Insert: {
+          active?: boolean
+          card_ids: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          position?: number
+          reward_outcome?: string
+        }
+        Update: {
+          active?: boolean
+          card_ids?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          position?: number
+          reward_outcome?: string
+        }
+        Relationships: []
+      }
       album_pack_claims: {
         Row: {
           cards: Json
@@ -1283,6 +1348,10 @@ export type Database = {
         }[]
       }
       admin_activity: { Args: never; Returns: Json }
+      admin_album_delete_collection: {
+        Args: { p_id: string }
+        Returns: boolean
+      }
       admin_album_economy: { Args: never; Returns: Json }
       admin_album_list_cards: {
         Args: never
@@ -1298,8 +1367,13 @@ export type Database = {
           subtitle: string
         }[]
       }
+      admin_album_list_collections: { Args: never; Returns: Json }
       admin_album_save_card: {
         Args: { p_card: Json; p_create?: boolean }
+        Returns: string
+      }
+      admin_album_save_collection: {
+        Args: { p_collection: Json }
         Returns: string
       }
       admin_album_set_card_active: {
@@ -1376,6 +1450,7 @@ export type Database = {
         Args: { p_card: string; p_foil: boolean }
         Returns: Json
       }
+      album_claim_collection: { Args: { p_collection: string }; Returns: Json }
       album_draw_cards: {
         Args: { p_extra: number; p_outcome: string; p_user: string }
         Returns: Json
@@ -1404,6 +1479,7 @@ export type Database = {
           subtitle: string
         }[]
       }
+      album_get_collections: { Args: never; Returns: Json }
       album_get_friend_duplicates: { Args: { p_friend: string }; Returns: Json }
       album_get_recycle_info: { Args: never; Returns: Json }
       album_get_trade_friends: {

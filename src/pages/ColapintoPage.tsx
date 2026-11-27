@@ -275,7 +275,7 @@ export function ColapintoPage() {
               to="/juego"
               className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-all hover:bg-accent/40 active:scale-95"
             >
-              Jugar “Adiviná el circuito”
+              Jugar el juego diario <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>

@@ -130,7 +130,7 @@ export const BADGES: readonly BadgeDef[] = [
     description: "Cartas distintas en tu álbum.",
     icon: Layers,
     unit: "cartas",
-    targets: [10, 30, 60],
+    targets: [30, 80, 150],
     value: (s) => s.album_owned,
   },
   {
@@ -139,7 +139,7 @@ export const BADGES: readonly BadgeDef[] = [
     description: "Cartas con efecto foil.",
     icon: Sparkles,
     unit: "foil",
-    targets: [1, 5, 15],
+    targets: [5, 15, 30],
     value: (s) => s.album_foils,
   },
 ];

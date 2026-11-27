@@ -205,13 +205,14 @@ export function UserProfilePage() {
           </p>
         </section>
 
-        <TrophyShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
+        <ProfileFavorites userId={profile.user_id} drivers={drivers} teams={teams} />
 
-        <BadgeShowcase userId={profile.user_id} isSelf={profile.relation === "self"}/>
 
         <AlbumShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
 
-        <ProfileFavorites userId={profile.user_id} drivers={drivers} teams={teams} />
+        <TrophyShowcase userId={profile.user_id} isSelf={profile.relation === "self"} />
+
+        <BadgeShowcase userId={profile.user_id} isSelf={profile.relation === "self"}/>
 
         {profile.relation === "friends" && (
           <section className="space-y-3">

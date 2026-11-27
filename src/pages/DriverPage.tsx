@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Trophy } from "lucide-react";
+import { ArrowLeft, ExternalLink, Star, Trophy } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useSession } from "@/hooks/useSession";
 import { getDriverSeasonStandings, type CareerSeason, type SeasonStanding } from "@/lib/f1";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { TeamStripe } from "@/components/TeamStripe";
@@ -107,6 +108,7 @@ export function DriverPage() {
   const { detail, current } = route.useLoaderData();
   const { profile, seasons, totals } = detail;
   const { isFavorite, toggle } = useFavorites();
+  const { session } = useSession();
   const photos = useDriverPhotos([{ id: profile.id, wikiUrl: profile.wikiUrl }]);
   const photo = photos[profile.id] ?? null;
 
@@ -196,11 +198,22 @@ export function DriverPage() {
             </p>
           </div>
         </div>
-        <FavoriteButton
-          active={isFavorite(profile.id)}
-          onToggle={() => toggle(profile.id)}
-          label={profile.name}
-        />
+        {session ? (
+          <FavoriteButton
+            active={isFavorite(profile.id)}
+            onToggle={() => toggle(profile.id)}
+            label={profile.name}
+          />
+        ) : (
+          <Link
+            to="/login"
+            title="Iniciá sesión para guardar favoritos"
+            aria-label={`Iniciá sesión para agregar a ${profile.name} a favoritos`}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-primary active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100"
+          >
+            <Star className="h-5 w-5" />
+          </Link>
+        )}
       </header>
 
       {photo && (

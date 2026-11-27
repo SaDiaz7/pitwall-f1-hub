@@ -40,6 +40,7 @@ import { NewToF1Card } from "@/components/NewToF1Card";
 import { GuestFeatures } from "@/components/GuestFeatures";
 import { useSession } from "@/hooks/useSession";
 import { FreePackCard } from "@/components/FreePackCard";
+import { CollectionsTeaser } from "@/components/CollectionsTeaser";
 
 const route = getRouteApi("/_privado/inicio");
 
@@ -283,10 +284,10 @@ function FavoriteWallpapers() {
           onDeleted={() => {
             setSelected(null);
             reload();
-          } } onUpdated={function (): void {
-            throw new Error("Function not implemented.");
-          } }        />
-      )}
+          }}
+          onUpdated={reload}
+        />
+        )}
     </section>
   );
 }
@@ -440,6 +441,8 @@ export function HomePage() {
       <div className="mt-10 grid grid-cols-1 items-start gap-x-6 gap-y-10 md:grid-cols-2 xl:block xl:columns-3 xl:gap-x-6 [&>section]:mt-0 xl:[&>section]:mb-6 xl:[&>section]:break-inside-avoid">
         {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
         {next && <WeekendCard gp={next} />}
+        {last && <LastRace gp={last} results={lastResults} />}
+        {session && <CollectionsTeaser />}
         {session && <RankingPreview season={season} />}
         <DailyGameRankingCard />
         {session && !predictionsLoading && <PredictionStats events={events} predictions={predictions} />}

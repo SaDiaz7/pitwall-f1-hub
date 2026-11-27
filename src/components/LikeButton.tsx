@@ -24,6 +24,7 @@ export function LikeButton({ active, count, onToggle, label, className }: LikeBu
     }
     if (!active) setPopping(false);
     wasActive.current = active;
+    return undefined;
   }, [active]);
 
   return (

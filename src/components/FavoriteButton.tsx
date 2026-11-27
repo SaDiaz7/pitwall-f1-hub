@@ -22,6 +22,7 @@ export function FavoriteButton({ active, onToggle, label }: FavoriteButtonProps)
     }
     if (!active) setPopping(false);
     wasActive.current = active;
+    return undefined;
   }, [active]);
 
   return (

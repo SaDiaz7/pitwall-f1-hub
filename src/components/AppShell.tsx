@@ -100,7 +100,7 @@ export const navItems = [
 type NavItem = (typeof navItems)[number];
 
 // Páginas que se ven sin cuenta. Las demás redirigen al login.
-const PUBLIC_PATHS: string[] = [...navItems.filter((item) => item.public).map((item) => item.to), "/gp"];
+const PUBLIC_PATHS: string[] = [...navItems.filter((item) => item.public).map((item) => item.to), "/gp", "/piloto"];
 
 // Páginas "hijas" que cuentan como parte de un ítem del menú.
 const EXTRA_PREFIXES: Record<string, string[]> = {

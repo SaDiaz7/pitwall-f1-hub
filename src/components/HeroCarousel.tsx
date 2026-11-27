@@ -15,8 +15,9 @@ interface HeroCarouselProps {
   autoplayMs?: number;
 }
 
+// Las flechas van abajo, al lado de los puntitos, para no tapar el contenido de la tarjeta.
 const ARROW_CLASS =
-  "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-background/70 text-foreground backdrop-blur transition hover:scale-105 hover:bg-background md:flex";
+  "flex h-8 w-8 items-center justify-center rounded-full border bg-background/60 text-muted-foreground backdrop-blur transition hover:scale-105 hover:text-foreground active:scale-90 motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100";
 
 export function HeroCarousel({ slides, autoplayMs = 6000 }: HeroCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
@@ -103,46 +104,35 @@ export function HeroCarousel({ slides, autoplayMs = 6000 }: HeroCarouselProps) {
             ))}
           </div>
         </div>
-
-        {manySlides && (
-          <>
-            <button
-              type="button"
-              onClick={goPrev}
-              aria-label="Tarjeta anterior"
-              className={cn(ARROW_CLASS, "left-3")}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={goNext}
-              aria-label="Tarjeta siguiente"
-              className={cn(ARROW_CLASS, "right-3")}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </>
-        )}
       </div>
 
       {manySlides && (
-        <div className="mt-3 flex justify-center gap-2">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.key}
-              type="button"
-              onClick={() => emblaApi?.scrollTo(i)}
-              aria-label={`Ir a la tarjeta ${i + 1}`}
-              aria-current={i === selected}
-              className={cn(
-                "h-2 rounded-full transition-all duration-300",
-                i === selected
-                  ? "w-6 bg-primary"
-                  : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70",
-              )}
-            />
-          ))}
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <button type="button" onClick={goPrev} aria-label="Tarjeta anterior" className={ARROW_CLASS}>
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex gap-2">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.key}
+                type="button"
+                onClick={() => emblaApi?.scrollTo(i)}
+                aria-label={`Ir a la tarjeta ${i + 1}`}
+                aria-current={i === selected}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  i === selected
+                    ? "w-6 bg-primary"
+                    : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70",
+                )}
+              />
+            ))}
+          </div>
+
+          <button type="button" onClick={goNext} aria-label="Tarjeta siguiente" className={ARROW_CLASS}>
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>

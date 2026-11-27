@@ -23,6 +23,7 @@ import { AdminActivity } from "@/components/AdminActivity";
 import { AdminSchedule } from "@/components/AdminSchedule";
 import { AdminAlbumEconomy } from "@/components/AdminAlbumEconomy";
 import { AdminCards } from "@/components/AdminCards";
+import { AdminCollections } from "@/components/AdminCollections";
 import { AdminWalls } from "@/components/AdminWalls";
 import { CountryFlag } from "@/components/CountryFlag";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
@@ -253,6 +254,7 @@ export function SettingsPage() {
             <div className="space-y-6">
               <AlbumAdmin />
               <AdminCards />
+              <AdminCollections />
               <AdminAlbumEconomy />
             </div>
           </TabsContent>

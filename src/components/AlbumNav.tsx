@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { to: "/album", label: "Colección" },
+  { to: "/colecciones", label: "Colecciones" },
   { to: "/repetidas", label: "Repetidas" },
 ] as const;
 
