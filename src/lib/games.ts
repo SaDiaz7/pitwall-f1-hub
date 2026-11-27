@@ -3,6 +3,7 @@
 export const GAME_LABELS: Record<string, string> = {
   circuit: "Adiviná el circuito",
   hl: "¿Más o menos?",
+  dg: "Adiviná el piloto",
 };
 
 // Días de la semana: 0 = domingo ... 6 = sábado. En pantalla la semana arranca el lunes.

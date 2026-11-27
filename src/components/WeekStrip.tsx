@@ -1,11 +1,12 @@
 import type { CSSProperties } from "react";
-import { ArrowUpDown, MapPin, type LucideIcon } from "lucide-react";
+import { ArrowUpDown, MapPin, Search, type LucideIcon } from "lucide-react";
 import { GAME_LABELS, WEEKDAY_SHORT, WEEK_ORDER, type TodayInfo } from "@/lib/games";
 import { cn } from "@/lib/utils";
 
 const GAME_ICONS: Record<string, LucideIcon> = {
   circuit: MapPin,
   hl: ArrowUpDown,
+  dg: Search,
 };
 
 // Tira con los 7 días de la semana y el juego que toca cada uno.

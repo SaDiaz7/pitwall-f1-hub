@@ -138,7 +138,8 @@ export function GameLeaderboard({ refreshKey = 0 }: { refreshKey?: number }) {
       </div>
 
       <p className="mb-3 text-xs text-muted-foreground">
-        6 puntos si lo resolvés en 1 intento, 5 en 2, y así hasta 1 punto en el 6.º. La semana va de lunes a domingo.
+        Circuito y Adiviná el piloto: 6 puntos si lo resolvés en 1 intento, 5 en 2, y así hasta 1 punto. ¿Más o menos?:
+        hasta 6 puntos según tus aciertos. La semana va de lunes a domingo.
       </p>
 
       {error && <p className="mb-3 rounded-md bg-destructive/15 p-2 text-sm text-destructive">No pudimos cargar el ranking.</p>}
@@ -155,7 +156,7 @@ export function GameLeaderboard({ refreshKey = 0 }: { refreshKey?: number }) {
 
       {active === "todos" && !myRow && (
         <p className="mb-3 text-sm text-muted-foreground">
-          No aparecés en este ranking: necesitás haber resuelto el circuito al menos un día de la semana, tener un
+          No aparecés en este ranking: necesitás haber jugado el juego diario al menos un día de la semana, tener un
           nombre de usuario y la visibilidad activada en{" "}
           <Link to="/ajustes" className="font-semibold text-primary hover:underline">
             Ajustes

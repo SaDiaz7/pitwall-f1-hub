@@ -122,6 +122,18 @@ function buildMessage(type: string, rows: OutboxRow[]): Message | null {
       const days = `${streak} ${streak === 1 ? "día" : "días"}`;
       const game = text(payload["game"], "circuit");
 
+      if (game === "dg") {
+        return {
+          title: "Ya está el piloto secreto de hoy",
+          body:
+            streak > 0
+              ? `Tu racha de ${days} está en juego. ¿Lo adivinás en 8 intentos?`
+              : "Un piloto secreto te espera. ¿Lo adivinás en 8 intentos?",
+          url: "/juego",
+          tag: `daily-game-${text(payload["date"], "hoy")}`,
+        };
+      }
+      
       if (game === "hl") {
         return {
           title: "Ya están los duelos de hoy",

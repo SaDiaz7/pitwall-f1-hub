@@ -338,6 +338,62 @@ export type Database = {
         }
         Relationships: []
       }
+      dg_daily: {
+        Row: {
+          created_at: string
+          item_id: string
+          play_date: string
+        }
+        Insert: {
+          created_at?: string
+          item_id: string
+          play_date: string
+        }
+        Update: {
+          created_at?: string
+          item_id?: string
+          play_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dg_daily_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "hl_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dg_plays: {
+        Row: {
+          created_at: string
+          finished: boolean
+          finished_at: string | null
+          guesses: string[]
+          play_date: string
+          solved: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finished?: boolean
+          finished_at?: string | null
+          guesses?: string[]
+          play_date: string
+          solved?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          finished?: boolean
+          finished_at?: string | null
+          guesses?: string[]
+          play_date?: string
+          solved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       dotd_votes: {
         Row: {
           created_at: string
@@ -553,6 +609,8 @@ export type Database = {
       hl_items: {
         Row: {
           active: boolean
+          birth_year: number | null
+          debut: number | null
           id: string
           is_current: boolean
           name: string
@@ -565,6 +623,8 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          birth_year?: number | null
+          debut?: number | null
           id: string
           is_current?: boolean
           name: string
@@ -577,6 +637,8 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          birth_year?: number | null
+          debut?: number | null
           id?: string
           is_current?: boolean
           name?: string
@@ -1394,11 +1456,42 @@ export type Database = {
       }
       album_sync_cards: { Args: { p_cards: Json }; Returns: number }
       album_today_pack: { Args: never; Returns: Json }
+      album_tradable: {
+        Args: { p_card: string; p_foil: boolean; p_user: string }
+        Returns: number
+      }
       all_distinct: { Args: { items: string[] }; Returns: boolean }
       award_trophies: { Args: { p_season: number }; Returns: number }
       bonus_points: { Args: { answers: Json; results: Json }; Returns: number }
       create_league: { Args: { p_name: string }; Returns: string }
       delete_league_post: { Args: { p_post_id: string }; Returns: boolean }
+      dg_cmp: { Args: { a: number; b: number }; Returns: string }
+      dg_ensure_today: {
+        Args: never
+        Returns: {
+          created_at: string
+          item_id: string
+          play_date: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "dg_daily"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      dg_feedback: {
+        Args: {
+          g: Database["public"]["Tables"]["hl_items"]["Row"]
+          s: Database["public"]["Tables"]["hl_items"]["Row"]
+        }
+        Returns: Json
+      }
+      dg_get_game: { Args: never; Returns: Json }
+      dg_list_drivers: { Args: never; Returns: Json }
+      dg_open_pack: { Args: never; Returns: Json }
+      dg_submit: { Args: { p_guess: string }; Returns: Json }
+      dg_today_pack: { Args: never; Returns: Json }
       dotd_get: {
         Args: { p_round: number; p_season: number }
         Returns: {

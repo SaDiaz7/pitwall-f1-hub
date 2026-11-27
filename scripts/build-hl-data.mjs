@@ -23,12 +23,18 @@ if (!Number.isInteger(through) || through < FIRST_SEASON) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const cache = existsSync(CACHE_FILE) ? JSON.parse(readFileSync(CACHE_FILE, "utf8")) : {};
 
+const HEADERS = {
+  Accept: "application/json",
+  "User-Agent": "PitWall-data-script/1.0 (https://pitwallff1.netlify.app)",
+};
+
 async function getJson(url) {
   for (let attempt = 1; attempt <= 6; attempt++) {
     await sleep(DELAY_MS);
-    const response = await fetch(url);
-    if (response.status === 429) {
-      console.log("\n  La API pidió esperar. Pausa de 60 segundos…");
+    const response = await fetch(url, { headers: HEADERS });
+    if (response.status === 429 || response.status === 403 || response.status >= 500) {
+      const body = (await response.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+      console.log(`\n  La API respondió ${response.status} (${body}). Pausa de 60 segundos… (intento ${attempt}/6)`);
       await sleep(60_000);
       continue;
     }

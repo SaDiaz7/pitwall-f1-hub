@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { DailyGame } from "@/components/DailyGame";
 import { DailyPack } from "@/components/DailyPack";
 import { GameLeaderboard } from "@/components/GameLeaderboard";
+import { GuessDriverGame } from "@/components/GuessDriverGame";
+import { GuessDriverPack } from "@/components/GuessDriverPack";
 import { HigherLowerGame } from "@/components/HigherLowerGame";
 import { HigherLowerPack } from "@/components/HigherLowerPack";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,6 +16,7 @@ import { GAME_LABELS } from "@/lib/games";
 const SUBTITLES: Record<string, string> = {
   circuit: "Hoy toca adivinar el circuito. ¿Lo reconocés por su trazado?",
   hl: "Hoy toca ¿Más o menos?: 10 duelos con estadísticas reales de pilotos.",
+  dg: "Hoy toca adivinar al piloto secreto. Tenés 8 intentos y pistas en cada uno.",
 };
 
 const DEFAULT_SUBTITLE = "Un desafío nuevo cada día. Jugá, ganá sobres y completá tu álbum.";
@@ -84,6 +87,13 @@ export function GamePage() {
               <HigherLowerGame onFinished={refresh} />
               <div className="max-w-3xl">
                 <HigherLowerPack refreshKey={version} />
+              </div>
+            </>
+          ) : today === "dg" ? (
+            <>
+              <GuessDriverGame onFinished={refresh} />
+              <div className="max-w-3xl">
+                <GuessDriverPack refreshKey={version} />
               </div>
             </>
           ) : (

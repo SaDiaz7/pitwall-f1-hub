@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, Flame } from "lucide-react";
+import { ArrowUpDown, Flame, Search } from "lucide-react";
 import { DailyGameCard } from "@/components/DailyGameCard";
 import { useHigherLower } from "@/hooks/useHigherLower";
+import { useGuessDriver } from "@/hooks/useGuessDriver";
 import { useSession } from "@/hooks/useSession";
 import { useTodayGame } from "@/hooks/useTodayGame";
 import { GAME_LABELS } from "@/lib/games";
@@ -104,6 +105,70 @@ function HigherLowerCard() {
   );
 }
 
+function GuessDriverCard() {
+  const { game, loading, error } = useGuessDriver({ withDrivers: false });
+
+  if (loading) return <Message>Cargando el juego de hoy…</Message>;
+  if (error || !game) return <Message>El juego de hoy no está disponible por el momento.</Message>;
+
+  const attempts = game.guesses.length;
+
+  let status = "Todavía no jugaste hoy.";
+  if (game.finished) {
+    status = game.solved
+      ? `¡Lo adivinaste en ${attempts} ${attempts === 1 ? "intento" : "intentos"}!`
+      : `No salió. Era ${game.answer?.name ?? "un piloto secreto"}.`;
+  } else if (attempts > 0) {
+    status = `Llevás ${attempts} de ${game.max_attempts} intentos.`;
+  }
+
+  const buttonLabel = game.finished ? "Ver resultado y sobre →" : attempts > 0 ? "Seguir jugando →" : "Jugar ahora →";
+
+  return (
+    <section className={SHELL}>
+      <div className="grid items-center gap-6 md:grid-cols-[1fr_16rem]">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">Juego diario</p>
+          <Link to="/juego" className="hover:text-primary">
+            <h2 className="mt-2 text-4xl font-bold uppercase italic md:text-5xl">Adiviná el piloto</h2>
+          </Link>
+          <p className="mt-3 text-muted-foreground">
+            Un piloto secreto por día. Probá con otros y usá las pistas para encontrarlo en 8 intentos.
+          </p>
+          <p className="mt-2 font-display text-xl font-semibold">{status}</p>
+          {game.streak > 0 && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
+              <Flame className="h-4 w-4 text-orange-400" /> Racha: {game.streak} {game.streak === 1 ? "día" : "días"}
+            </p>
+          )}
+          <Link to="/juego" className={BUTTON}>
+            {buttonLabel}
+          </Link>
+        </div>
+
+        <div className="flex h-36 flex-col items-center justify-center gap-4 text-primary md:h-44">
+          <Search className="h-16 w-16" aria-hidden="true" />
+          <ol className="flex gap-1.5" aria-hidden="true">
+            {Array.from({ length: game.max_attempts }, (_, index) => {
+              const played = game.guesses[index];
+              return (
+                <li
+                  key={index}
+                  className={cn(
+                    "h-2.5 w-2.5 rounded-full",
+                    played ? (played.correct ? "bg-emerald-400" : "bg-amber-400") : "bg-secondary",
+                  )}
+                />
+              );
+            })}
+          </ol>
+        </div>
+      </div>
+      <Stripe />
+    </section>
+  );
+}
+
 export function TodayGameCard() {
   const { session, loading: sessionLoading } = useSession();
   const { info, loading, error } = useTodayGame();
@@ -113,6 +178,7 @@ export function TodayGameCard() {
   if (!session) return <GuestCard game={info.today} />;
   if (info.today === "hl") return <HigherLowerCard />;
   if (info.today === "circuit") return <DailyGameCard />;
+  if (info.today === "dg") return <GuessDriverCard />;
 
   return <Message>Hoy no hay juego diario.</Message>;
 }
