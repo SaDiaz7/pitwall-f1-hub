@@ -450,7 +450,7 @@ export function HomePage() {
       <HomeNews />
 
       <div className="mt-10 grid grid-cols-1 items-start gap-x-6 gap-y-10 md:grid-cols-2 xl:block xl:columns-3 xl:gap-x-6 [&>section]:mt-0 xl:[&>section]:mb-6 xl:[&>section]:break-inside-avoid">
-        {drivers.length > 0 && <TopFiveCard drivers={drivers} linked={Boolean(session)} />}
+        {drivers.length > 0 && <TopFiveCard drivers={drivers} linked />}
         {next && <WeekendCard gp={next} />}
         {last && <LastRace gp={last} results={lastResults} />}
         {session && <CollectionsTeaser />}

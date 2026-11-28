@@ -1,5 +1,13 @@
 export function translateAuthError(message: string): string {
   const m = message.toLowerCase();
+
+  if (m.includes("current password")) {
+    if (m.includes("incorrect") || m.includes("invalid") || m.includes("wrong")) {
+      return "La contraseña actual no es correcta.";
+    }
+    return "Ingresá tu contraseña actual.";
+  }
+
   if (m.includes("different from the old")) return "La nueva contraseña tiene que ser distinta a la actual.";
   if (m.includes("reauthentication") || m.includes("recently")) {
     return "Por seguridad, cerrá sesión, volvé a entrar y probá de nuevo.";

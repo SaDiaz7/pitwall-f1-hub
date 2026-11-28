@@ -97,6 +97,7 @@ function AccountPanel() {
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
+  const [current, setCurrent] = useState("");
   const [confirm, setConfirm] = useState("");
   const [status, setStatus] = useState<Status>(null);
   const [saving, setSaving] = useState(false);
@@ -105,6 +106,11 @@ function AccountPanel() {
   const onChangePassword = async (ev: FormEvent) => {
     ev.preventDefault();
     setStatus(null);
+
+    if (current === "") {
+      setStatus({ type: "error", text: "Ingresá tu contraseña actual." });
+      return;
+    }
 
     if (password.length < 8) {
       setStatus({ type: "error", text: "La contraseña debe tener al menos 8 caracteres." });
@@ -116,7 +122,13 @@ function AccountPanel() {
     }
 
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
+
+    // current_password: el proyecto de Supabase exige la contraseña actual para cambiarla.
+    const { error } = await supabase.auth.updateUser({
+      password,
+      current_password: current,
+    } as Parameters<typeof supabase.auth.updateUser>[0]);
+
     setSaving(false);
 
     if (error) {
@@ -127,6 +139,7 @@ function AccountPanel() {
 
     setPassword("");
     setConfirm("");
+    setCurrent("");
     setStatus({ type: "ok", text: "Contraseña actualizada." });
   };
 
@@ -156,6 +169,27 @@ function AccountPanel() {
 
         <form onSubmit={onChangePassword} noValidate className="space-y-4">
           <h2 className="text-xl font-bold uppercase">Cambiar contraseña</h2>
+
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            value={session?.user.email ?? ""}
+            readOnly
+            tabIndex={-1}
+            aria-hidden="true"
+            className="sr-only"
+          />
+          <div className="space-y-1.5">
+            <Label htmlFor="account-current">Contraseña actual</Label>
+            <PasswordInput
+              id="account-current"
+              value={current}
+              onChange={setCurrent}
+              autoComplete="current-password"
+            />
+          </div>
+          
           <div className="space-y-1.5">
             <Label htmlFor="account-password">Contraseña nueva</Label>
             <PasswordInput

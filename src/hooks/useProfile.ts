@@ -21,6 +21,9 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   header_url: string | null;
+  header_pos_x: number;
+  header_pos_y: number;
+  header_zoom: number;
   country: string | null;
   is_public: boolean;
   show_favorites: boolean;
@@ -34,6 +37,9 @@ const EMPTY_PROFILE: Profile = {
   avatar_url: null,
   bio: null,
   header_url: null,
+  header_pos_x: 50,
+  header_pos_y: 50,
+  header_zoom: 1,
   country: null,
   is_public: true,
   show_favorites: true,
@@ -93,7 +99,9 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_url, bio, header_url, is_public, show_favorites, country")
+      .select(
+        "username, display_name, avatar_url, bio, header_url, header_pos_x, header_pos_y, header_zoom, is_public, show_favorites, country",
+      )
       .eq("id", userId)
       .maybeSingle();
 
@@ -202,7 +210,14 @@ export function useProfile() {
       }
 
       const { data } = supabase.storage.from("profile-headers").getPublicUrl(path);
-      return save({ header_url: `${data.publicUrl}?v=${Date.now()}` });
+
+      // Con una imagen nueva, el encuadre vuelve a quedar centrado y sin zoom.
+      return save({
+        header_url: `${data.publicUrl}?v=${Date.now()}`,
+        header_pos_x: 50,
+        header_pos_y: 50,
+        header_zoom: 1,
+      });
     },
     [userId, save],
   );
@@ -210,7 +225,7 @@ export function useProfile() {
   const removeHeader = useCallback(async (): Promise<SaveResult> => {
     if (!userId) return { ok: false, message: "Tenés que iniciar sesión." };
 
-    const result = await save({ header_url: null });
+    const result = await save({ header_url: null, header_pos_x: 50, header_pos_y: 50, header_zoom: 1 });
     if (result.ok) {
       // Si no se puede borrar el archivo no pasa nada: el perfil ya no lo muestra.
       await supabase.storage.from("profile-headers").remove([`${userId}/header`]);

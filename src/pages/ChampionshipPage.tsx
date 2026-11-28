@@ -30,7 +30,11 @@ export function ChampionshipPage() {
 
   // Las estrellas solo tienen sentido en la temporada en curso.
   const isCurrent = season === undefined || season === CURRENT_YEAR;
-  const showStars = isCurrent && Boolean(session);
+  // Las estrellas de pilotos sirven en cualquier temporada (podés guardar pilotos históricos).
+  // Las de equipos, solo en la temporada en curso.
+  const showDriverStars = Boolean(session);
+  const showTeamStars = isCurrent && Boolean(session);
+
   const errorMessage = error ?? teamFavorites.error;
 
   const onSeasonChange = (value: string) => {
@@ -78,7 +82,7 @@ export function ChampionshipPage() {
         </p>
       )}
 
-      {isCurrent && errorMessage && (
+      {errorMessage && (
         <p className="mb-4 rounded-md bg-destructive/15 p-2 text-sm text-destructive">{errorMessage}</p>
       )}
 
@@ -98,9 +102,9 @@ export function ChampionshipPage() {
             <>
               <StandingsTable
                 rows={driverRows}
-                driverLinks={Boolean(session)}
+                driverLinks
                 photos={photos}
-                {...(showStars ? { isFavorite, onToggleFavorite: toggle } : {})}
+                {...(showDriverStars ? { isFavorite, onToggleFavorite: toggle } : {})}
               />
               <p className="mt-3 text-xs text-muted-foreground">
                 Fotos: Wikipedia/Wikimedia Commons, cada imagen con su propia licencia. Los colores de los equipos son
@@ -117,7 +121,7 @@ export function ChampionshipPage() {
             <StandingsTable
               rows={teams}
               showTeam={false}
-              {...(showStars
+              {...(showTeamStars
                 ? { isFavorite: teamFavorites.isFavorite, onToggleFavorite: teamFavorites.toggle }
                 : {})}
             />

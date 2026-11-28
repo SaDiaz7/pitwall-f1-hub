@@ -27,6 +27,9 @@ interface PublicProfile {
   avatar_url: string | null;
   bio: string | null;
   header_url: string | null;
+  header_pos_x: number;
+  header_pos_y: number;
+  header_zoom: number;
   country: string | null;
   total_points: number;
   scored_races: number;

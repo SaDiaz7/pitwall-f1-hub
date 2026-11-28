@@ -1026,7 +1026,10 @@ export type Database = {
           bio: string | null
           country: string | null
           display_name: string | null
+          header_pos_x: number
+          header_pos_y: number
           header_url: string | null
+          header_zoom: number
           id: string
           is_public: boolean
           show_favorites: boolean
@@ -1038,7 +1041,10 @@ export type Database = {
           bio?: string | null
           country?: string | null
           display_name?: string | null
+          header_pos_x?: number
+          header_pos_y?: number
           header_url?: string | null
+          header_zoom?: number
           id: string
           is_public?: boolean
           show_favorites?: boolean
@@ -1050,7 +1056,10 @@ export type Database = {
           bio?: string | null
           country?: string | null
           display_name?: string | null
+          header_pos_x?: number
+          header_pos_y?: number
           header_url?: string | null
+          header_zoom?: number
           id?: string
           is_public?: boolean
           show_favorites?: boolean
@@ -1804,7 +1813,10 @@ export type Database = {
           bio: string
           country: string
           display_name: string
+          header_pos_x: number
+          header_pos_y: number
           header_url: string
+          header_zoom: number
           relation: string
           scored_races: number
           total_points: number
